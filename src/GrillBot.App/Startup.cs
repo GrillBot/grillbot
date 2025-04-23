@@ -254,7 +254,7 @@ public class Startup
         services.Configure<ForwardedHeadersOptions>(opt => opt.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto);
 
         services.AddHttpLogging(c => c.LoggingFields = HttpLoggingFields.All);
-        services.Configure<AspNetCoreTraceInstrumentationOptions>(opt => opt.Filter = ctx => ctx.Request.Path != "/metrics");
+        services.Configure<AspNetCoreTraceInstrumentationOptions>(opt => opt.Filter = ctx => ctx.Request.Path != "/metrics" && ctx.Request.Path != "/health");
 
         services.AddOpenTelemetry()
             .ConfigureResource(b => b.AddService("GrillBot"))

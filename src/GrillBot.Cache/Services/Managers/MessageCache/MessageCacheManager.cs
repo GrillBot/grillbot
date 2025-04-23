@@ -204,6 +204,11 @@ public class MessageCacheManager : IMessageCacheManager
                 // Catches expected errors from discord API.
                 return [];
             }
+            catch(ArgumentNullException)
+            {
+                // TODO Delete after Discord.NET release with https://github.com/discord-net/Discord.Net/pull/3065
+                return [];
+            }
         }
     }
 

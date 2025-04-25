@@ -10,17 +10,13 @@ namespace GrillBot.App.Modules.Interactions;
 
 [RequireUserPerms]
 [Group("points", "Points")]
-public class PointsModule : InteractionsModuleBase
+public class PointsModule(IServiceProvider serviceProvider) : InteractionsModuleBase(serviceProvider)
 {
-    public PointsModule(IServiceProvider serviceProvider) : base(serviceProvider)
-    {
-    }
-
     [UserCommand("Body uživatele")]
     [SlashCommand("where", "Get the current status of user points.")]
     public async Task GetUserPointsAsync(IUser? user = null)
     {
-        using var command = GetCommand<PointsImage>();
+        using var command = await GetCommandAsync<PointsImage>();
 
         try
         {
@@ -38,7 +34,7 @@ public class PointsModule : InteractionsModuleBase
         bool overAllTime = false
     )
     {
-        using var command = GetCommand<PointsLeaderboard>();
+        using var command = await GetCommandAsync<PointsLeaderboard>();
 
         try
         {
@@ -63,7 +59,7 @@ public class PointsModule : InteractionsModuleBase
     [SlashCommand("chart", "Get charts of points")]
     public async Task GetChartAsync(ChartType type, ChartsFilter filter, IEnumerable<IUser>? users = null)
     {
-        using var command = GetCommand<PointsChart>();
+        using var command = await GetCommandAsync<PointsChart>();
 
         using var img = await command.Command.ProcessAsync(type, users, filter);
         await FollowupWithFileAsync(img.Path);

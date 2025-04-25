@@ -3,17 +3,11 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Modules.Implementations.Points;
 
-public class PointsBoardPaginationHandler : ComponentInteractionHandler
+public class PointsBoardPaginationHandler(
+    int _page,
+    IServiceProvider _serviceProvider
+) : ComponentInteractionHandler
 {
-    private int Page { get; }
-    private IServiceProvider ServiceProvider { get; }
-
-    public PointsBoardPaginationHandler(int page, IServiceProvider serviceProvider)
-    {
-        Page = page;
-        ServiceProvider = serviceProvider;
-    }
-
     public override async Task ProcessAsync(IInteractionContext context)
     {
         if (!TryParseData<PointsBoardMetadata>(context.Interaction, out var component, out var metadata))
@@ -22,19 +16,19 @@ public class PointsBoardPaginationHandler : ComponentInteractionHandler
             return;
         }
 
-        using var scope = ServiceProvider.CreateScope();
+        using var scope = _serviceProvider.CreateScope();
         var action = scope.ServiceProvider.GetRequiredService<Actions.Commands.Points.PointsLeaderboard>();
         action.Init(context);
 
         var pagesCount = await action.ComputePagesCountAsync();
-        var page = CheckNewPageNumber(Page, pagesCount);
-        if (page == metadata.Page)
+        var newPage = CheckNewPageNumber(_page, pagesCount);
+        if (newPage == metadata.Page)
         {
             await context.Interaction.DeferAsync();
             return;
         }
 
-        var (embed, paginationComponent) = await action.ProcessAsync(page, metadata.OverAllTime);
+        var (embed, paginationComponent) = await action.ProcessAsync(newPage, metadata.OverAllTime);
         await component.UpdateAsync(msg =>
         {
             msg.Components = paginationComponent;

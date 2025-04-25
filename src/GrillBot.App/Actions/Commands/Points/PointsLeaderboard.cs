@@ -13,23 +13,14 @@ using GrillBot.Core.Services.Common.Executor;
 
 namespace GrillBot.App.Actions.Commands.Points;
 
-public class PointsLeaderboard : CommandAction
+public class PointsLeaderboard(
+    ITextsManager _texts,
+    FormatHelper _formatHelper,
+    IServiceClientExecutor<IPointsServiceClient> _pointsServiceClient,
+    DataResolveManager _dataResolveManager
+) : CommandAction
 {
     private const int MaxItemsCount = 10;
-
-    private ITextsManager Texts { get; }
-    private FormatHelper FormatHelper { get; }
-    private readonly DataResolveManager _dataResolveManager;
-    private readonly IServiceClientExecutor<IPointsServiceClient> _pointsServiceClient;
-
-    public PointsLeaderboard(ITextsManager texts, FormatHelper formatHelper, IServiceClientExecutor<IPointsServiceClient> pointsServiceClient,
-        DataResolveManager dataResolveManager)
-    {
-        Texts = texts;
-        FormatHelper = formatHelper;
-        _pointsServiceClient = pointsServiceClient;
-        _dataResolveManager = dataResolveManager;
-    }
 
     public async Task<(Embed embed, MessageComponent? paginationComponent)> ProcessAsync(int page, bool overAllTime)
     {
@@ -38,24 +29,29 @@ public class PointsLeaderboard : CommandAction
 
         var leaderboard = await GetLeaderboardAsync(guildId, skip, overAllTime);
         if (leaderboard.Count == 0)
-            throw new NotFoundException(Texts["Points/Board/NoActivity", Locale]);
+            throw new NotFoundException(_texts["Points/Board/NoActivity", Locale]);
 
         var embed = await CreateEmbedAsync(Context.Guild, leaderboard, page, skip, overAllTime);
         var paginationComponents = await CreatePaginationComponents(page);
         return (embed, paginationComponents);
     }
 
-    private async Task<List<BoardItem>> GetLeaderboardAsync(string guildId, int skip, bool overAllTime)
+    private Task<List<BoardItem>> GetLeaderboardAsync(string guildId, int skip, bool overAllTime)
     {
         var columns = overAllTime ? LeaderboardColumnFlag.Total : LeaderboardColumnFlag.YearBack;
         var sortOptions = overAllTime ? LeaderboardSortOptions.ByTotalDescending : LeaderboardSortOptions.ByYearBackDescending;
 
-        return await _pointsServiceClient.ExecuteRequestAsync((c, ctx) => c.GetLeaderboardAsync(guildId, skip, MaxItemsCount, columns, sortOptions, ctx.CancellationToken));
+        return _pointsServiceClient.ExecuteRequestAsync(
+            (c, ctx) => c.GetLeaderboardAsync(guildId, skip, MaxItemsCount, columns, sortOptions, ctx.CancellationToken)
+        );
     }
 
     public async Task<int> ComputePagesCountAsync()
     {
-        var totalItemsCount = await _pointsServiceClient.ExecuteRequestAsync((c, ctx) => c.GetLeaderboardCountAsync(Context.Guild.Id.ToString(), ctx.CancellationToken));
+        var totalItemsCount = await _pointsServiceClient.ExecuteRequestAsync(
+            (c, ctx) => c.GetLeaderboardCountAsync(Context.Guild.Id.ToString(), ctx.CancellationToken)
+        );
+
         return ComputePagesCount(totalItemsCount);
     }
 
@@ -73,7 +69,7 @@ public class PointsLeaderboard : CommandAction
                 Page = page,
                 OverAllTime = overAllTime
             })
-            .WithAuthor(Texts["Points/Board/Title", Locale])
+            .WithAuthor(_texts["Points/Board/Title", Locale])
             .WithColor(Color.Blue)
             .WithCurrentTimestamp()
             .WithDescription(list)
@@ -117,8 +113,8 @@ public class PointsLeaderboard : CommandAction
     private string FormatRow(int index, PointsStatus item, int skip, string username, bool overAllTime)
     {
         var value = overAllTime ? item.Total : item.YearBack;
-        var points = FormatHelper.FormatNumber("Points/Board/Counts", Locale, value);
-        return Texts["Points/Board/Row", Locale].FormatWith(index + skip + 1, username, points);
+        var points = _formatHelper.FormatNumber("Points/Board/Counts", Locale, value);
+        return _texts["Points/Board/Row", Locale].FormatWith(index + skip + 1, username, points);
     }
 
     private async Task<MessageComponent?> CreatePaginationComponents(int currentPage)

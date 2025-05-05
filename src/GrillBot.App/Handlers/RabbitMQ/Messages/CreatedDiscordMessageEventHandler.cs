@@ -5,7 +5,7 @@ using GrillBot.Core.Services.GrillBot.Models.Events.Messages;
 using GrillBot.Core.Services.RemindService.Models.Events;
 using Microsoft.Extensions.Logging;
 
-namespace GrillBot.App.Handlers.RabbitMQ;
+namespace GrillBot.App.Handlers.RabbitMQ.Messages;
 
 public class CreatedDiscordMessageEventHandler : RabbitMessageHandlerBase<CreatedDiscordMessagePayload>
 {

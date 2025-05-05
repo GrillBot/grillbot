@@ -21,7 +21,7 @@ public static class ManagerExtensions
             .AddScoped<Points.PointsManager>()
             .AddScoped<Points.PointsSynchronizationManager>()
             .AddScoped<Points.PointsValidationManager>()
-            .AddScoped<LocalizedEmbedManager>()
+            .AddScoped<LocalizationManager>()
             .AddScoped<Auth.JwtTokenManager>();
 
         return services;

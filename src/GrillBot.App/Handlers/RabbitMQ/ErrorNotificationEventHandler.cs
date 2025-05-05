@@ -7,6 +7,7 @@ using GrillBot.Core.RabbitMQ.V2.Consumer;
 using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Core.Services.GrillBot.Models.Events.Errors;
 using GrillBot.Core.Services.GrillBot.Models.Events.Messages;
+using GrillBot.Core.Services.GrillBot.Models.Events.Messages.Embeds;
 using Microsoft.Extensions.Logging;
 
 namespace GrillBot.App.Handlers.RabbitMQ;
@@ -57,18 +58,18 @@ public class ErrorNotificationEventHandler(
         }
     }
 
-    private async Task<DiscordMessagePayload?> CreateMessage(ErrorNotificationPayload payload, TemporaryFile? withoutAccidentImage)
+    private async Task<DiscordSendMessagePayload?> CreateMessage(ErrorNotificationPayload payload, TemporaryFile? withoutAccidentImage)
     {
         var loggingConfiguration = _configuration.GetSection("Discord:Logging");
         if (!loggingConfiguration.GetValue<bool>("Enabled"))
             return null;
 
-        var guildId = loggingConfiguration.GetValue<ulong>("GuildId").ToString();
-        var channelId = loggingConfiguration.GetValue<ulong>("ChannelId").ToString();
+        var guildId = loggingConfiguration.GetValue<ulong>("GuildId");
+        var channelId = loggingConfiguration.GetValue<ulong>("ChannelId");
         var attachment = await CreateWithoutAccidentAttachmentAsync(withoutAccidentImage);
         var embed = CreateMessageEmbed(payload, attachment?.Filename);
 
-        return new DiscordMessagePayload(
+        return new DiscordSendMessagePayload(
             guildId,
             channelId,
             null,
@@ -85,9 +86,8 @@ public class ErrorNotificationEventHandler(
         if (image is null)
             return null;
 
-        var content = await File.ReadAllBytesAsync(image.Path);
-        var filename = Path.GetFileName(image.Path);
-        return new DiscordMessageFile(filename, false, content);
+        var content = await image.ReadAllBytesAsync();
+        return new DiscordMessageFile(image.Filename, false, content);
     }
 
     private DiscordMessageEmbed CreateMessageEmbed(ErrorNotificationPayload payload, string? withoutAccidentName)

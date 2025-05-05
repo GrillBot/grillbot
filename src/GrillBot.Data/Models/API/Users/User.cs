@@ -23,4 +23,9 @@ public class User
     /// Avatar url.
     /// </summary>
     public string AvatarUrl { get; set; } = null!;
+
+    [global::System.Text.Json.Serialization.JsonIgnore]
+    [Newtonsoft.Json.JsonIgnore]
+    public string DisplayName
+        => string.IsNullOrEmpty(GlobalAlias) ? Username : $"{Username} ({GlobalAlias})";
 }

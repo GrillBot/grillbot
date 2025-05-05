@@ -1,20 +1,17 @@
-﻿using GrillBot.Common.Extensions;
+﻿using GrillBot.App.Managers.DataResolve;
+using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Localization;
+using GrillBot.Core.Extensions;
 
 namespace GrillBot.App.Managers;
 
-public class LocalizedEmbedManager
+public class LocalizationManager(
+    ITextsManager _texts,
+    IDiscordClient _discordClient,
+    DataResolveManager _dataResolve
+)
 {
-    private readonly ITextsManager _texts;
-    private readonly IDiscordClient _discordClient;
-
-    public LocalizedEmbedManager(ITextsManager texts, IDiscordClient discordClient)
-    {
-        _texts = texts;
-        _discordClient = discordClient;
-    }
-
     public async Task<EmbedBuilder> CreateLocalizedEmbedAsync(EmbedBuilder original, string language, Dictionary<string, string> additionalData)
     {
         var result = new EmbedBuilder();
@@ -91,7 +88,7 @@ public class LocalizedEmbedManager
             .WithIsInline(original.IsInline);
     }
 
-    private async Task<string> TransformValueAsync(string value, string language, Dictionary<string, string> additionalData)
+    public async Task<string> TransformValueAsync(string value, string language, Dictionary<string, string> additionalData)
     {
         if (value.StartsWith("Bot."))
         {
@@ -102,6 +99,20 @@ public class LocalizedEmbedManager
                 case "Bot.AvatarUrl":
                     return _discordClient.CurrentUser.GetUserAvatarUrl();
             }
+        }
+
+        if (value.StartsWith("User."))
+        {
+            var resolveUserId = value.Split(':', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)[1].ToUlong();
+            var user = await _dataResolve.GetUserAsync(resolveUserId);
+
+            if (user is null)
+                return value;
+
+            if (value.StartsWith("User.AvatarUrl:"))
+                return user.AvatarUrl;
+            else if (value.StartsWith("User.DisplayName:"))
+                return user.DisplayName;
         }
 
         if (value.StartsWith("UserDisplayName.") && ulong.TryParse(value.Replace("UserDisplayName.", ""), CultureInfo.InvariantCulture, out var userId))

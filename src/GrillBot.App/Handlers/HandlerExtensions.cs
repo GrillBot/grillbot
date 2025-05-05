@@ -1,4 +1,5 @@
-﻿using GrillBot.App.Handlers.Synchronization.Database;
+﻿using GrillBot.App.Handlers.RabbitMQ.Messages;
+using GrillBot.App.Handlers.Synchronization.Database;
 using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Core.RabbitMQ.V2;
 using Microsoft.Extensions.DependencyInjection;
@@ -119,9 +120,10 @@ public static class HandlerExtensions
     {
         services
             .AddRabbitConsumer<RabbitMQ.FileDeleteEventHandler>()
-            .AddRabbitConsumer<RabbitMQ.SendMessageEventHandler>()
+            .AddRabbitConsumer<SendMessageEventHandler>()
             .AddRabbitConsumer<RabbitMQ.ErrorNotificationEventHandler>()
             .AddRabbitConsumer<RabbitMQ.RabbitHandlerErrorHandler>()
-            .AddRabbitConsumer<RabbitMQ.CreatedDiscordMessageEventHandler>();
+            .AddRabbitConsumer<CreatedDiscordMessageEventHandler>()
+            .AddRabbitConsumer<EditMessageEventHandler>();
     }
 }

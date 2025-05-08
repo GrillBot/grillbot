@@ -69,7 +69,7 @@ public abstract class MessageEventHandlerBase<TPayload>(
 
     protected async Task<string?> CreateContentAsync(TPayload payload)
     {
-        if (!string.IsNullOrEmpty(payload.Content))
+        if (string.IsNullOrEmpty(payload.Content))
             return null;
         if (!payload.CanUseLocalizedContent)
             return payload.Content;

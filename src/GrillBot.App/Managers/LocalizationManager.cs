@@ -98,6 +98,8 @@ public class LocalizationManager(
                     return _discordClient.CurrentUser.GetDisplayName();
                 case "Bot.AvatarUrl":
                     return _discordClient.CurrentUser.GetUserAvatarUrl();
+                case "Bot.Mention":
+                    return _discordClient.CurrentUser.Mention;
             }
         }
 
@@ -113,6 +115,8 @@ public class LocalizationManager(
                 return user.AvatarUrl;
             else if (value.StartsWith("User.DisplayName:"))
                 return user.DisplayName;
+            else if (value.StartsWith("User.Mention:"))
+                return MentionUtils.MentionUser(user.Id.ToUlong());
         }
 
         if (value.StartsWith("UserDisplayName.") && ulong.TryParse(value.Replace("UserDisplayName.", ""), CultureInfo.InvariantCulture, out var userId))
@@ -120,6 +124,9 @@ public class LocalizationManager(
             var user = await _discordClient.FindUserAsync(userId);
             return user is null ? value : user.GetDisplayName();
         }
+
+        if (value.StartsWith("DateTime:") && DateTime.TryParse(value.Replace("DateTime:", ""), CultureInfo.InvariantCulture, out var dateTime))
+            return dateTime.ToLocalTime().ToCzechFormat();
 
         var localized = _texts.GetIfExists(value, language).ReplaceIfNullOrEmpty(value);
         return ProcessAdditionalData(value, localized, additionalData);

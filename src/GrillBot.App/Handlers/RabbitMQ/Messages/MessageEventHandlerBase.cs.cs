@@ -57,7 +57,7 @@ public abstract class MessageEventHandlerBase<TPayload>(
         var embedBuilder = payload.Embed.ToBuilder();
         var isOriginalEmbedValid = payload.Embed.IsValidEmbed();
 
-        if (!payload.CanUseLocalizedEmbeds)
+        if (!payload.CanUseLocalization)
             return !isOriginalEmbedValid ? null : embedBuilder.Build();
 
         if (!payload.ServiceData.TryGetValue("Language", out var language))
@@ -71,7 +71,7 @@ public abstract class MessageEventHandlerBase<TPayload>(
     {
         if (string.IsNullOrEmpty(payload.Content))
             return null;
-        if (!payload.CanUseLocalizedContent)
+        if (!payload.CanUseLocalization)
             return payload.Content;
 
         var locale = payload.Locale ?? TextsManager.DefaultLocale;

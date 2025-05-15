@@ -611,5 +611,30 @@
                 "description": "List of users"
             }
         }
+    },
+    "emote-suggestions": {
+        "name": "emote-suggestions",
+        "description": "Emote Suggestions",
+        "create": {
+            "name": "create",
+            "description": "Create a suggestion to add a new emote.",
+            "reason": {
+                "name": "reason",
+                "description": "The reason why the emote should be added."
+            },
+            "emoteName": {
+                "name": "name",
+                "description": "Name of the suggested emote. Not required if you're suggesting an existing emote."
+            },
+            "emote": {
+                "name": "emote",
+                "description": "The emote you want to suggest. Cannot be combined with an attachment."
+            },
+            "attachment": {
+                "name": "attachment",
+                "description": "An attachment to be used as the emote. Cannot be combined with an emote."
+            }
+        }
     }
+
 }

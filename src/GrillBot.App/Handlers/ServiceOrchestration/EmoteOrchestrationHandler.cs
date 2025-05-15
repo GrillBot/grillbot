@@ -3,45 +3,30 @@ using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.RabbitMQ.V2.Publisher;
+using GrillBot.Core.Services.Common.Executor;
+using GrillBot.Core.Services.Emote;
 using GrillBot.Core.Services.Emote.Models.Events;
+using GrillBot.Core.Services.Emote.Models.Events.Guild;
+using Microsoft.Extensions.Logging;
 
 namespace GrillBot.App.Handlers.ServiceOrchestration;
 
-public class EmoteOrchestrationHandler : IMessageDeletedEvent, IMessageReceivedEvent, IReactionAddedEvent, IReactionRemovedEvent, IReadyEvent, IGuildAvailableEvent, IGuildUpdatedEvent
+public partial class EmoteOrchestrationHandler(
+    IRabbitPublisher _rabbitPublisher,
+    IMessageCacheManager _messageCache,
+    IDiscordClient _discordClient,
+    IServiceClientExecutor<IEmoteServiceClient> _emoteService,
+    ILogger<EmoteOrchestrationHandler> _logger
+) :
+    IMessageDeletedEvent,
+    IMessageReceivedEvent,
+    IReactionAddedEvent,
+    IReactionRemovedEvent,
+    IReadyEvent,
+    IGuildAvailableEvent,
+    IGuildUpdatedEvent,
+    IChannelDestroyedEvent
 {
-    private readonly IRabbitPublisher _rabbitPublisher;
-    private readonly IMessageCacheManager _messageCache;
-    private readonly IDiscordClient _discordClient;
-
-    public EmoteOrchestrationHandler(IRabbitPublisher rabbitPublisher, IMessageCacheManager messageCache, IDiscordClient discordClient)
-    {
-        _rabbitPublisher = rabbitPublisher;
-        _messageCache = messageCache;
-        _discordClient = discordClient;
-    }
-
-    // MessageDeleted
-    public async Task ProcessAsync(Cacheable<IMessage, ulong> cachedMessage, Cacheable<IMessageChannel, ulong> cachedChannel)
-    {
-        if (!cachedChannel.HasValue || cachedChannel.Value is not ITextChannel)
-            return;
-
-        var message = cachedMessage.HasValue ? cachedMessage.Value : null;
-        message ??= await _messageCache.GetAsync(cachedMessage.Id, null, true) as IUserMessage;
-        if (message?.IsCommand(_discordClient.CurrentUser) != false) return;
-        if (message.Author is not IGuildUser guildUser) return;
-
-        var emotes = message.GetEmotesFromMessage().ToList();
-        if (emotes.Count == 0) return;
-
-        var guildId = guildUser.GuildId.ToString();
-        var userId = guildUser.Id.ToString();
-        var createdAt = DateTime.UtcNow;
-        var payloads = emotes.ConvertAll(e => new EmoteEventPayload(guildId, userId, e.ToString(), createdAt, false));
-
-        await _rabbitPublisher.PublishAsync(payloads);
-    }
-
     // MessageReceived
     public async Task ProcessAsync(IMessage message)
     {
@@ -104,22 +89,6 @@ public class EmoteOrchestrationHandler : IMessageDeletedEvent, IMessageReceivedE
         await _rabbitPublisher.PublishAsync(new EmoteEventPayload(guildId, userId, emoteId, DateTime.UtcNow, false));
     }
 
-    // Ready
-    async Task IReadyEvent.ProcessAsync()
-    {
-        var guilds = await _discordClient.GetGuildsAsync();
-        var payloads = new List<SynchronizeEmotesPayload>();
-
-        foreach (var guild in guilds)
-        {
-            var emotes = guild.Emotes.ToList();
-            payloads.Add(new SynchronizeEmotesPayload(guild.Id.ToString(), emotes));
-        }
-
-        if (payloads.Count > 0)
-            await _rabbitPublisher.PublishAsync(payloads);
-    }
-
     // GuildAvailable
     public async Task ProcessAsync(IGuild guild)
     {
@@ -134,5 +103,13 @@ public class EmoteOrchestrationHandler : IMessageDeletedEvent, IMessageReceivedE
 
         var emotesAfter = after.Emotes.ToList();
         await _rabbitPublisher.PublishAsync(new SynchronizeEmotesPayload(after.Id.ToString(), emotesAfter));
+    }
+
+    // Channel destroyed
+    public Task ProcessAsync(IChannel channel)
+    {
+        return channel is not IGuildChannel guildChannel
+            ? Task.CompletedTask
+            : _rabbitPublisher.PublishAsync(GuildChannelDeletedPayload.Create(guildChannel));
     }
 }

@@ -611,5 +611,29 @@
                 "description": "Seznam uživatelů"
             }
         }
+    },
+    "emote-suggestions": {
+        "name": "emote-suggestions",
+        "description": "Návrhy emotů",
+        "create": {
+            "name": "create",
+            "description": "Vytvoření návrhu na přidání nového emote.",
+            "reason": {
+                "name": "duvod",
+                "description": "Důvod, proč by měl být emote přidán."
+            },
+            "emoteName": {
+                "name": "název",
+                "description": "Název navrhovaného emote. Není nutné vyplňovat, pokud navrhuješ již existující emote."
+            },
+            "emote": {
+                "name": "emote",
+                "description": "Emote, který navrhuješ přidat. Nelze kombinovat s přílohou."
+            },
+            "attachment": {
+                "name": "priloha",
+                "description": "Příloha, která se má použít jako emote. Nelze kombinovat s emote."
+            }
+        }
     }
 }

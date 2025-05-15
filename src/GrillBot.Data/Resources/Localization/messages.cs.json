@@ -625,5 +625,49 @@
         "CreateWarning": {
             "Success": "Varování bylo úspěšně zapsáno."
         }
+    },
+    "SuggestionModule": {
+        "CreateSuggestion": {
+            "MissingReason": "Je nutné uvést důvod, proč bychom měli emote přidat.",
+            "ReasonTooLong": "Důvod je příliš dlouhý. Maximální délka je 1024 znaků.",
+            "MissingEmoteOrAttachment": "Chybí emote nebo příloha.",
+            "BothEmoteAndAttachment": "Lze přidat buď emote, nebo přílohu – ne obojí.",
+            "MissingName": "Chybí název navrhovaného emote.",
+            "TooMuchSuggestions": "Můžeš podat maximálně {0} návrhů denně.",
+            "DuplicateSuggestion": "Tento měsíc už někdo podal návrh na stejný emote.",
+            "Success": "Návrh byl úspěšně odeslán."
+        },
+        "SuggestionEmbed": {
+            "Title": "Nový návrh podán",
+            "EmoteNameTitle": "Název emote",
+            "EmoteReasonTitle": "Důvod přidání",
+            "ApprovedForVote": {
+                "True": {
+                    "Title": "Schváleno k hlasování",
+                    "At": "Schváleno (datum)"
+                },
+                "False": {
+                    "Title": "Zamítnuto k hlasování",
+                    "At": "Zamítnuto (datum)"
+                }
+            },
+            "VoteKilledTitle": "Hlasování zrušeno",
+            "VoteFinishedTitle": "Hlasování ukončeno",
+            "ApprovedVotes": {
+                "UpVotes": "Pozitivní hlasy",
+                "DownVotes": "Negativní hlasy"
+            },
+            "VoteStartedAt": "Začátek hlasování",
+            "VoteEndAt": "Konec hlasování",
+            "VoteRunning": "Hlasování probíhá"
+        },
+        "PrivateMessageSuggestionCreated": "Tvůj návrh byl úspěšně podán. Nyní je na moderátorech, aby rozhodli.",
+        "VoteReport": {
+            "Title": "Výsledky hlasování"
+        },
+        "VoteEmbed": {
+            "Title": "Hlasování o návrhu",
+            "ExpectedEnd": "Očekávaný konec"
+        }
     }
 }

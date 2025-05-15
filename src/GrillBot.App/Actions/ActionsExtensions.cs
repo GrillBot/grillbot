@@ -175,6 +175,10 @@ public static class ActionsExtensions
             .AddScoped<Commands.Birthday.HaveBirthday>()
             .AddScoped<Commands.Birthday.RemoveBirthday>();
 
+        // EmoteSuggestions
+        services
+            .AddScoped<Commands.Emotes.Suggestions.CreateEmoteSuggestionAction>();
+
         // Emotes
         services
             .AddScoped<Commands.Emotes.EmoteInfo>()

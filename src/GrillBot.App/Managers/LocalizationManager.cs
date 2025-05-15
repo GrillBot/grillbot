@@ -137,6 +137,9 @@ public class LocalizationManager(
         if (rawValue == "RemindModule/NotifyMessage/Postponed" && additionalData.TryGetValue("PostponeCount", out var postponeCount))
             return localized.FormatWith(postponeCount);
 
+        if (rawValue == "SuggestionModule/CreateSuggestion/TooMuchSuggestions" && additionalData.TryGetValue("MaxSuggestions", out var maxSuggestions))
+            return localized.FormatWith(maxSuggestions);
+
         return localized;
     }
 }

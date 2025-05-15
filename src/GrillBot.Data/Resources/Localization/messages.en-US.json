@@ -625,5 +625,49 @@
         "CreateWarning": {
             "Success": "The warning was successfully written."
         }
+    },
+    "SuggestionModule": {
+        "CreateSuggestion": {
+            "MissingReason": "You must provide a reason why this emote should be added.",
+            "ReasonTooLong": "The reason is too long. Maximum length is 1024 characters.",
+            "MissingEmoteOrAttachment": "Missing emote or attachment.",
+            "BothEmoteAndAttachment": "You can submit either an emote or an attachment, not both.",
+            "MissingName": "Missing emote name.",
+            "TooMuchSuggestions": "You can submit up to {0} suggestions per day.",
+            "DuplicateSuggestion": "Someone has already submitted a suggestion for the same emote this month.",
+            "Success": "Your suggestion has been submitted successfully."
+        },
+        "SuggestionEmbed": {
+            "Title": "New Suggestion Submitted",
+            "EmoteNameTitle": "Emote Name",
+            "EmoteReasonTitle": "Reason for Adding",
+            "ApprovedForVote": {
+                "True": {
+                    "Title": "Approved for Voting",
+                    "At": "Approved At"
+                },
+                "False": {
+                    "Title": "Rejected from Voting",
+                    "At": "Rejected At"
+                }
+            },
+            "VoteKilledTitle": "Vote Canceled",
+            "VoteFinishedTitle": "Vote Ended",
+            "ApprovedVotes": {
+                "UpVotes": "Upvotes",
+                "DownVotes": "Downvotes"
+            },
+            "VoteStartedAt": "Vote Started",
+            "VoteEndAt": "Vote Ended",
+            "VoteRunning": "Voting in Progress"
+        },
+        "PrivateMessageSuggestionCreated": "Your suggestion has been submitted successfully. It's now up to the moderators to decide.",
+        "VoteReport": {
+            "Title": "Voting Results"
+        },
+        "VoteEmbed": {
+            "Title": "Suggestion Vote",
+            "ExpectedEnd": "Expected End"
+        }
     }
 }

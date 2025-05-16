@@ -43,6 +43,8 @@ public class DiscordService : IHostedService
         InteractionService.AddTypeConverter<IEmote>(new EmotesTypeConverter());
         InteractionService.AddTypeConverter<IMessage>(new MessageTypeConverter());
         InteractionService.AddTypeConverter<IEnumerable<IUser>>(new UsersTypeConverter());
+        InteractionService.AddTypeConverter<Guid>(new GuidTypeConverter());
+        InteractionService.AddTypeReader<Guid>(new GuidTypeConverter());
 
         var assembly = Assembly.GetEntryAssembly();
         await InteractionService.AddModulesAsync(assembly, Provider);

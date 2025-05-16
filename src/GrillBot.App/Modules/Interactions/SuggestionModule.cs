@@ -2,6 +2,7 @@
 using GrillBot.App.Actions.Commands.Emotes.Suggestions;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
+using GrillBot.Core.Services.Emote.Models.Events.Suggestions;
 
 namespace GrillBot.App.Modules.Interactions;
 
@@ -34,5 +35,11 @@ public class SuggestionModule(IServiceProvider serviceProvider) : InteractionsMo
             await SetResponseAsync(GetText(nameof(CreateSuggestionAsync), "Success"));
         else
             await SetResponseAsync(command.Command.ErrorMessage);
+    }
+
+    [ComponentInteraction("suggestion_approve_for_vote:*:*", ignoreGroupNames: true)]
+    public Task SuggestionApprovalChangeClicked(Guid suggestionId, bool approved)
+    {
+        return SendViaRabbitAsync(EmoteSuggestionApprovalChangePayload.Create(suggestionId, approved, Context.User));
     }
 }

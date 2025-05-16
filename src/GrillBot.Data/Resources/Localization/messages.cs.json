@@ -577,7 +577,8 @@
             "InvalidMessageIdFormat": "Nesprávný formát identifikátoru zprávy.",
             "UnknownMessage": "Identifikátor zprávy v odkazu odkazuje na neexistující zprávu."
         },
-        "UserNotFound": "Zadaný uživatel `{0}` nebyl nalezen."
+        "UserNotFound": "Zadaný uživatel `{0}` nebyl nalezen.",
+        "GuidInvalidValue": "Zadaná hodnota není platný GUID.",
     },
     "PublicApiClients": {
         "NotFound": "Požadovaný klient nebyl nalezen."

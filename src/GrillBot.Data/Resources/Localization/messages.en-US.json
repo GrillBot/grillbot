@@ -577,7 +577,8 @@
             "InvalidMessageIdFormat": "Provided message identifier has no valid format.",
             "UnknownMessage": "The message with the specified identifier was not found."
         },
-        "UserNotFound": "Provided user  `{0}` wasn't found."
+        "UserNotFound": "Provided user  `{0}` wasn't found.",
+        "GuidInvalidValue": "Provided string is not valid GUID value."
     },
     "PublicApiClients": {
         "NotFound": "Requested client wasn't found."

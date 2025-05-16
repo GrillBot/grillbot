@@ -1,5 +1,4 @@
 ﻿using Discord.Interactions;
-using GrillBot.App.Infrastructure.TypeReaders;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using System.Diagnostics;
@@ -11,6 +10,8 @@ using GrillBot.Common.Managers.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net.WebSockets;
 using System.Net.Sockets;
+
+using Infra = GrillBot.App.Infrastructure;
 
 namespace GrillBot.App.Services.Discord;
 
@@ -39,12 +40,11 @@ public class DiscordService : IHostedService
 
         var token = Configuration.GetValue<string>("Discord:Token");
 
-        InteractionService.AddTypeConverter<DateTime>(new DateTimeTypeConverter());
-        InteractionService.AddTypeConverter<IEmote>(new EmotesTypeConverter());
-        InteractionService.AddTypeConverter<IMessage>(new MessageTypeConverter());
-        InteractionService.AddTypeConverter<IEnumerable<IUser>>(new UsersTypeConverter());
-        InteractionService.AddTypeConverter<Guid>(new GuidTypeConverter());
-        InteractionService.AddTypeReader<Guid>(new GuidTypeConverter());
+        InteractionService.AddTypeConverter<DateTime>(new Infra.TypeReaders.DateTimeTypeConverter());
+        InteractionService.AddTypeConverter<IEmote>(new Infra.TypeReaders.EmotesTypeConverter());
+        InteractionService.AddTypeConverter<IMessage>(new Infra.TypeReaders.MessageTypeConverter());
+        InteractionService.AddTypeConverter<IEnumerable<IUser>>(new Infra.TypeReaders.UsersTypeConverter());
+        InteractionService.AddTypeReader<Guid>(new Infra.TypeReaders.Guid.GuidTypeReader());
 
         var assembly = Assembly.GetEntryAssembly();
         await InteractionService.AddModulesAsync(assembly, Provider);

@@ -38,8 +38,9 @@ public class SuggestionModule(IServiceProvider serviceProvider) : InteractionsMo
     }
 
     [ComponentInteraction("suggestion_approve_for_vote:*:*", ignoreGroupNames: true)]
-    public Task SuggestionApprovalChangeClicked(Guid suggestionId, bool approved)
+    public async Task SuggestionApprovalChangeClicked(Guid suggestionId, bool approved)
     {
-        return SendViaRabbitAsync(EmoteSuggestionApprovalChangePayload.Create(suggestionId, approved, Context.User));
+        await SendViaRabbitAsync(EmoteSuggestionApprovalChangePayload.Create(suggestionId, approved, Context.User));
+        await DeferAsync();
     }
 }

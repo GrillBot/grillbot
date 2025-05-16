@@ -4,7 +4,7 @@ using GrillBot.Core.Extensions;
 
 namespace GrillBot.App.Infrastructure.TypeReaders;
 
-public class UsersTypeConverter : TypeConverterBase<IEnumerable<IUser>>
+public class UsersTypeConverter : TypeConverter<IEnumerable<IUser>>
 {
     public override ApplicationCommandOptionType GetDiscordType()
         => ApplicationCommandOptionType.String;
@@ -19,11 +19,11 @@ public class UsersTypeConverter : TypeConverterBase<IEnumerable<IUser>>
         {
             var user = await ConvertUserAsync(context, userIdent);
             if (user is null)
-                return ConvertFailed(services, "UserNotFound", locale);
+                return TypeReaderHelper.ConvertFailed(services, "UserNotFound", locale);
             result.Add(user);
         }
 
-        return FromSuccess(result.ToArray());
+        return TypeReaderHelper.FromSuccess(result.ToArray());
     }
 
     private static async Task<IUser?> ConvertUserAsync(IInteractionContext context, string userIdent)

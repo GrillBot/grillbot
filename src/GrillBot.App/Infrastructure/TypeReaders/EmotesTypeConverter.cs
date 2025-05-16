@@ -1,9 +1,10 @@
 ﻿using Discord.Interactions;
 using Discord.Net;
+using GrillBot.Common.Helpers;
 
 namespace GrillBot.App.Infrastructure.TypeReaders;
 
-public class EmotesTypeConverter : TypeConverterBase<IEmote>
+public class EmotesTypeConverter : TypeConverter<IEmote>
 {
     public override ApplicationCommandOptionType GetDiscordType()
         => ApplicationCommandOptionType.String;
@@ -13,20 +14,22 @@ public class EmotesTypeConverter : TypeConverterBase<IEmote>
         var value = (string)option.Value;
 
         if (NeoSmart.Unicode.Emoji.IsEmoji(value))
-            return FromSuccess(new Emoji(value));
+            return TypeReaderHelper.FromSuccess(new Emoji(value));
         if (Emote.TryParse(value, out var emote))
-            return FromSuccess(emote);
+            return TypeReaderHelper.FromSuccess(emote);
 
         if (ulong.TryParse(value, out var emoteId))
         {
             emote = await TryDownloadEmoteAsync(context.Guild, emoteId);
 
             if (emote != null)
-                return FromSuccess(emote);
+                return TypeReaderHelper.FromSuccess(emote);
         }
 
         emote = context.Guild.Emotes.FirstOrDefault(o => o.Name == value);
-        return emote is not null ? FromSuccess(emote) : ConvertFailed(services, "EmoteInvalidFormat", context.Interaction.UserLocale);
+        return emote is not null ?
+            TypeReaderHelper.FromSuccess(emote) :
+            TypeReaderHelper.ConvertFailed(services, "EmoteInvalidFormat", context.Interaction.UserLocale);
     }
 
     private static async Task<Emote?> TryDownloadEmoteAsync(IGuild guild, ulong emoteId)

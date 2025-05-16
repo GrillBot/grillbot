@@ -3,7 +3,7 @@ using GrillBot.Common.Helpers;
 
 namespace GrillBot.App.Infrastructure.TypeReaders;
 
-public class DateTimeTypeConverter : TypeConverterBase<DateTime>
+public class DateTimeTypeConverter : TypeConverter<DateTime>
 {
     public override ApplicationCommandOptionType GetDiscordType()
         => ApplicationCommandOptionType.String;
@@ -13,13 +13,13 @@ public class DateTimeTypeConverter : TypeConverterBase<DateTime>
         var value = (string)option.Value;
 
         if (value.Contains('/') && DateTime.TryParse(value, new CultureInfo("en-US"), DateTimeStyles.None, out var dateTime))
-            return Task.FromResult(FromSuccess(dateTime));
+            return Task.FromResult(TypeReaderHelper.FromSuccess(dateTime));
         if (DateTime.TryParse(value, new CultureInfo("cs-CZ"), DateTimeStyles.None, out dateTime))
-            return Task.FromResult(FromSuccess(dateTime));
+            return Task.FromResult(TypeReaderHelper.FromSuccess(dateTime));
 
         var matchedValue = DateTimeRegexHelper.TryConvert(value);
         if (matchedValue is not null)
-            return Task.FromResult(FromSuccess(matchedValue));
+            return Task.FromResult(TypeReaderHelper.FromSuccess(matchedValue));
 
         var timeShift = DateTimeRegexHelper.TimeShift().Match(value);
         var timeShiftMatched = timeShift.Success;
@@ -60,7 +60,7 @@ public class DateTimeTypeConverter : TypeConverterBase<DateTime>
         }
 
         return timeShiftMatched
-            ? Task.FromResult(FromSuccess(result))
-            : Task.FromResult(ParseFailed(services, "DateTimeInvalidFormat", context.Interaction.UserLocale));
+            ? Task.FromResult(TypeReaderHelper.FromSuccess(result))
+            : Task.FromResult(TypeReaderHelper.ParseFailed(services, "DateTimeInvalidFormat", context.Interaction.UserLocale));
     }
 }

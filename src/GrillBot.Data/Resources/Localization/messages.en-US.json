@@ -669,6 +669,8 @@
         "VoteEmbed": {
             "Title": "Suggestion Vote",
             "ExpectedEnd": "Expected End"
-        }
+        },
+        "NoVote": "No proposal that hasn’t been voted on has been approved.",
+        "VoteStarted": "Voting has started. Voting launched: {0}."
     }
 }

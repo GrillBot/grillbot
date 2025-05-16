@@ -177,7 +177,8 @@ public static class ActionsExtensions
 
         // EmoteSuggestions
         services
-            .AddScoped<Commands.Emotes.Suggestions.CreateEmoteSuggestionAction>();
+            .AddScoped<Commands.Emotes.Suggestions.CreateEmoteSuggestionAction>()
+            .AddScoped<Commands.Emotes.Suggestions.StartVoteAction>();
 
         // Emotes
         services

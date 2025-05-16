@@ -669,6 +669,8 @@
         "VoteEmbed": {
             "Title": "Hlasování o návrhu",
             "ExpectedEnd": "Očekávaný konec"
-        }
+        },
+        "NoVote": "Nebyl schválen žádný návrh, o kterém se ještě nehlasovalo.",
+        "VoteStarted": "Hlasování bylo zahájeno. Spuštěno hlasování: {0}."
     }
 }

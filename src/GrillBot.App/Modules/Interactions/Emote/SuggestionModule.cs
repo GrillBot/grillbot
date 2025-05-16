@@ -4,7 +4,7 @@ using GrillBot.App.Infrastructure;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.Core.Services.Emote.Models.Events.Suggestions;
 
-namespace GrillBot.App.Modules.Interactions;
+namespace GrillBot.App.Modules.Interactions.Emote;
 
 [Group("emote-suggestions", "Emote suggestions")]
 [RequireUserPerms]

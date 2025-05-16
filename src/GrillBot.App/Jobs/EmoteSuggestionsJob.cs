@@ -9,12 +9,12 @@ namespace GrillBot.App.Jobs;
 [DisallowUninitialized]
 public class EmoteSuggestionsJob(
     IServiceProvider serviceProvider,
-    IServiceClientExecutor<IEmoteServiceClient> _emoteService
+    IEmoteServiceClient _emoteService
 ) : Job(serviceProvider)
 {
     protected override async Task RunAsync(IJobExecutionContext context)
     {
-        var result = await _emoteService.ExecuteRequestAsync((c, _) => c.FinishSuggestionVotesAsync());
+        var result = await _emoteService.FinishSuggestionVotesAsync();
 
         if (result > 0)
             context.Result = $"Finished votes: {result}";

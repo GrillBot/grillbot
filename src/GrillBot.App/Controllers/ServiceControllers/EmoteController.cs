@@ -1,8 +1,14 @@
 ﻿using GrillBot.App.Infrastructure.Auth;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Core.Services.Emote;
+using GrillBot.Core.Services.Emote.Models.Events.Suggestions;
 using GrillBot.Core.Services.Emote.Models.Request;
+using GrillBot.Core.Services.Emote.Models.Request.EmoteSuggestions;
+using GrillBot.Core.Services.Emote.Models.Request.Guild;
 using GrillBot.Core.Services.Emote.Models.Response;
+using GrillBot.Core.Services.Emote.Models.Response.EmoteSuggestions;
+using GrillBot.Core.Services.Emote.Models.Response.Guild;
+using GrillBot.Core.Validation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -53,4 +59,38 @@ public class EmoteController(IServiceProvider serviceProvider) : ServiceControll
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public Task<IActionResult> DeleteStatisticsAsync(string guildId, string emoteId, [FromQuery] string? userId = null)
         => ExecuteAsync(async (client, ctx) => await client.DeleteStatisticsAsync(guildId, emoteId, userId, ctx.AuthorizationToken, ctx.CancellationToken));
+
+    [HttpPost("emote-suggestions/list")]
+    [ProducesResponseType<PaginatedResponse<EmoteSuggestionItem>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status200OK)]
+    public Task<IActionResult> GetEmoteSuggestionsListAsync(EmoteSuggestionsListRequest request)
+        => ExecuteAsync((client, ctx) => client.GetEmoteSuggestionsAsync(request, ctx.CancellationToken), request);
+
+    [HttpPut("emote-suggestions/approve/{suggestionId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public Task<IActionResult> SetSuggestionApprovalAsync(Guid suggestionId, [FromQuery] bool isApproved)
+        => ExecuteAsync((client, ctx) => client.SetSuggestionApprovalAsync(suggestionId, isApproved, ctx.AuthorizationToken, ctx.CancellationToken));
+
+    [HttpPost("emote-suggestions/{suggestionId:guid}/votes")]
+    [ProducesResponseType<PaginatedResponse<EmoteSuggestionVoteItem>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
+    public Task<IActionResult> GetEmoteSuggestionVotesAsync(Guid suggestionId, EmoteSuggestionVoteListRequest request)
+        => ExecuteAsync((client, ctx) => client.GetSuggestionVotesAsync(suggestionId, request, ctx.CancellationToken), request);
+
+    [HttpDelete("emote-suggestions/{suggestionId:guid}/votes")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public Task<IActionResult> EmoteSuggestionsCancelVoteAsync(Guid suggestionId)
+        => ExecuteRabbitPayloadAsync(new EmoteSuggestionCancelVotePayload(suggestionId));
+
+    [HttpPut("guilds/{guildId}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
+    public Task<IActionResult> EmoteUpdateGuildAsync([DiscordId] ulong guildId, GuildRequest request)
+        => ExecuteAsync((client, ctx) => client.UpdateGuildAsync(guildId, request, ctx.CancellationToken), request);
+
+    [HttpGet("guilds/{guildId}")]
+    [ProducesResponseType<GuildData>(StatusCodes.Status200OK)]
+    public Task<IActionResult> EmoteGetGuildAsync([DiscordId] ulong guildId)
+        => ExecuteAsync((client, ctx) => client.GetGuildAsync(guildId, ctx.CancellationToken));
 }

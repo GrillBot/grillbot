@@ -40,4 +40,7 @@ public abstract class ServiceControllerBase<TService>(
 
     protected Task<IActionResult> ExecuteRabbitPayloadAsync(Func<object> createPayload)
         => ProcessAsync<RabbitMQPublisherAction>(createPayload());
+
+    protected Task<IActionResult> ExecuteRabbitPayloadAsync(object payload)
+        => ExecuteRabbitPayloadAsync(() => payload);
 }

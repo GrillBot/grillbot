@@ -1,4 +1,5 @@
 ﻿using GrillBot.Common.Managers.Events.Contracts;
+using GrillBot.Core.Extensions;
 using GrillBot.Core.Services.Emote.Models.Events;
 using GrillBot.Core.Services.Emote.Models.Events.Guild;
 using Microsoft.Extensions.Logging;
@@ -41,11 +42,11 @@ public partial class EmoteOrchestrationHandler
                 var channels = await guild.GetChannelsAsync();
                 var guildData = await _emoteService.ExecuteRequestAsync((c, ctx) => c.GetGuildAsync(guild.Id, ctx.CancellationToken));
 
-                if (guildData.SuggestionChannelId is not null && !channels.Any(o => o.Id == guildData.SuggestionChannelId))
-                    payloads.Add(new GuildChannelDeletedPayload(guild.Id, guildData.SuggestionChannelId.Value));
+                if (guildData.SuggestionChannelId is not null && !channels.Any(o => o.Id == guildData.SuggestionChannelId.ToUlong()))
+                    payloads.Add(new GuildChannelDeletedPayload(guild.Id, guildData.SuggestionChannelId.ToUlong()));
 
-                if (guildData.VoteChannelId is not null && !channels.Any(o => o.Id == guildData.VoteChannelId))
-                    payloads.Add(new GuildChannelDeletedPayload(guild.Id, guildData.VoteChannelId.Value));
+                if (guildData.VoteChannelId is not null && !channels.Any(o => o.Id == guildData.VoteChannelId.ToUlong()))
+                    payloads.Add(new GuildChannelDeletedPayload(guild.Id, guildData.VoteChannelId.ToUlong()));
             }
             catch (Exception ex)
             {

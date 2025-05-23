@@ -64,19 +64,19 @@ public class EmoteController(IServiceProvider serviceProvider) : ServiceControll
     [ProducesResponseType<PaginatedResponse<EmoteSuggestionItem>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
     public Task<IActionResult> GetEmoteSuggestionsListAsync(EmoteSuggestionsListRequest request)
-        => ExecuteAsync((client, ctx) => client.GetEmoteSuggestionsAsync(request, ctx.CancellationToken), request);
+        => ExecuteAsync(async (client, ctx) => await client.GetEmoteSuggestionsAsync(request, ctx.CancellationToken), request);
 
     [HttpPut("emote-suggestions/approve/{suggestionId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public Task<IActionResult> SetSuggestionApprovalAsync(Guid suggestionId, [FromQuery] bool isApproved)
-        => ExecuteAsync((client, ctx) => client.SetSuggestionApprovalAsync(suggestionId, isApproved, ctx.AuthorizationToken, ctx.CancellationToken));
+        => ExecuteAsync(async (client, ctx) => await client.SetSuggestionApprovalAsync(suggestionId, isApproved, ctx.AuthorizationToken, ctx.CancellationToken));
 
     [HttpPost("emote-suggestions/{suggestionId:guid}/votes")]
     [ProducesResponseType<PaginatedResponse<EmoteSuggestionVoteItem>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
     public Task<IActionResult> GetEmoteSuggestionVotesAsync(Guid suggestionId, EmoteSuggestionVoteListRequest request)
-        => ExecuteAsync((client, ctx) => client.GetSuggestionVotesAsync(suggestionId, request, ctx.CancellationToken), request);
+        => ExecuteAsync(async (client, ctx) => await client.GetSuggestionVotesAsync(suggestionId, request, ctx.CancellationToken), request);
 
     [HttpDelete("emote-suggestions/{suggestionId:guid}/votes")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -87,10 +87,10 @@ public class EmoteController(IServiceProvider serviceProvider) : ServiceControll
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
     public Task<IActionResult> EmoteUpdateGuildAsync([DiscordId] ulong guildId, GuildRequest request)
-        => ExecuteAsync((client, ctx) => client.UpdateGuildAsync(guildId, request, ctx.CancellationToken), request);
+        => ExecuteAsync(async (client, ctx) => await client.UpdateGuildAsync(guildId, request, ctx.CancellationToken), request);
 
     [HttpGet("guilds/{guildId}")]
     [ProducesResponseType<GuildData>(StatusCodes.Status200OK)]
     public Task<IActionResult> EmoteGetGuildAsync([DiscordId] ulong guildId)
-        => ExecuteAsync((client, ctx) => client.GetGuildAsync(guildId, ctx.CancellationToken));
+        => ExecuteAsync(async (client, ctx) => await client.GetGuildAsync(guildId, ctx.CancellationToken));
 }

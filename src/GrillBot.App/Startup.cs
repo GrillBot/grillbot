@@ -39,6 +39,9 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 using GrillBot.Core.Metrics;
+using System.Diagnostics.Metrics;
+using GrillBot.Core.Metrics.CustomTelemetry;
+using GrillBot.App.Telemetry;
 namespace GrillBot.App;
 
 public class Startup
@@ -272,7 +275,12 @@ public class Startup
                 .AddRuntimeInstrumentation()
                 .AddProcessInstrumentation()
                 .AddPrometheusExporter()
+                .AddMeter("GrillBot-ServiceMeter")
             );
+
+        services.AddSingleton(provider => provider.GetRequiredService<IMeterFactory>().Create("GrillBot-ServiceMeter"));
+        services.AddHostedService<TelemetryService>();
+        services.AddCustomTelemetryBuilder<CommandsTelemetryBuilder>();
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment environment)

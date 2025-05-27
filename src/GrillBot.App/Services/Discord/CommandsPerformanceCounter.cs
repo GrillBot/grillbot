@@ -2,8 +2,9 @@
 
 public static class CommandsPerformanceCounter
 {
-    private static Dictionary<string, DateTime> RunningTasks { get; } = new();
-    private static readonly object RunningTasksLock = new();
+    private static readonly Dictionary<string, DateTime> _runningTasks = [];
+    private static readonly object _runningTasksLock = new();
+    private static long _counter = 0;
 
     private static string CreateContextKey(IInteractionContext context)
         => $"{context.Interaction.GetType().Name}|{context.User.Id}|{context.Interaction.Id}";
@@ -13,12 +14,13 @@ public static class CommandsPerformanceCounter
 
     private static void StartRunningTask(string contextKey)
     {
-        lock (RunningTasksLock)
+        lock (_runningTasksLock)
         {
-            if (RunningTasks.ContainsKey(contextKey))
+            if (_runningTasks.ContainsKey(contextKey))
                 return;
 
-            RunningTasks.Add(contextKey, DateTime.Now);
+            _runningTasks.Add(contextKey, DateTime.Now);
+            _counter++;
         }
     }
 
@@ -37,9 +39,9 @@ public static class CommandsPerformanceCounter
 
     private static DateTime RunningTaskCompleted(string contextKey)
     {
-        lock (RunningTasksLock)
+        lock (_runningTasksLock)
         {
-            RunningTasks.Remove(contextKey, out var startAt);
+            _runningTasks.Remove(contextKey, out var startAt);
 
             return startAt;
         }
@@ -50,9 +52,17 @@ public static class CommandsPerformanceCounter
 
     private static bool TaskExists(string contextKey)
     {
-        lock (RunningTasksLock)
+        lock (_runningTasksLock)
         {
-            return RunningTasks.ContainsKey(contextKey);
+            return _runningTasks.ContainsKey(contextKey);
+        }
+    }
+
+    public static long GetCount()
+    {
+        lock (_runningTasksLock)
+        {
+            return _counter;
         }
     }
 }

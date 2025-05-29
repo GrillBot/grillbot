@@ -7,12 +7,9 @@ using GrillBot.Core.Helpers;
 
 namespace GrillBot.App.Actions.Commands;
 
-public class CleanChannelMessages : CommandAction
+public class CleanChannelMessages(ITextsManager _texts, IMessageCacheManager _messageCache) : CommandAction
 {
     private const long DiscordEpoch = 1420070400000L;
-
-    private readonly ITextsManager _texts;
-    private readonly IMessageCacheManager _messageCache;
 
     private RequestOptions RequestOptions => new()
     {
@@ -20,12 +17,6 @@ public class CleanChannelMessages : CommandAction
         RetryMode = RetryMode.AlwaysRetry,
         AuditLogReason = $"GrillBot channel clean command. Exexcuted {Context.User.GetFullName()} in {Context.Channel.Name}"
     };
-
-    public CleanChannelMessages(ITextsManager texts, IMessageCacheManager messageCache)
-    {
-        _texts = texts;
-        _messageCache = messageCache;
-    }
 
     public async Task<string> ProcessAsync(string criterium, IGuildChannel? channel)
     {
@@ -44,11 +35,17 @@ public class CleanChannelMessages : CommandAction
     private static ulong ParseValue(string countOrMessage)
     {
         var messageLink = MessageHelper.DiscordMessageUriRegex().Match(countOrMessage);
-        return messageLink.Success ? messageLink.Groups[3].Value.ToUlong() : countOrMessage.ToUlong();
+        if (messageLink.Success)
+            return messageLink.Groups[3].Value.ToUlong();
+
+        return ulong.TryParse(countOrMessage, CultureInfo.InvariantCulture, out var count) ? count : 0;
     }
 
     private static async Task<IEnumerable<IMessage>> GetMessagesAsync(ulong countOrId, IMessageChannel channel)
     {
+        if (countOrId == 0)
+            return [];
+
         if (countOrId < DiscordEpoch) // Value before discord epoch means count of messages.
             return await channel.GetMessagesAsync(Convert.ToInt32(countOrId) + 1).FlattenAsync();
 

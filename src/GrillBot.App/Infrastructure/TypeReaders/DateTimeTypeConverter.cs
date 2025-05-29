@@ -12,8 +12,15 @@ public class DateTimeTypeConverter : TypeConverter<DateTime>
     {
         var value = (string)option.Value;
 
+        if (value.Contains(':') && TimeSpan.TryParse(value, CultureInfo.InvariantCulture, out var time))
+        {
+            var dt = PreventPast(DateTime.Now.Date.Add(time));
+            return Task.FromResult(TypeReaderHelper.FromSuccess(dt));
+        }
+
         if (value.Contains('/') && DateTime.TryParse(value, new CultureInfo("en-US"), DateTimeStyles.None, out var dateTime))
             return Task.FromResult(TypeReaderHelper.FromSuccess(dateTime));
+
         if (DateTime.TryParse(value, new CultureInfo("cs-CZ"), DateTimeStyles.None, out dateTime))
             return Task.FromResult(TypeReaderHelper.FromSuccess(dateTime));
 
@@ -62,5 +69,11 @@ public class DateTimeTypeConverter : TypeConverter<DateTime>
         return timeShiftMatched
             ? Task.FromResult(TypeReaderHelper.FromSuccess(result))
             : Task.FromResult(TypeReaderHelper.ParseFailed(services, "DateTimeInvalidFormat", context.Interaction.UserLocale));
+    }
+
+    private static DateTime PreventPast(DateTime dateTime)
+    {
+        var now = dateTime.Kind == DateTimeKind.Utc ? DateTime.UtcNow : DateTime.Now;
+        return dateTime <= now ? dateTime.AddDays(1) : dateTime;
     }
 }

@@ -8,12 +8,8 @@ namespace GrillBot.App.Modules.Interactions;
 
 [Group("channel", "Channel information")]
 [RequireUserPerms]
-public class ChannelModule : InteractionsModuleBase
+public class ChannelModule(IServiceProvider serviceProvider) : InteractionsModuleBase(serviceProvider)
 {
-    public ChannelModule(IServiceProvider serviceProvider) : base(serviceProvider)
-    {
-    }
-
     [SlashCommand("info", "Channel information")]
     public async Task GetChannelInfoAsync(
         SocketGuildChannel channel,
@@ -33,7 +29,7 @@ public class ChannelModule : InteractionsModuleBase
     [SlashCommand("board", "TOP 10 channel statistics you can access.")]
     public async Task GetChannelboardAsync()
     {
-        using var command = GetCommand<Actions.Commands.GetChannelboard>();
+        using var command = await GetCommandAsync<Actions.Commands.GetChannelboard>();
 
         try
         {

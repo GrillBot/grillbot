@@ -8,30 +8,24 @@ using GrillBot.Core.Extensions;
 
 namespace GrillBot.App.Actions.Commands;
 
-public class GetChannelboard : CommandAction
+public class GetChannelboard(
+    GrillBotDatabaseBuilder _databaseBuilder,
+    ITextsManager _texts,
+    FormatHelper _formatHelper
+) : CommandAction
 {
     private const int ItemsOnPage = 10;
-
-    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private ITextsManager Texts { get; }
-    private FormatHelper FormatHelper { get; }
-
-    public GetChannelboard(GrillBotDatabaseBuilder databaseBuilder, ITextsManager texts, FormatHelper formatHelper)
-    {
-        DatabaseBuilder = databaseBuilder;
-        Texts = texts;
-        FormatHelper = formatHelper;
-    }
 
     public async Task<(Embed embed, MessageComponent? paginationComponents)> ProcessAsync(int page)
     {
         var visibleChannels = await GetAvailableChannelsAsync();
+        var visibleChannelIds = visibleChannels.Select(o => o.Id.ToString()).ToHashSet();
 
-        using var repository = DatabaseBuilder.CreateRepository();
-        var statistics = await repository.Channel.GetAvailableStatsAsync(Context.Guild, visibleChannels.Select(o => o.Id.ToString()));
+        using var repository = _databaseBuilder.CreateRepository();
+        var statistics = await repository.Channel.GetAvailableStatsAsync(Context.Guild, visibleChannelIds);
 
         if (statistics.Count == 0)
-            return (CreateEmbed(Texts["ChannelModule/GetChannelboard/NoActivity", Locale], page), null);
+            return (CreateEmbed(_texts["ChannelModule/GetChannelboard/NoActivity", Locale], page), null);
 
         var skip = page * ItemsOnPage;
         var result = statistics
@@ -49,7 +43,7 @@ public class GetChannelboard : CommandAction
     {
         var visibleChannels = await GetAvailableChannelsAsync();
 
-        using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = _databaseBuilder.CreateRepository();
         var statisticsCount = await repository.Channel.GetAvailableStatsCountAsync(Context.Guild, visibleChannels.Select(o => o.Id.ToString()));
 
         return ComputePagesCount(statisticsCount);
@@ -62,7 +56,7 @@ public class GetChannelboard : CommandAction
     {
         var availableChannels = await Context.Guild.GetAvailableChannelsAsync((IGuildUser)Context.User, true, false);
         if (availableChannels.Count == 0)
-            throw new NotFoundException(Texts["ChannelModule/GetChannelboard/NoAccess", Locale]);
+            throw new NotFoundException(_texts["ChannelModule/GetChannelboard/NoAccess", Locale]);
 
         return availableChannels;
     }
@@ -72,7 +66,7 @@ public class GetChannelboard : CommandAction
         return new EmbedBuilder()
             .WithFooter(Context.User)
             .WithMetadata(new ChannelboardMetadata { Page = page })
-            .WithAuthor(Texts["ChannelModule/GetChannelboard/Title", Locale])
+            .WithAuthor(_texts["ChannelModule/GetChannelboard/Title", Locale])
             .WithColor(Color.Blue)
             .WithCurrentTimestamp()
             .WithDescription(description)
@@ -82,13 +76,13 @@ public class GetChannelboard : CommandAction
     private async Task<string> CreateDescriptionAsync(Dictionary<string, (long count, DateTime firstMessageAt, DateTime lastMessageAt)> statistics, int skip)
     {
         var result = new List<string>();
-        var template = Texts["ChannelModule/GetChannelboard/Row", Locale];
+        var template = _texts["ChannelModule/GetChannelboard/Row", Locale];
         for (var i = 0; i < statistics.Count; i++)
         {
             var statItem = statistics.ElementAt(i);
             var order = (i + skip + 1).ToString().PadLeft(2, '0');
             var channel = await Context.Guild.GetChannelAsync(statItem.Key.ToUlong());
-            var count = FormatHelper.FormatNumber("ChannelModule/GetChannelboard/Counts", Locale, statItem.Value.count);
+            var count = _formatHelper.FormatNumber("ChannelModule/GetChannelboard/Counts", Locale, statItem.Value.count);
 
             result.Add(template.FormatWith(order, channel.Name, count));
         }

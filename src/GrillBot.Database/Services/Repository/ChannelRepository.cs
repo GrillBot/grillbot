@@ -205,13 +205,13 @@ public class ChannelRepository : SubRepositoryBase<GrillBotContext>
         }
     }
 
-    public async Task<Dictionary<string, (long count, DateTime firstMessageAt, DateTime lastMessageAt)>> GetAvailableStatsAsync(IGuild guild, IEnumerable<string> availableChannelIds,
+    public async Task<Dictionary<string, (long count, DateTime firstMessageAt, DateTime lastMessageAt)>> GetAvailableStatsAsync(IGuild guild, ISet<string> availableChannelIds,
         bool showInvisible = false)
     {
         using (CreateCounter())
         {
             var query = DbContext.UserChannels.AsNoTracking()
-                .Where(o => o.Count > 0 && o.GuildId == guild.Id.ToString() && availableChannelIds.Contains(o.ChannelId));
+                .Where(o => o.Count > 0 && o.GuildId == guild.Id.ToString());
 
             if (!showInvisible)
                 query = query.Where(o => (o.Channel.Flags & (long)ChannelFlag.StatsHidden) == 0);
@@ -225,7 +225,14 @@ public class ChannelRepository : SubRepositoryBase<GrillBotContext>
                     FirstMessageAt = o.Min(x => x.FirstMessageAt)
                 });
 
-            return await groupQuery.ToDictionaryAsync(o => o.ChannelId, o => (o.Count, o.FirstMessageAt, o.LastMessageAt));
+            var data = await groupQuery.ToDictionaryAsync(o => o.ChannelId, o => (o.Count, o.FirstMessageAt, o.LastMessageAt));
+            foreach (var channelId in data.Keys.ToList())
+            {
+                if (!availableChannelIds.Contains(channelId))
+                    data.Remove(channelId);
+            }
+
+            return data;
         }
     }
 

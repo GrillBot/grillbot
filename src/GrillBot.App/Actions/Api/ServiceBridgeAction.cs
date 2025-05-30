@@ -1,4 +1,5 @@
 ﻿using GrillBot.Common.Models;
+using GrillBot.Core.Extensions;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Services.Common;
 using GrillBot.Core.Services.Common.Exceptions;
@@ -22,7 +23,7 @@ public class ServiceBridgeAction<TServiceClient>(
         try
         {
             if (funcExecutor is not null)
-                return ApiResult.Ok(await _client.ExecuteRequestAsync((c, ctx) => funcExecutor(c, ctx)));
+                return await ExecuteRequestAsync(funcExecutor);
 
             if (actionExecutor is not null)
             {
@@ -50,5 +51,27 @@ public class ServiceBridgeAction<TServiceClient>(
         }
 
         return ApiResult.BadRequest();
+    }
+
+    private async Task<ApiResult> ExecuteRequestAsync(Func<TServiceClient, ServiceExecutorContext, Task<object>> funcExecutor)
+    {
+        object? result = null;
+
+        try
+        {
+            result = await _client.ExecuteRequestAsync((c, ctx) => funcExecutor(c, ctx));
+
+            if (result is Stream stream)
+            {
+                var streamContent = await stream.ToByteArrayAsync();
+                return ApiResult.Ok(new FileContentResult(streamContent, "application/octet-stream"));
+            }
+
+            return ApiResult.Ok(result);
+        }
+        finally
+        {
+            (result as IDisposable)?.Dispose();
+        }
     }
 }

@@ -93,4 +93,10 @@ public class EmoteController(IServiceProvider serviceProvider) : ServiceControll
     [ProducesResponseType<GuildData>(StatusCodes.Status200OK)]
     public Task<IActionResult> EmoteGetGuildAsync([DiscordId] ulong guildId)
         => ExecuteAsync(async (client, ctx) => await client.GetGuildAsync(guildId, ctx.CancellationToken));
+
+    [HttpGet("emote-suggestions/{suggestionId:guid}/preview")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public Task<IActionResult> GetEmoteSuggestionImagePreviewAsync(Guid suggestionId)
+        => ExecuteAsync(async (client, ctx) => await client.GetEmoteSuggestionImagePreviewAsync(suggestionId, ctx.CancellationToken));
 }

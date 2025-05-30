@@ -49,4 +49,19 @@ public class AuditLogController(IServiceProvider serviceProvider) : ServiceContr
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public Task<IActionResult> GetDetailAsync(Guid id)
         => ExecuteAsync(async (client, ctx) => (await client.GetDetailAsync(id, ctx.CancellationToken))!);
+
+    [HttpGet("statistics/api/periodStats")]
+    [ProducesResponseType<Dictionary<string, long>>(StatusCodes.Status200OK)]
+    public Task<IActionResult> GetApiPeriodStatisticsAsync([FromQuery(Name = "group")] string[] apiGroups, [Required] string groupingKey)
+        => ExecuteAsync(async (client, ctx) => await client.GetApiPeriodStatisticsAsync(apiGroups, groupingKey, ctx.CancellationToken));
+
+    [HttpGet("statistics/auditLog/periodStats")]
+    [ProducesResponseType<Dictionary<string, long>>(StatusCodes.Status200OK)]
+    public Task<IActionResult> GetAuditLogPeriodStatisticsAsync([Required] string groupingKey)
+        => ExecuteAsync(async (client, ctx) => await client.GetAuditLogPeriodStatisticsAsync(groupingKey, ctx.CancellationToken));
+
+    [HttpGet("statistics/interactions/periodStats")]
+    [ProducesResponseType<Dictionary<string, long>>(StatusCodes.Status200OK)]
+    public Task<IActionResult> GetInteractionsPeriodStatisticsAsync([Required] string groupingKey)
+        => ExecuteAsync(async (client, ctx) => await client.GetInteractionsPeriodStatisticsAsync(groupingKey, ctx.CancellationToken));
 }

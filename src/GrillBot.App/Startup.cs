@@ -180,15 +180,16 @@ public class Startup
         services.AddQuartz(q =>
         {
             q.AddTriggeredJob<MessageCacheJob>(Configuration, "Discord:MessageCache:Period");
-            q.AddTriggeredJob<AuditLogClearingJob>(Configuration, "AuditLog:CleaningCron");
             q.AddTriggeredJob<RemindCronJob>(Configuration, "Reminder:CronJob");
-            q.AddTriggeredJob<BirthdayCronJob>(Configuration, "Birthday:Cron", true);
             q.AddTriggeredJob<UnverifyCronJob>(Configuration, "Unverify:CheckPeriodTime");
             q.AddTriggeredJob<UserSynchronizationJob>(Configuration, "UserSyncPeriodTime");
-            q.AddTriggeredJob<PointsJob>(Configuration, "Points:JobInterval");
             q.AddTriggeredJob<CacheCleanerJob>(Configuration, "CacheCleanerInterval");
             q.AddTriggeredJob<UnverifyLogArchivationJob>(Configuration, "Unverify:LogArchivePeriod");
             q.AddTriggeredJob<EmoteSuggestionsJob>(Configuration, "EmoteSuggestions:JobInterval");
+
+            q.AddCronJob<BirthdayCronJob>("0 0 12 * * ?"); // Run every day at 12:00 PM
+            q.AddCronJob<AuditLogClearingJob>("0 0 2 ? * * *"); // Run every day at 2:00 AM
+            q.AddCronJob<PointsJob>("0 0 3 ? * * *"); // Run every day at 3:00 AM
         });
 
         services.AddQuartzHostedService();

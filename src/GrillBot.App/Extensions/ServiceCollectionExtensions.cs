@@ -21,5 +21,18 @@ public static class ServiceCollectionExtensions
                     opt.WithSimpleSchedule(builder => builder.RepeatForever().WithInterval(configuration.GetValue<TimeSpan>(configurationKey)));
             });
     }
-    
+
+    public static void AddCronJob<T>(this IServiceCollectionQuartzConfigurator quartz, string cronExpression) where T : IJob
+    {
+        var jobName = typeof(T).Name;
+
+        quartz.AddJob<T>(opt => opt.WithIdentity(jobName))
+            .AddTrigger(opt =>
+            {
+                opt
+                    .ForJob(jobName)
+                    .WithIdentity($"{jobName}-Trigger")
+                    .WithCronSchedule(cronExpression);
+            });
+    }
 }

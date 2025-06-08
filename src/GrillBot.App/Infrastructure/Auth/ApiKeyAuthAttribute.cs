@@ -80,9 +80,12 @@ public class ApiKeyAuthAttribute : Attribute, IAsyncActionFilter
     private static void SetIdentification(ActionContext context, ApiClient client)
     {
         var apiRequestContext = context.HttpContext.RequestServices.GetRequiredService<ApiRequestContext>();
-        apiRequestContext.RemoteIp = context.HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
-        if (apiRequestContext.RemoteIp == "::1")
-            apiRequestContext.RemoteIp = "127.0.0.1";
+        var forwardedHeader = context.HttpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault();
+
+        if (!string.IsNullOrEmpty(forwardedHeader))
+            apiRequestContext.RemoteIp = forwardedHeader.Split(',')[0].Trim();
+        else
+            apiRequestContext.RemoteIp = context.HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
 
         var jwtToken = context.HttpContext.RequestServices.GetRequiredService<JwtTokenManager>()
             .CreateTokenForApiClient(client, apiRequestContext.Language, apiRequestContext.RemoteIp);
@@ -90,11 +93,9 @@ public class ApiKeyAuthAttribute : Attribute, IAsyncActionFilter
             context.HttpContext.RequestServices.GetRequiredService<ICurrentUserProvider>().SetCustomToken(jwtToken.AccessToken);
 
         apiRequestContext.LogRequest.Identification = $"PublicApiV2({client.Name})";
-        apiRequestContext.LoggedUserData = new ClaimsPrincipal(new ClaimsIdentity(new[]
-            {
-                new Claim(ClaimTypes.Name, client.Name),
-                new Claim(ClaimTypes.Role, "V2")
-            })
-        );
+        apiRequestContext.LoggedUserData = new ClaimsPrincipal(new ClaimsIdentity([
+            new Claim(ClaimTypes.Name, client.Name),
+            new Claim(ClaimTypes.Role, "V2")
+        ]));
     }
 }

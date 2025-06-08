@@ -66,6 +66,15 @@ public class RequestFilter : IAsyncActionFilter
         }
 
         ApiRequestContext.LogRequest.Language = ApiRequestContext.Language;
+
+        if (context.HttpContext.Request.Headers.TryGetValue("X-Forwarded-For", out var forwardedHeader))
+        {
+            var remoteIp = forwardedHeader.FirstOrDefault()?.Split(',').FirstOrDefault()?.Trim();
+            if (string.IsNullOrEmpty(remoteIp))
+                remoteIp = context.HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
+
+            ApiRequestContext.RemoteIp = remoteIp;
+        }
     }
 
     private async Task SetLoggedUserAsync(ActionContext context)

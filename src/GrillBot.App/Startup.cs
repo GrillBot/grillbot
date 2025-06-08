@@ -43,6 +43,7 @@ using System.Diagnostics.Metrics;
 using GrillBot.App.Telemetry;
 using GrillBot.Core.Metrics.Services;
 using GrillBot.App.Managers.Auth;
+using GrillBot.Common.Extensions;
 
 namespace GrillBot.App;
 
@@ -225,11 +226,9 @@ public class Startup
                 {
                     OnTokenValidated = context =>
                     {
-                        var requestIp = context.HttpContext.Connection.RemoteIpAddress?.ToString() ?? "";
-                        if (requestIp == "::1")
-                            requestIp = "127.0.0.1";
-
+                        var requestIp = context.HttpContext.GetRemoteIp();
                         var loginIp = context.Principal?.FindFirst(JwtTokenManager.IP_CLAIM_TYPE)?.Value ?? "";
+
                         if (!requestIp.Equals(loginIp, StringComparison.OrdinalIgnoreCase))
                             context.Fail("IP address mismatch.");
 

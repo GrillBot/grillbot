@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using GrillBot.App.Managers.Auth;
+using GrillBot.Common.Extensions;
 using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure.Auth;
 using GrillBot.Database.Entity;
@@ -80,12 +81,7 @@ public class ApiKeyAuthAttribute : Attribute, IAsyncActionFilter
     private static void SetIdentification(ActionContext context, ApiClient client)
     {
         var apiRequestContext = context.HttpContext.RequestServices.GetRequiredService<ApiRequestContext>();
-        var forwardedHeader = context.HttpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault();
-
-        if (!string.IsNullOrEmpty(forwardedHeader))
-            apiRequestContext.RemoteIp = forwardedHeader.Split(',')[0].Trim();
-        else
-            apiRequestContext.RemoteIp = context.HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
+        apiRequestContext.RemoteIp = context.HttpContext.GetRemoteIp();
 
         var jwtToken = context.HttpContext.RequestServices.GetRequiredService<JwtTokenManager>()
             .CreateTokenForApiClient(client, apiRequestContext.Language, apiRequestContext.RemoteIp);

@@ -1,5 +1,6 @@
 ﻿using GrillBot.App.Infrastructure.Auth;
 using GrillBot.App.Managers;
+using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.AuditLog;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Localization;
@@ -60,21 +61,13 @@ public class RequestFilter : IAsyncActionFilter
         if (context.HttpContext.Request.Headers.TryGetValue("Language", out var value))
         {
             if (!TextsManager.IsSupportedLocale(value.ToString()))
-                throw new ValidationException(new ValidationResult("Unsupported language header value.", new[] { "Language" }), null, value);
+                throw new ValidationException(new ValidationResult("Unsupported language header value.", ["Language"]), null, value);
 
             ApiRequestContext.Language = TextsManager.FixLocale(value.ToString());
         }
 
         ApiRequestContext.LogRequest.Language = ApiRequestContext.Language;
-
-        if (context.HttpContext.Request.Headers.TryGetValue("X-Forwarded-For", out var forwardedHeader))
-        {
-            var remoteIp = forwardedHeader.FirstOrDefault()?.Split(',').FirstOrDefault()?.Trim();
-            if (string.IsNullOrEmpty(remoteIp))
-                remoteIp = context.HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
-
-            ApiRequestContext.RemoteIp = remoteIp;
-        }
+        ApiRequestContext.RemoteIp = context.HttpContext.GetRemoteIp();
     }
 
     private async Task SetLoggedUserAsync(ActionContext context)

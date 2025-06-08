@@ -80,9 +80,12 @@ public class ApiKeyAuthAttribute : Attribute, IAsyncActionFilter
     private static void SetIdentification(ActionContext context, ApiClient client)
     {
         var apiRequestContext = context.HttpContext.RequestServices.GetRequiredService<ApiRequestContext>();
+        apiRequestContext.RemoteIp = context.HttpContext.Connection.RemoteIpAddress?.ToString() ?? "127.0.0.1";
+        if (apiRequestContext.RemoteIp == "::1")
+            apiRequestContext.RemoteIp = "127.0.0.1";
 
         var jwtToken = context.HttpContext.RequestServices.GetRequiredService<JwtTokenManager>()
-            .CreateTokenForApiClient(client, apiRequestContext.Language);
+            .CreateTokenForApiClient(client, apiRequestContext.Language, apiRequestContext.RemoteIp);
         if (!string.IsNullOrEmpty(jwtToken?.AccessToken))
             context.HttpContext.RequestServices.GetRequiredService<ICurrentUserProvider>().SetCustomToken(jwtToken.AccessToken);
 

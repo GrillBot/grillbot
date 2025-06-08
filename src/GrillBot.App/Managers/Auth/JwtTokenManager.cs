@@ -12,25 +12,17 @@ using System.Security.Claims;
 
 namespace GrillBot.App.Managers.Auth;
 
-public class JwtTokenManager
+public class JwtTokenManager(
+    GrillBotDatabaseBuilder _databaseBuilder,
+    ITextsManager _texts,
+    IServiceProvider _serviceProvider,
+    IWebHostEnvironment _environment,
+    IConfiguration _configuration
+)
 {
-    private readonly GrillBotDatabaseBuilder _databaseBuilder;
-    private readonly ITextsManager _texts;
-    private readonly IServiceProvider _serviceProvider;
-    private readonly IWebHostEnvironment _environment;
-    private readonly IConfiguration _configuration;
+    public const string IP_CLAIM_TYPE = "https://grillbot.eu/claims/ip";
 
-    public JwtTokenManager(GrillBotDatabaseBuilder databaseBuilder, ITextsManager texts, IServiceProvider serviceProvider,
-        IWebHostEnvironment environment, IConfiguration configuration)
-    {
-        _databaseBuilder = databaseBuilder;
-        _texts = texts;
-        _serviceProvider = serviceProvider;
-        _environment = environment;
-        _configuration = configuration;
-    }
-
-    public async Task<OAuth2LoginToken> CreateTokenForUserAsync(IUser user, string language, IInteractionContext? interaction = null)
+    public async Task<OAuth2LoginToken> CreateTokenForUserAsync(IUser user, string language, string ip, IInteractionContext? interaction = null)
     {
         using var repository = _databaseBuilder.CreateRepository();
 
@@ -43,10 +35,10 @@ public class JwtTokenManager
             return new OAuth2LoginToken(_texts["Auth/CreateToken/PublicAdminBlocked", language].FormatWith(user.Username));
 
         await SynchronizeUserToServicesAsync(user);
-        return GenerateJwtToken(userEntity, userRole, interaction, null);
+        return GenerateJwtToken(userEntity, userRole, interaction, null, ip);
     }
 
-    public OAuth2LoginToken CreateTokenForApiClient(ApiClient client, string language)
+    public OAuth2LoginToken CreateTokenForApiClient(ApiClient client, string language, string ip)
     {
         var userAvatarId = SnowflakeUtils.ToSnowflake(DateTimeOffset.UtcNow);
         var userEntity = new User
@@ -59,7 +51,7 @@ public class JwtTokenManager
             AvatarUrl = CDN.GetDefaultUserAvatarUrl(userAvatarId)
         };
 
-        return GenerateJwtToken(userEntity, "ApiV2", null, client);
+        return GenerateJwtToken(userEntity, "ApiV2", null, client, ip);
     }
 
     private static string? ResolveRole(User user, IInteractionContext? interaction)
@@ -72,7 +64,7 @@ public class JwtTokenManager
         return user.HaveFlags(UserFlags.WebAdmin) ? "Administrator" : "User";
     }
 
-    private OAuth2LoginToken GenerateJwtToken(User user, string userRole, IInteractionContext? interaction, ApiClient? apiClient)
+    private OAuth2LoginToken GenerateJwtToken(User user, string userRole, IInteractionContext? interaction, ApiClient? apiClient, string ip)
     {
         var expiresAt = ResolveTokenExpiration(userRole);
         var issuer = $"GrillBot/{Environment.MachineName}/{Environment.UserName}";
@@ -87,7 +79,7 @@ public class JwtTokenManager
                 new SymmetricSecurityKey(Encoding.ASCII.GetBytes($"{_configuration["Auth:OAuth2:ClientId"]}_{_configuration["Auth:OAuth2:ClientSecret"]}")),
                 SecurityAlgorithms.HmacSha256Signature
             ),
-            Subject = new ClaimsIdentity(ResolveClaims(user, userRole, interaction, apiClient))
+            Subject = new ClaimsIdentity(ResolveClaims(user, userRole, interaction, apiClient, ip))
         };
 
         var tokenHandler = new JwtSecurityTokenHandler();
@@ -113,12 +105,13 @@ public class JwtTokenManager
         };
     }
 
-    private static IEnumerable<Claim> ResolveClaims(User user, string userRole, IInteractionContext? interaction, ApiClient? apiClient)
+    private static IEnumerable<Claim> ResolveClaims(User user, string userRole, IInteractionContext? interaction, ApiClient? apiClient, string ip)
     {
         yield return new Claim(ClaimTypes.Name, user.Username);
         yield return new Claim(ClaimTypes.NameIdentifier, user.Id);
         yield return new Claim(ClaimTypes.Role, userRole);
         yield return new Claim("GrillBot:Permissions", string.Join(",", CreatePermissions(userRole, interaction, apiClient)));
+        yield return new Claim(IP_CLAIM_TYPE, ip);
 
         if (!string.IsNullOrEmpty(user.AvatarUrl))
             yield return new Claim(ClaimTypes.UserData, user.AvatarUrl);

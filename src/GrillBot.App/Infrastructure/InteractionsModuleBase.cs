@@ -176,7 +176,7 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
     private async Task InitializeCommandAsync<TCommand>(ScopedCommand<TCommand> command) where TCommand : notnull
     {
         var jwtToken = await command.Resolve<JwtTokenManager>()
-           .CreateTokenForUserAsync(Context.User, Locale, Context);
+           .CreateTokenForUserAsync(Context.User, Locale, "localhost", Context);
 
         if (!string.IsNullOrEmpty(jwtToken.AccessToken))
             command.Resolve<ICurrentUserProvider>().SetCustomToken(jwtToken.AccessToken);

@@ -42,6 +42,7 @@ using GrillBot.Core.Metrics;
 using System.Diagnostics.Metrics;
 using GrillBot.App.Telemetry;
 using GrillBot.Core.Metrics.Services;
+using GrillBot.App.Managers.Auth;
 
 namespace GrillBot.App;
 
@@ -218,6 +219,22 @@ public class Startup
                     ValidIssuer = $"GrillBot/{machineInfo}",
                     ValidAudience = $"GrillBot/{machineInfo}",
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes($"{Configuration["Auth:OAuth2:ClientId"]}_{Configuration["Auth:OAuth2:ClientSecret"]}"))
+                };
+
+                o.Events = new JwtBearerEvents
+                {
+                    OnTokenValidated = context =>
+                    {
+                        var requestIp = context.HttpContext.Connection.RemoteIpAddress?.ToString() ?? "";
+                        if (requestIp == "::1")
+                            requestIp = "127.0.0.1";
+
+                        var loginIp = context.Principal?.FindFirst(JwtTokenManager.IP_CLAIM_TYPE)?.Value ?? "";
+                        if (!requestIp.Equals(loginIp, StringComparison.OrdinalIgnoreCase))
+                            context.Fail("IP address mismatch.");
+
+                        return Task.CompletedTask;
+                    }
                 };
             })
             .AddOAuth("Discord", opt =>

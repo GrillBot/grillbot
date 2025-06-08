@@ -20,6 +20,8 @@ public class ApiRequestContext
 
     public ApiRequestRequest LogRequest { get; set; } = new();
 
+    public string RemoteIp { get; set; } = "127.0.0.1";
+
     public ulong GetUserId()
     {
         if (LoggedUserData == null)

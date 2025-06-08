@@ -14,7 +14,7 @@ public abstract class BaseAutocompleteHandler : AutocompleteHandler
         var command = new ScopedCommand<TCommand>(serviceProvider.CreateScope());
 
         var jwtToken = await command.Resolve<JwtTokenManager>()
-            .CreateTokenForUserAsync(context.User, TextsManager.FixLocale(context.Interaction.UserLocale), context);
+            .CreateTokenForUserAsync(context.User, TextsManager.FixLocale(context.Interaction.UserLocale), "127.0.0.1", context);
         if (!string.IsNullOrEmpty(jwtToken?.AccessToken))
             command.Resolve<ICurrentUserProvider>().SetCustomToken(jwtToken.AccessToken);
 

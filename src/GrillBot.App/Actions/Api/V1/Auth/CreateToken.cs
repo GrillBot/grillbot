@@ -2,6 +2,7 @@
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
+using GrillBot.App.Managers.Auth;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
@@ -118,7 +119,8 @@ public class CreateToken : ApiAction
             {
                 new Claim(ClaimTypes.Name, user.Username),
                 new Claim(ClaimTypes.NameIdentifier, user.Id),
-                new Claim(ClaimTypes.Role, isPublic ? "User" : "Admin")
+                new Claim(ClaimTypes.Role, isPublic ? "User" : "Admin"),
+                new Claim(JwtTokenManager.IP_CLAIM_TYPE, ApiContext.RemoteIp)
             })
         };
 

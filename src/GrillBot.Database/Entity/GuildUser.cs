@@ -40,18 +40,11 @@ public class GuildUser
 
     public bool IsInGuild { get; set; }
 
-    public ISet<GuildUserChannel> Channels { get; set; }
-    public ISet<Nickname> Nicknames { get; set; }
+    public ISet<GuildUserChannel> Channels { get; set; } = new HashSet<GuildUserChannel>();
 
     [NotMapped]
     public string? DisplayName
         => string.IsNullOrEmpty(Nickname) ? User?.Username : $"{Nickname} ({User?.Username})";
-
-    public GuildUser()
-    {
-        Channels = new HashSet<GuildUserChannel>();
-        Nicknames = new HashSet<Nickname>();
-    }
 
     public static GuildUser FromDiscord(IGuild guild, IGuildUser user)
     {

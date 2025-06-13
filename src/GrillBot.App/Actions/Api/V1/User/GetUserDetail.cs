@@ -20,36 +20,26 @@ using GrillBot.Core.Services.UserMeasures.Models.Measures;
 using GrillBot.Core.Services.Common.Executor;
 using GrillBot.Core.Services.InviteService;
 using GrillBot.Core.Services.InviteService.Models.Request;
+using GrillBot.Core.Services.UserManagementService;
+using GrillBot.Core.Services.UserManagementService.Models.Response;
+using GrillBot.Core.Services.Common.Exceptions;
 
 namespace GrillBot.App.Actions.Api.V1.User;
 
-public class GetUserDetail : ApiAction
+public class GetUserDetail(
+    ApiRequestContext apiContext,
+    GrillBotDatabaseBuilder _databaseBuilder,
+    IMapper _mapper,
+    IDiscordClient _discordClient,
+    ITextsManager _texts,
+    IServiceClientExecutor<IPointsServiceClient> _pointsServiceClient,
+    IServiceClientExecutor<IUserMeasuresServiceClient> _userMeasuresService,
+    DataResolveManager _dataResolveManager,
+    IServiceClientExecutor<IEmoteServiceClient> _emoteServiceClient,
+    IServiceClientExecutor<IInviteServiceClient> _inviteServiceClient,
+    IServiceClientExecutor<IUserManagementServiceClient> _userManagement
+) : ApiAction(apiContext)
 {
-    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private IMapper Mapper { get; }
-    private IDiscordClient DiscordClient { get; }
-    private ITextsManager Texts { get; }
-    private readonly DataResolveManager _dataResolveManager;
-    private readonly IServiceClientExecutor<IEmoteServiceClient> _emoteServiceClient;
-    private readonly IServiceClientExecutor<IPointsServiceClient> _pointsServiceClient;
-    private readonly IServiceClientExecutor<IUserMeasuresServiceClient> _userMeasuresService;
-    private readonly IServiceClientExecutor<IInviteServiceClient> _inviteServiceClient;
-
-    public GetUserDetail(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, IMapper mapper, IDiscordClient discordClient, ITextsManager texts,
-        IServiceClientExecutor<IPointsServiceClient> pointsServiceClient, IServiceClientExecutor<IUserMeasuresServiceClient> userMeasuresService, DataResolveManager dataResolveManager,
-        IServiceClientExecutor<IEmoteServiceClient> emoteServiceClient, IServiceClientExecutor<IInviteServiceClient> inviteServiceClient) : base(apiContext)
-    {
-        DatabaseBuilder = databaseBuilder;
-        Mapper = mapper;
-        DiscordClient = discordClient;
-        Texts = texts;
-        _pointsServiceClient = pointsServiceClient;
-        _userMeasuresService = userMeasuresService;
-        _dataResolveManager = dataResolveManager;
-        _emoteServiceClient = emoteServiceClient;
-        _inviteServiceClient = inviteServiceClient;
-    }
-
     public override async Task<ApiResult> ProcessAsync()
     {
         var userId = (ulong?)Parameters.ElementAtOrDefault(0);
@@ -63,10 +53,10 @@ public class GetUserDetail : ApiAction
 
     public async Task<ApiModels.Users.UserDetail> ProcessAsync(ulong id)
     {
-        using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = _databaseBuilder.CreateRepository();
 
         var entity = await repository.User.FindUserByIdAsync(id, UserIncludeOptions.All, true)
-            ?? throw new NotFoundException(Texts["User/NotFound", ApiContext.Language]);
+            ?? throw new NotFoundException(_texts["User/NotFound", ApiContext.Language]);
 
         var result = new ApiModels.Users.UserDetail
         {
@@ -82,9 +72,11 @@ public class GetUserDetail : ApiAction
             GlobalAlias = entity.GlobalAlias
         };
 
+        var userInfo = await GetUserInfoAsync(id);
+
         await AddDiscordDataAsync(result);
         foreach (var guild in entity.Guilds)
-            result.Guilds.Add(await CreateGuildDetailAsync(guild));
+            result.Guilds.Add(await CreateGuildDetailAsync(guild, userInfo));
 
         result.Guilds = result.Guilds.OrderByDescending(o => o.IsUserInGuild).ThenBy(o => o.Guild.Name).ToList();
         return result;
@@ -92,18 +84,21 @@ public class GetUserDetail : ApiAction
 
     private async Task AddDiscordDataAsync(ApiModels.Users.UserDetail result)
     {
-        var user = await DiscordClient.FindUserAsync(result.Id.ToUlong());
+        var user = await _discordClient.FindUserAsync(result.Id.ToUlong());
         if (user is null) return;
 
         result.ActiveClients = user.ActiveClients.Select(o => o.ToString()).ToList();
         result.IsKnown = true;
     }
 
-    private async Task<ApiModels.Users.GuildUserDetail> CreateGuildDetailAsync(Entity.GuildUser guildUserEntity)
+    private async Task<ApiModels.Users.GuildUserDetail> CreateGuildDetailAsync(Entity.GuildUser guildUserEntity, UserInfo? userInfo)
     {
-        var result = Mapper.Map<ApiModels.Users.GuildUserDetail>(guildUserEntity);
+        var result = _mapper.Map<ApiModels.Users.GuildUserDetail>(guildUserEntity);
+        var guildUserInfo = userInfo?.Guilds.FirstOrDefault(o => o.GuildId == guildUserEntity.GuildId);
 
-        result.Channels = result.Channels.OrderByDescending(o => o.Count).ThenBy(o => o.Channel.Name).ToList();
+        result.Channels = [.. result.Channels.OrderByDescending(o => o.Count).ThenBy(o => o.Channel.Name)];
+        result.Nickname = guildUserInfo?.CurrentNickname;
+        result.NicknameHistory = guildUserInfo?.NicknameHistory ?? [];
 
         await SetCreatedInvitesAsync(result, guildUserEntity);
         await SetUsedInviteAsync(result, guildUserEntity);
@@ -117,7 +112,7 @@ public class GetUserDetail : ApiAction
 
     private async Task UpdateGuildDetailAsync(ApiModels.Users.GuildUserDetail detail, Entity.GuildUser entity)
     {
-        var guild = await DiscordClient.GetGuildAsync(detail.Guild.Id.ToUlong());
+        var guild = await _discordClient.GetGuildAsync(detail.Guild.Id.ToUlong());
         if (guild is null) return;
 
         detail.IsGuildKnown = true;
@@ -128,7 +123,7 @@ public class GetUserDetail : ApiAction
         detail.IsUserInGuild = true;
         SetUnverify(detail, entity.Unverify, guildUser, guild);
         await SetVisibleChannelsAsync(detail, guildUser, guild);
-        detail.Roles = Mapper.Map<List<ApiModels.Role>>(guildUser.GetRoles().OrderByDescending(o => o.Position).ToList());
+        detail.Roles = _mapper.Map<List<ApiModels.Role>>(guildUser.GetRoles().OrderByDescending(o => o.Position).ToList());
     }
 
     private void SetUnverify(ApiModels.Users.GuildUserDetail detail, Entity.Unverify? unverify, IGuildUser user, IGuild guild)
@@ -136,7 +131,7 @@ public class GetUserDetail : ApiAction
         if (unverify == null) return;
 
         var profile = UnverifyProfileManager.Reconstruct(unverify, user, guild);
-        detail.Unverify = Mapper.Map<ApiModels.Unverify.UnverifyInfo>(profile);
+        detail.Unverify = _mapper.Map<ApiModels.Unverify.UnverifyInfo>(profile);
     }
 
     private async Task SetVisibleChannelsAsync(ApiModels.Users.GuildUserDetail detail, IGuildUser user, IGuild guild)
@@ -148,7 +143,7 @@ public class GetUserDetail : ApiAction
 
         detail.VisibleChannels = visibleChannels
             .Where(o => o is not ICategoryChannel)
-            .Select(o => Mapper.Map<ApiModels.Channels.Channel>(o))
+            .Select(o => _mapper.Map<ApiModels.Channels.Channel>(o))
             .OrderBy(o => o.Name)
             .ToList();
     }
@@ -279,5 +274,17 @@ public class GetUserDetail : ApiAction
             Creator = creator,
             UsedUsersCount = inviteInfo.Data[0].Uses,
         };
+    }
+
+    private async Task<UserInfo?> GetUserInfoAsync(ulong userId)
+    {
+        try
+        {
+            return await _userManagement.ExecuteRequestAsync((c, ctx) => c.GetUserInfoAsync(userId, ctx.CancellationToken));
+        }
+        catch (ClientNotFoundException)
+        {
+            return null;
+        }
     }
 }

@@ -23,7 +23,6 @@ public sealed class GrillBotRepository : RepositoryBase<GrillBotContext>
     public AutoReplyRepository AutoReply => GetOrCreateRepository<AutoReplyRepository>();
     public StatisticsRepository Statistics => GetOrCreateRepository<StatisticsRepository>();
     public ApiClientRepository ApiClientRepository => GetOrCreateRepository<ApiClientRepository>();
-    public NicknameRepository Nickname => GetOrCreateRepository<NicknameRepository>();
 
     private TRepository GetOrCreateRepository<TRepository>() where TRepository : SubRepositoryBase<GrillBotContext>
     {

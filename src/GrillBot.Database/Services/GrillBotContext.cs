@@ -63,13 +63,6 @@ public class GrillBotContext : DbContext
         });
 
         modelBuilder.Entity<SelfunverifyKeepable>(builder => builder.HasKey(o => new { o.GroupName, o.Name }));
-
-        modelBuilder.Entity<Nickname>(builder =>
-        {
-            builder.HasKey(o => new { o.GuildId, o.UserId, o.Id });
-            builder.HasOne(o => o.User).WithMany(o => o.Nicknames).HasForeignKey(o => new { o.GuildId, o.UserId });
-        });
-
         modelBuilder.Entity<ApiClient>(builder => builder.Property(o => o.AllowedMethods).HasConversion(new JsonValueConverter<List<string>>()));
 
         base.OnModelCreating(modelBuilder);
@@ -85,5 +78,4 @@ public class GrillBotContext : DbContext
     public DbSet<SelfunverifyKeepable> SelfunverifyKeepables => Set<SelfunverifyKeepable>();
     public DbSet<AutoReplyItem> AutoReplies => Set<AutoReplyItem>();
     public DbSet<ApiClient> ApiClients => Set<ApiClient>();
-    public DbSet<Nickname> Nicknames => Set<Nickname>();
 }

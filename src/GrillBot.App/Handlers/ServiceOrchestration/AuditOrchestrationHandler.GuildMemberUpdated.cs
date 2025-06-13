@@ -27,7 +27,7 @@ public partial class AuditOrchestrationHandler
     private static void ProcessUserChanges(IGuildUser? before, IGuildUser after, CreateItemsMessage payload)
     {
         if (before is null) return;
-        if (before.IsDeafened == after.IsDeafened && before.IsMuted == after.IsMuted && before.Nickname == after.Nickname) return;
+        if (before.IsDeafened == after.IsDeafened && before.IsMuted == after.IsMuted) return;
 
         payload.Items.Add(new LogRequest(LogType.MemberUpdated, DateTime.UtcNow, after.Guild.Id.ToString())
         {

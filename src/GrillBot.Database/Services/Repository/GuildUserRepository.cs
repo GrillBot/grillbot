@@ -79,15 +79,4 @@ public class GuildUserRepository : SubRepositoryBase<GrillBotContext>
                 .ToListAsync();
         }
     }
-
-    public async Task<Dictionary<string, string>> GetUserNicknamesAsync(ulong guildId)
-    {
-        using (CreateCounter())
-        {
-            return await DbContext.GuildUsers.AsNoTracking()
-                .Where(o => o.GuildId == guildId.ToString() && !string.IsNullOrEmpty(o.Nickname))
-                .Select(o => new { o.UserId, o.Nickname })
-                .ToDictionaryAsync(o => o.UserId, o => o.Nickname!);
-        }
-    }
 }

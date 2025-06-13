@@ -21,8 +21,7 @@ public static class HandlerExtensions
             .AddScoped<IChannelDestroyedEvent, ChannelDestroyed.GuildConfigurationChannelDestroyedHandler>();
 
         services
-            .AddScoped<IGuildMemberUpdatedEvent, GuildMemberUpdated.ServerBoosterHandler>()
-            .AddScoped<IGuildMemberUpdatedEvent, GuildMemberUpdated.UserNicknameUpdatedHandler>();
+            .AddScoped<IGuildMemberUpdatedEvent, GuildMemberUpdated.ServerBoosterHandler>();
 
         services
             .AddScoped<IInteractionCommandExecutedEvent, InteractionCommandExecuted.InteractionFailedCommandHandler>()
@@ -106,6 +105,7 @@ public static class HandlerExtensions
         RegisterServiceOrchestration<ServiceOrchestration.RubbergodOrchestrationHandler>(services);
         RegisterServiceOrchestration<ServiceOrchestration.SearchingOrchestrationHandler>(services);
         RegisterServiceOrchestration<ServiceOrchestration.InviteOrchestrationHandler>(services);
+        RegisterServiceOrchestration<ServiceOrchestration.UserManagementOrchestrationHandler>(services);
     }
 
     private static void RegisterServiceOrchestration<TOrchestrationHandler>(IServiceCollection services) where TOrchestrationHandler : class

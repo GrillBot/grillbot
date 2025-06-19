@@ -29,6 +29,7 @@ public class SendMessageEventHandler(
         var components = message.Components?.BuildComponents();
         var wrappedComponents = components is null ? null : ComponentsHelper.CreateWrappedComponents(components.ToList().AsReadOnly());
         var content = await CreateContentAsync(message);
+        var reference = message.Reference?.ToDiscordReference();
 
         if (channel is null)
         {
@@ -47,7 +48,7 @@ public class SendMessageEventHandler(
         {
             if (message.Attachments.Count > 0)
             {
-                msg = await SendMessageWithAttachmentsAsync(channel, content, allowedMentions, message.Attachments, embed, flags, wrappedComponents);
+                msg = await SendMessageWithAttachmentsAsync(channel, content, allowedMentions, message.Attachments, embed, flags, wrappedComponents, reference);
                 return RabbitConsumptionResult.Success;
             }
 
@@ -57,7 +58,7 @@ public class SendMessageEventHandler(
                 embed: embed,
                 options: null,
                 allowedMentions: allowedMentions,
-                messageReference: null,
+                messageReference: reference,
                 components: wrappedComponents,
                 stickers: null,
                 embeds: null,
@@ -78,7 +79,7 @@ public class SendMessageEventHandler(
     }
 
     private static async Task<IUserMessage> SendMessageWithAttachmentsAsync(IMessageChannel channel, string? content, AllowedMentions? allowedMentions, List<DiscordMessageFile> attachments,
-        Embed? embed, MessageFlags flags, MessageComponent? components)
+        Embed? embed, MessageFlags flags, MessageComponent? components, MessageReference? reference)
     {
         var fileAttachments = attachments.ConvertAll(o => o.ToFileAttachment());
 
@@ -91,7 +92,7 @@ public class SendMessageEventHandler(
                 embed: embed,
                 options: null,
                 allowedMentions: allowedMentions,
-                messageReference: null,
+                messageReference: reference,
                 components: components,
                 stickers: null,
                 embeds: null,

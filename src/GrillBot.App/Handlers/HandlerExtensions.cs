@@ -106,6 +106,7 @@ public static class HandlerExtensions
         RegisterServiceOrchestration<ServiceOrchestration.SearchingOrchestrationHandler>(services);
         RegisterServiceOrchestration<ServiceOrchestration.InviteOrchestrationHandler>(services);
         RegisterServiceOrchestration<ServiceOrchestration.UserManagementOrchestrationHandler>(services);
+        RegisterServiceOrchestration<ServiceOrchestration.MessageOrchestrationHandler>(services);
     }
 
     private static void RegisterServiceOrchestration<TOrchestrationHandler>(IServiceCollection services) where TOrchestrationHandler : class

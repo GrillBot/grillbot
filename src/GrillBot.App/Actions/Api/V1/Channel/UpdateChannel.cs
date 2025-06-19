@@ -9,6 +9,8 @@ using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Core.Services.AuditLog.Enums;
 using GrillBot.Core.Services.AuditLog.Models.Events.Create;
+using GrillBot.Core.Services.MessageService.Models.Events;
+using GrillBot.Core.Services.MessageService.Models.Events.Channels;
 using GrillBot.Core.Services.PointsService.Models.Channels;
 using GrillBot.Core.Services.PointsService.Models.Users;
 using GrillBot.Data.Models.API.Channels;
@@ -59,6 +61,7 @@ public class UpdateChannel : ApiAction
         await WriteToAuditLogAsync(id, before, channel);
         await TryReloadAutoReplyAsync(before, channel);
         await SyncPointsServiceAsync(channel);
+        await SynchronizeMessageServiceAsync(before, channel);
 
         return ApiResult.Ok();
     }
@@ -104,5 +107,26 @@ public class UpdateChannel : ApiAction
         };
 
         await _rabbitPublisher.PublishAsync(new CreateItemsMessage(logRequest));
+    }
+
+    private Task SynchronizeMessageServiceAsync(Database.Entity.GuildChannel before, Database.Entity.GuildChannel after)
+    {
+        if (
+            before.HasFlag(ChannelFlag.PointsDeactivated) == after.HasFlag(ChannelFlag.PointsDeactivated) &&
+            before.HasFlag(ChannelFlag.AutoReplyDeactivated) == after.HasFlag(ChannelFlag.AutoReplyDeactivated)
+        )
+        {
+            // No change in flags that are synchronized to MessageService.
+            return Task.CompletedTask;
+        }
+
+        var syncItem = new ChannelSynchronizationItem(after.GuildId.ToUlong(), after.ChannelId.ToUlong())
+        {
+            IsAutoReplyDisabled = after.HasFlag(ChannelFlag.AutoReplyDeactivated),
+            IsPointsDisabled = after.HasFlag(ChannelFlag.PointsDeactivated),
+            IsDeleted = after.HasFlag(ChannelFlag.Deleted)
+        };
+
+        return _rabbitPublisher.PublishAsync(new SynchronizationPayload([syncItem]));
     }
 }

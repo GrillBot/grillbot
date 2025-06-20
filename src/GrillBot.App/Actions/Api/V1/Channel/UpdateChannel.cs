@@ -21,7 +21,6 @@ namespace GrillBot.App.Actions.Api.V1.Channel;
 public class UpdateChannel : ApiAction
 {
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private AutoReplyManager AutoReplyManager { get; }
     private ITextsManager Texts { get; }
     private ChannelHelper ChannelHelper { get; }
     private IDiscordClient DiscordClient { get; }
@@ -29,12 +28,11 @@ public class UpdateChannel : ApiAction
     private readonly PointsManager _pointsManager;
     private readonly IRabbitPublisher _rabbitPublisher;
 
-    public UpdateChannel(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, ITextsManager texts, AutoReplyManager autoReplyManager, ChannelHelper channelHelper,
+    public UpdateChannel(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder, ITextsManager texts, ChannelHelper channelHelper,
         IDiscordClient discordClient, PointsManager pointsManager, IRabbitPublisher rabbitPublisher) : base(apiContext)
     {
         DatabaseBuilder = databaseBuilder;
         Texts = texts;
-        AutoReplyManager = autoReplyManager;
         ChannelHelper = channelHelper;
         DiscordClient = discordClient;
         _pointsManager = pointsManager;
@@ -59,17 +57,10 @@ public class UpdateChannel : ApiAction
             return ApiResult.Ok();
 
         await WriteToAuditLogAsync(id, before, channel);
-        await TryReloadAutoReplyAsync(before, channel);
         await SyncPointsServiceAsync(channel);
         await SynchronizeMessageServiceAsync(before, channel);
 
         return ApiResult.Ok();
-    }
-
-    private async Task TryReloadAutoReplyAsync(Database.Entity.GuildChannel before, Database.Entity.GuildChannel after)
-    {
-        if (before.HasFlag(ChannelFlag.AutoReplyDeactivated) != after.HasFlag(ChannelFlag.AutoReplyDeactivated))
-            await AutoReplyManager.InitAsync();
     }
 
     private async Task SyncPointsServiceAsync(Database.Entity.GuildChannel after)

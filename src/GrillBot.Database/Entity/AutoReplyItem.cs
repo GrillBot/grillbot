@@ -1,7 +1,5 @@
-﻿using GrillBot.Database.Enums;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.RegularExpressions;
 
 namespace GrillBot.Database.Entity;
 
@@ -19,10 +17,4 @@ public class AutoReplyItem
 
     [Required]
     public long Flags { get; set; }
-
-    [NotMapped]
-    public RegexOptions RegexOptions => RegexOptions.Singleline | (HaveFlags(AutoReplyFlags.CaseSensitive) ? RegexOptions.None : RegexOptions.IgnoreCase);
-
-    public bool HaveFlags(AutoReplyFlags flags)
-        => (Flags & (long)flags) != 0;
 }

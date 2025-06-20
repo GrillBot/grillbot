@@ -38,7 +38,6 @@ public static class HandlerExtensions
         services
             .AddScoped<IMessageReceivedEvent, MessageReceived.ChannelMessageReceivedHandler>()
             .AddScoped<IMessageReceivedEvent, MessageReceived.UnsucessCommandHandler>()
-            .AddScoped<IMessageReceivedEvent, MessageReceived.AutoReplyHandler>()
             .AddScoped<IMessageReceivedEvent, MessageReceived.EmoteChainHandler>()
             .AddScoped<IMessageReceivedEvent, MessageReceived.ChannelPinMessageReceivedHandler>();
 
@@ -51,7 +50,6 @@ public static class HandlerExtensions
         services
             .AddScoped<IReadyEvent, Ready.GuildSynchronizationHandler>()
             .AddScoped<IReadyEvent, Ready.CommandsRegistrationHandler>()
-            .AddScoped<IReadyEvent, Ready.AutoReplyReadyHandler>()
             .AddScoped<IReadyEvent, Ready.UserInitSynchronizationHandler>()
             .AddScoped<IReadyEvent, Ready.ChannelInitSynchronizationHandler>();
 

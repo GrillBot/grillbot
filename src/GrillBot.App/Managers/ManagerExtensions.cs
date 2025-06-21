@@ -7,7 +7,6 @@ public static class ManagerExtensions
     public static IServiceCollection AddManagers(this IServiceCollection services)
     {
         services
-            .AddSingleton<AutoReplyManager>()
             .AddSingleton<EmoteChainManager>()
             .AddSingleton<AuditLogManager>()
             .AddSingleton<UserManager>() // TODO Review and change to scoped

@@ -26,7 +26,6 @@ public class StatisticsRepository : SubRepositoryBase<GrillBotContext>
                 { nameof(DbContext.Unverifies), await DbContext.Unverifies.CountAsync() },
                 { nameof(DbContext.UnverifyLogs), await DbContext.UnverifyLogs.CountAsync() },
                 { nameof(DbContext.SelfunverifyKeepables), await DbContext.SelfunverifyKeepables.CountAsync() },
-                { nameof(DbContext.AutoReplies), await DbContext.AutoReplies.CountAsync() },
                 { nameof(DbContext.ApiClients), await DbContext.ApiClients.CountAsync() }
             };
         }

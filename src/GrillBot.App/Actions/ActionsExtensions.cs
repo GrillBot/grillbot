@@ -1,6 +1,7 @@
 ﻿using GrillBot.Core.Services.AuditLog;
 using GrillBot.Core.Services.Emote;
 using GrillBot.Core.Services.InviteService;
+using GrillBot.Core.Services.MessageService;
 using GrillBot.Core.Services.PointsService;
 using GrillBot.Core.Services.RemindService;
 using GrillBot.Core.Services.SearchingService;
@@ -30,7 +31,8 @@ public static class ActionsExtensions
             .AddScoped<Api.ServiceBridgeAction<IRemindServiceClient>>()
             .AddScoped<Api.ServiceBridgeAction<ISearchingServiceClient>>()
             .AddScoped<Api.ServiceBridgeAction<IEmoteServiceClient>>()
-            .AddScoped<Api.ServiceBridgeAction<IInviteServiceClient>>();
+            .AddScoped<Api.ServiceBridgeAction<IInviteServiceClient>>()
+            .AddScoped<Api.ServiceBridgeAction<IMessageServiceClient>>();
     }
 
     private static IServiceCollection AddApiActions(this IServiceCollection services)
@@ -45,14 +47,6 @@ public static class ActionsExtensions
             .AddScoped<Api.V1.Auth.GetRedirectLink>()
             .AddScoped<Api.V1.Auth.ProcessCallback>()
             .AddScoped<Api.V1.Auth.CreateToken>();
-
-        // AutoReply
-        services
-            .AddScoped<Api.V1.AutoReply.GetAutoReplyList>()
-            .AddScoped<Api.V1.AutoReply.GetAutoReplyItem>()
-            .AddScoped<Api.V1.AutoReply.CreateAutoReplyItem>()
-            .AddScoped<Api.V1.AutoReply.UpdateAutoReplyItem>()
-            .AddScoped<Api.V1.AutoReply.RemoveAutoReplyItem>();
 
         // Channel
         services

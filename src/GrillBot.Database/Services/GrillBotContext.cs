@@ -76,6 +76,5 @@ public class GrillBotContext : DbContext
     public DbSet<Unverify> Unverifies => Set<Unverify>();
     public DbSet<UnverifyLog> UnverifyLogs => Set<UnverifyLog>();
     public DbSet<SelfunverifyKeepable> SelfunverifyKeepables => Set<SelfunverifyKeepable>();
-    public DbSet<AutoReplyItem> AutoReplies => Set<AutoReplyItem>();
     public DbSet<ApiClient> ApiClients => Set<ApiClient>();
 }

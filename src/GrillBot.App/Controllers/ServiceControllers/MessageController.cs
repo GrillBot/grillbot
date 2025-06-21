@@ -14,7 +14,7 @@ public class MessageController(IServiceProvider serviceProvider) : ServiceContro
     [HttpPost("autoreply")]
     [ProducesResponseType<AutoReplyDefinition>(StatusCodes.Status200OK)]
     public Task<IActionResult> CreateAutoReplyDefinition([FromBody] AutoReplyDefinitionRequest request)
-        => ExecuteAsync(async (client, ctx) => await client.CreateAutoReplyDefinition(request, ctx.CancellationToken));
+        => ExecuteAsync(async (client, ctx) => await client.CreateAutoReplyDefinition(request, ctx.CancellationToken), request);
 
     [HttpGet("autoreply/{id:guid}")]
     [ProducesResponseType<AutoReplyDefinition>(StatusCodes.Status200OK)]
@@ -25,7 +25,7 @@ public class MessageController(IServiceProvider serviceProvider) : ServiceContro
     [HttpPost("autoreply/list")]
     [ProducesResponseType(typeof(PaginatedResponse<AutoReplyDefinition>), StatusCodes.Status200OK)]
     public Task<IActionResult> GetAutoReplyDefinitionList([FromBody] AutoReplyDefinitionListRequest request)
-        => ExecuteAsync(async (client, ctx) => await client.GetAutoReplyDefinitionListAsync(request, ctx.CancellationToken));
+        => ExecuteAsync(async (client, ctx) => await client.GetAutoReplyDefinitionListAsync(request, ctx.CancellationToken), request);
 
     [HttpDelete("autoreply/{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -37,5 +37,5 @@ public class MessageController(IServiceProvider serviceProvider) : ServiceContro
     [ProducesResponseType<AutoReplyDefinition>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public Task<IActionResult> UpdateAutoReplyDefinition(Guid id, [FromBody] AutoReplyDefinitionRequest request)
-        => ExecuteAsync(async (client, ctx) => await client.UpdateAutoReplyDefinitionAsync(id, request, ctx.CancellationToken));
+        => ExecuteAsync(async (client, ctx) => await client.UpdateAutoReplyDefinitionAsync(id, request, ctx.CancellationToken), request);
 }

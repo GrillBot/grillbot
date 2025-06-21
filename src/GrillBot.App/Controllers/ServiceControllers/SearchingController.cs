@@ -15,7 +15,7 @@ public class SearchingController(IServiceProvider serviceProvider) : ServiceCont
     [ProducesResponseType(typeof(PaginatedResponse<SearchListItem>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public Task<IActionResult> GetSearchingListAsync(SearchingListRequest request)
-        => ExecuteAsync(async (client, ctx) => await client.GetSearchingListAsync(request, ctx.CancellationToken));
+        => ExecuteAsync(async (client, ctx) => await client.GetSearchingListAsync(request, ctx.CancellationToken), request);
 
     [HttpDelete("{id}")]
     [JwtAuthorize("Searching(Admin)")]

@@ -1,27 +1,30 @@
-﻿using Azure.Storage.Blobs;
+﻿using Azure.Identity;
+using Azure.Storage.Blobs;
 using GrillBot.Core.Managers.Performance;
 using Microsoft.Extensions.Configuration;
 
 namespace GrillBot.Common.FileStorage;
 
-public class BlobManagerFactory
+public class BlobManagerFactory(
+    ICounterManager _counterManager,
+    IConfiguration _configuration
+)
 {
-    private ICounterManager CounterManager { get; }
-    private IConfiguration Configuration { get; }
-
-    public BlobManagerFactory(ICounterManager counterManager, IConfiguration configuration)
-    {
-        CounterManager = counterManager;
-        Configuration = configuration;
-    }
-
     public async Task<BlobManager> CreateAsync(string containerName)
     {
-        var connectionString = Configuration.GetConnectionString("StorageAccount");
+        var authData = _configuration.GetRequiredSection("Auth:AzureIdentity");
 
-        var containerClient = new BlobContainerClient(connectionString, containerName);
-        await containerClient.CreateIfNotExistsAsync();
+        var accountAddress = new Uri(authData["StorageAccountUrl"]!);
+        var credentials = new ClientSecretCredential(
+            authData["TenantId"],
+            authData["ClientId"],
+            authData["ClientSecret"]
+        );
 
-        return new BlobManager(CounterManager, containerClient);
+        var client = new BlobServiceClient(accountAddress, credentials);
+        var container = client.GetBlobContainerClient(containerName);
+        await container.CreateIfNotExistsAsync();
+
+        return new BlobManager(_counterManager, container);
     }
 }

@@ -44,6 +44,7 @@ using GrillBot.App.Telemetry;
 using GrillBot.Core.Metrics.Services;
 using GrillBot.App.Managers.Auth;
 using GrillBot.Common.Extensions;
+using GrillBot.Core.HealthCheck;
 
 namespace GrillBot.App;
 
@@ -269,13 +270,13 @@ public class Startup
                 };
             });
 
-        services.AddHealthChecks()
+        HealthCheckExtensions.AddHealthChecks(services)
             .AddCheck<DiscordHealthCheck>(nameof(DiscordHealthCheck))
             .AddNpgSql(connectionString!);
 
         services.Configure<ForwardedHeadersOptions>(opt => opt.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto);
 
-        services.AddHttpLogging(c => c.LoggingFields = HttpLoggingFields.All);
+        services.AddHttpLogging(c => c.LoggingFields = HttpLoggingFields.All & ~HttpLoggingFields.ResponseBody);
         services.Configure<AspNetCoreTraceInstrumentationOptions>(opt => opt.Filter = ctx => ctx.Request.Path != "/metrics" && ctx.Request.Path != "/health");
 
         services.AddOpenTelemetry()
@@ -283,8 +284,9 @@ public class Startup
             .WithTracing(b => b
                 .AddAspNetCoreInstrumentation()
                 .AddHttpClientInstrumentation()
-                .AddSource("*")
                 .AddQuartzInstrumentation()
+                .AddEntityFrameworkCoreInstrumentation()
+                .AddSource("*")
                 .AddOtlpExporter()
             )
             .WithMetrics(b => b
@@ -347,7 +349,7 @@ public class Startup
         app.UseEndpoints(endpoints =>
         {
             endpoints.MapControllers();
-            endpoints.MapHealthChecks("/health");
+            endpoints.MapHealthChecks();
         });
     }
 }

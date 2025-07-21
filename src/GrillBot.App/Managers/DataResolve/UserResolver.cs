@@ -11,12 +11,12 @@ public class UserResolver : BaseDataResolver<IUser, Database.Entity.User, Data.M
     {
     }
 
-    public Task<Data.Models.API.Users.User?> GetUserAsync(ulong userId)
+    public Task<Data.Models.API.Users.User?> GetUserAsync(ulong userId, CancellationToken cancellationToken = default)
     {
         return GetMappedEntityAsync(
             $"User({userId})",
-            () => _discordClient.GetUserAsync(userId, CacheMode.CacheOnly),
-            repo => repo.User.FindUserByIdAsync(userId, disableTracking: true)
+            () => _discordClient.GetUserAsync(userId, CacheMode.CacheOnly, options: new() { CancelToken = cancellationToken }),
+            repo => repo.User.FindUserByIdAsync(userId, disableTracking: true, cancellationToken: cancellationToken)
         );
     }
 

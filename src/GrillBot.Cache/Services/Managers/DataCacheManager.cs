@@ -16,14 +16,14 @@ public class DataCacheManager
         _counterManager = counterManager;
     }
 
-    public async Task SetValueAsync<TValue>(string key, TValue value, TimeSpan? expiration)
+    public async Task SetValueAsync<TValue>(string key, TValue value, TimeSpan? expiration, CancellationToken cancellationToken = default)
     {
-        await _semaphore.WaitAsync();
+        await _semaphore.WaitAsync(cancellationToken);
 
         try
         {
             using (_counterManager.Create("DataCache"))
-                await _cache.SetAsync(key, value, expiration);
+                await _cache.SetAsync(key, value, expiration, cancellationToken);
         }
         finally
         {
@@ -31,14 +31,14 @@ public class DataCacheManager
         }
     }
 
-    public async Task<TValue?> GetValueAsync<TValue>(string key)
+    public async Task<TValue?> GetValueAsync<TValue>(string key, CancellationToken cancellationToken  =default)
     {
-        await _semaphore.WaitAsync();
+        await _semaphore.WaitAsync(cancellationToken);
 
         try
         {
             using (_counterManager.Create("DataCache"))
-                return await _cache.GetAsync<TValue>(key);
+                return await _cache.GetAsync<TValue>(key, cancellationToken);
         }
         finally
         {

@@ -21,19 +21,19 @@ public abstract class MessageEventHandlerBase<TPayload>(
     protected IDiscordClient DiscordClient => _discordClient;
     protected IRabbitPublisher RabbitPublisher => _rabbitPublisher;
 
-    protected async Task<IMessageChannel?> GetChannelAsync(ulong? guildId, ulong channelId)
+    protected async Task<IMessageChannel?> GetChannelAsync(ulong? guildId, ulong channelId, CancellationToken cancellationToken = default)
     {
         if (guildId is not null)
         {
-            var guild = await _discordClient.GetGuildAsync(guildId.Value);
-            return guild is null ? null : await guild.GetTextChannelAsync(channelId);
+            var guild = await _discordClient.GetGuildAsync(guildId.Value, options: new() { CancelToken = cancellationToken });
+            return guild is null ? null : await guild.GetTextChannelAsync(channelId, options: new() { CancelToken = cancellationToken });
         }
 
-        var user = await _discordClient.GetUserAsync(channelId);
-        return user is null ? null : (IMessageChannel)await user.CreateDMChannelAsync();
+        var user = await _discordClient.GetUserAsync(channelId, options: new() { CancelToken = cancellationToken });
+        return user is null ? null : (IMessageChannel)await user.CreateDMChannelAsync(options: new() { CancelToken = cancellationToken });
     }
 
-    protected async Task LogWarningAsync(ulong? guildId, ulong channelId, string message, TPayload payload)
+    protected Task LogWarningAsync(ulong? guildId, ulong channelId, string message, TPayload payload, CancellationToken cancellationToken = default)
     {
         var logRequest = new LogRequest(LogType.Warning, DateTime.UtcNow, guildId?.ToString(), _discordClient.CurrentUser.Id.ToString(), channelId.ToString())
         {
@@ -46,35 +46,32 @@ public abstract class MessageEventHandlerBase<TPayload>(
         };
 
         Logger.LogWarning("{Message}", message);
-        await RabbitPublisher.PublishAsync(new CreateItemsMessage(logRequest));
+        return RabbitPublisher.PublishAsync(new CreateItemsMessage(logRequest), cancellationToken: cancellationToken);
     }
 
-    protected async Task<Embed?> CreateEmbedAsync(TPayload payload)
+    protected async Task<Embed?> CreateEmbedAsync(TPayload payload, CancellationToken cancellationToken = default)
     {
         if (payload.Embed is null)
             return null;
 
-        var embedBuilder = payload.Embed.ToBuilder();
-        var isOriginalEmbedValid = payload.Embed.IsValidEmbed();
-
         if (!payload.CanUseLocalization)
-            return !isOriginalEmbedValid ? null : embedBuilder.Build();
+            return !payload.Embed.IsValidEmbed() ? null : payload.Embed.ToBuilder().Build();
 
         if (!payload.ServiceData.TryGetValue("Language", out var language))
             language = TextsManager.DefaultLocale;
 
-        var localizedEmbed = await _localizationManager.CreateLocalizedEmbedAsync(embedBuilder, language, payload.ServiceData);
+        var localizedEmbed = await _localizationManager.CreateLocalizedEmbedAsync(payload.Embed, language, payload.ServiceData, cancellationToken);
         return localizedEmbed.Build();
     }
 
-    protected async Task<string?> CreateContentAsync(TPayload payload)
+    protected async Task<string?> CreateContentAsync(TPayload payload, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrEmpty(payload.Content))
+        if (string.IsNullOrEmpty(payload.Content?.Key))
             return null;
         if (!payload.CanUseLocalization)
             return payload.Content;
 
         var locale = payload.Locale ?? TextsManager.DefaultLocale;
-        return await _localizationManager.TransformValueAsync(payload.Content!, locale, payload.ServiceData);
+        return await _localizationManager.TransformValueAsync(payload.Content!, locale, payload.ServiceData, cancellationToken);
     }
 }

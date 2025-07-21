@@ -24,24 +24,24 @@ public class CreatedDiscordMessageEventHandler(
         switch (message.ServiceId)
         {
             case "Remind":
-                await ProcessRemindServiceMessageAsync(message);
+                await ProcessRemindServiceMessageAsync(message, cancellationToken);
                 break;
             case "Emote":
-                await ProcessEmoteServiceMessageAsync(message);
+                await ProcessEmoteServiceMessageAsync(message, cancellationToken);
                 break;
         }
 
         return RabbitConsumptionResult.Success;
     }
 
-    private Task ProcessRemindServiceMessageAsync(CreatedDiscordMessagePayload payload)
+    private Task ProcessRemindServiceMessageAsync(CreatedDiscordMessagePayload payload, CancellationToken cancellationToken = default)
     {
         if (payload.ServiceData.TryGetValue("RemindId", out var _remindId) && long.TryParse(_remindId, CultureInfo.InvariantCulture, out var remindId))
-            return _rabbitPublisher.PublishAsync(new RemindMessageNotifyPayload(remindId, payload.MessageId));
+            return _rabbitPublisher.PublishAsync(new RemindMessageNotifyPayload(remindId, payload.MessageId), cancellationToken: cancellationToken);
         return Task.CompletedTask;
     }
 
-    private Task ProcessEmoteServiceMessageAsync(CreatedDiscordMessagePayload payload)
+    private Task ProcessEmoteServiceMessageAsync(CreatedDiscordMessagePayload payload, CancellationToken cancellationToken = default)
     {
         if (
             !payload.ServiceData.TryGetValue("SuggestionId", out var _suggestionId) ||
@@ -54,8 +54,8 @@ public class CreatedDiscordMessageEventHandler(
 
         return messageType switch
         {
-            "VoteMessage" => _rabbitPublisher.PublishAsync(new EmoteSuggestionVoteMessageCreatedPayload(suggestionId, payload.MessageId.ToUlong())),
-            "SuggestionMessage" => _rabbitPublisher.PublishAsync(new EmoteSuggestionMessageCreatedPayload(suggestionId, payload.MessageId.ToUlong())),
+            "VoteMessage" => _rabbitPublisher.PublishAsync(new EmoteSuggestionVoteMessageCreatedPayload(suggestionId, payload.MessageId.ToUlong()), cancellationToken: cancellationToken),
+            "SuggestionMessage" => _rabbitPublisher.PublishAsync(new EmoteSuggestionMessageCreatedPayload(suggestionId, payload.MessageId.ToUlong()), cancellationToken: cancellationToken),
             _ => Task.CompletedTask,
         };
     }

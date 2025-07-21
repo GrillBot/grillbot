@@ -11,6 +11,7 @@ using GrillBot.Core.Managers.Performance;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Enums.Internal;
+using System.Threading;
 
 namespace GrillBot.Database.Services.Repository;
 
@@ -74,7 +75,7 @@ public class UserRepository : SubRepositoryBase<GrillBotContext>
         }
     }
 
-    public async Task<User?> FindUserByIdAsync(ulong id, UserIncludeOptions includeOptions = UserIncludeOptions.None, bool disableTracking = false)
+    public async Task<User?> FindUserByIdAsync(ulong id, UserIncludeOptions includeOptions = UserIncludeOptions.None, bool disableTracking = false, CancellationToken cancellationToken = default)
     {
         using (CreateCounter())
         {
@@ -90,7 +91,7 @@ public class UserRepository : SubRepositoryBase<GrillBotContext>
             if (includeOptions != UserIncludeOptions.None)
                 query = query.AsSplitQuery();
 
-            return await query.FirstOrDefaultAsync(o => o.Id == id.ToString());
+            return await query.FirstOrDefaultAsync(o => o.Id == id.ToString(), cancellationToken);
         }
     }
 

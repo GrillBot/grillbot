@@ -48,10 +48,10 @@ public class DataResolveManager
         return await _guildUserResolver.GetGuildUserAsync(guildId, userId);
     }
 
-    public async Task<ApiModels.Users.User?> GetUserAsync(ulong userId)
+    public async Task<ApiModels.Users.User?> GetUserAsync(ulong userId, CancellationToken cancellationToken = default)
     {
         _userResolver ??= new UserResolver(_discordClient, _databaseBuilder, _cache);
-        return await _userResolver.GetUserAsync(userId);
+        return await _userResolver.GetUserAsync(userId, cancellationToken);
     }
 
     public async Task<ApiModels.Role?> GetRoleAsync(ulong roleId)

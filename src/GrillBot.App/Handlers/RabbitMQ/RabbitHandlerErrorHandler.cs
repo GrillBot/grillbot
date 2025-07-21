@@ -7,7 +7,6 @@ using GrillBot.Core.Services.AuditLog.Enums;
 using GrillBot.Core.Services.AuditLog.Models.Events.Create;
 using GrillBot.Core.Services.GrillBot.Models.Events.Errors;
 using Microsoft.Extensions.Logging;
-using Serilog.Data;
 
 namespace GrillBot.App.Handlers.RabbitMQ;
 
@@ -23,17 +22,17 @@ public class RabbitHandlerErrorHandler(
         CancellationToken cancellationToken = default
     )
     {
-        await PublishErrorNotificationAsync(message);
-        await PublishAuditLogMessageAsync(message);
+        await PublishErrorNotificationAsync(message, cancellationToken);
+        await PublishAuditLogMessageAsync(message, cancellationToken);
         return RabbitConsumptionResult.Success;
     }
 
-    private async Task PublishErrorNotificationAsync(RabbitErrorMessage payload)
+    private Task PublishErrorNotificationAsync(RabbitErrorMessage payload, CancellationToken cancellationToken = default)
     {
         var notificationFields = CreateErrorNotificationFields(payload);
         var notification = new ErrorNotificationPayload("Při zpracování zprávy z RabbitMQ došlo k chybě.", notificationFields, null);
 
-        await _rabbitPublisher.PublishAsync(notification);
+        return _rabbitPublisher.PublishAsync(notification, cancellationToken: cancellationToken);
     }
 
     private static IEnumerable<ErrorNotificationField> CreateErrorNotificationFields(RabbitErrorMessage payload)
@@ -52,7 +51,7 @@ public class RabbitHandlerErrorHandler(
         yield return new ErrorNotificationField("Zkrácený obsah chyby", payload.Exception.Cut(500)!, false);
     }
 
-    private async Task PublishAuditLogMessageAsync(RabbitErrorMessage payload)
+    private Task PublishAuditLogMessageAsync(RabbitErrorMessage payload, CancellationToken cancellationToken = default)
     {
         var logRequest = new LogRequest(LogType.Error, DateTime.UtcNow)
         {
@@ -64,7 +63,7 @@ public class RabbitHandlerErrorHandler(
             }
         };
 
-        await _rabbitPublisher.PublishAsync(new CreateItemsMessage(logRequest));
+        return _rabbitPublisher.PublishAsync(new CreateItemsMessage(logRequest), cancellationToken: cancellationToken);
     }
 
     private static string BuildErrorMessage(RabbitErrorMessage payload)

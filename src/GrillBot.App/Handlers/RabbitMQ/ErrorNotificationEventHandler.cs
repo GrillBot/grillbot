@@ -30,17 +30,17 @@ public class ErrorNotificationEventHandler(
     {
         await _discordClient.WaitOnConnectedState(cancellationToken);
 
-        var withoutAccidentImage = await CreateWithoutAccidentImageAsync(message.UserId);
+        var withoutAccidentImage = await CreateWithoutAccidentImageAsync(message.UserId, cancellationToken);
 
         try
         {
-            await _dataCache.SetValueAsync("GrillBot_LastErrorDate", DateTime.Now, TimeSpan.FromDays(365));
+            await _dataCache.SetValueAsync("GrillBot_LastErrorDate", DateTime.Now, TimeSpan.FromDays(365), cancellationToken);
 
             var msg = await CreateMessage(message, withoutAccidentImage);
             if (msg is null)
                 return RabbitConsumptionResult.Success;
 
-            await _rabbitPublisher.PublishAsync(msg);
+            await _rabbitPublisher.PublishAsync(msg, cancellationToken: cancellationToken);
         }
         finally
         {

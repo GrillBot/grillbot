@@ -27,24 +27,24 @@ public class SendMessageEventHandler(
     {
         await DiscordClient.WaitOnConnectedState(cancellationToken);
 
-        var channel = await GetChannelAsync(message.GuildId, message.ChannelId);
-        var embed = await CreateEmbedAsync(message);
+        var channel = await GetChannelAsync(message.GuildId, message.ChannelId, cancellationToken);
+        var embed = await CreateEmbedAsync(message, cancellationToken);
         var allowedMentions = message.AllowedMentions?.ToAllowedMentions();
         var flags = message.Flags ?? MessageFlags.None;
         var components = (message.Components?.BuildComponents() ?? []).Select(o => o.ToBuilder());
         var wrappedComponents = components is null ? null : ComponentsHelper.CreateWrappedComponents(components.ToList().AsReadOnly());
-        var content = await CreateContentAsync(message);
+        var content = await CreateContentAsync(message, cancellationToken);
         var reference = message.Reference?.ToDiscordReference();
 
         if (channel is null)
         {
-            await LogWarningAsync(message.GuildId, message.ChannelId, $"Unable to find channel with ID {message.ChannelId}", message);
+            await LogWarningAsync(message.GuildId, message.ChannelId, $"Unable to find channel with ID {message.ChannelId}", message, cancellationToken);
             return RabbitConsumptionResult.Success;
         }
 
         if (embed is null && string.IsNullOrEmpty(content) && message.Attachments.Count == 0)
         {
-            await LogWarningAsync(message.GuildId, message.ChannelId, "Unable to send discord message without content.", message);
+            await LogWarningAsync(message.GuildId, message.ChannelId, "Unable to send discord message without content.", message, cancellationToken);
             return RabbitConsumptionResult.Success;
         }
 
@@ -53,7 +53,7 @@ public class SendMessageEventHandler(
         {
             if (message.Attachments.Count > 0)
             {
-                msg = await SendMessageWithAttachmentsAsync(channel, content, allowedMentions, message.Attachments, embed, flags, wrappedComponents, reference);
+                msg = await SendMessageWithAttachmentsAsync(channel, content, allowedMentions, message.Attachments, embed, flags, wrappedComponents, reference, cancellationToken);
                 return RabbitConsumptionResult.Success;
             }
 
@@ -77,14 +77,14 @@ public class SendMessageEventHandler(
         finally
         {
             if (message is not null)
-                await PublishCreatedMessageAsync(message, msg!);
+                await PublishCreatedMessageAsync(message, msg!, cancellationToken);
         }
 
         return RabbitConsumptionResult.Success;
     }
 
     private static async Task<IUserMessage> SendMessageWithAttachmentsAsync(IMessageChannel channel, string? content, AllowedMentions? allowedMentions, List<DiscordMessageFile> attachments,
-        Embed? embed, MessageFlags flags, MessageComponent? components, MessageReference? reference)
+        Embed? embed, MessageFlags flags, MessageComponent? components, MessageReference? reference, CancellationToken cancellationToken = default)
     {
         var fileAttachments = attachments.ConvertAll(o => o.ToFileAttachment());
 
@@ -95,7 +95,7 @@ public class SendMessageEventHandler(
                 text: content,
                 isTTS: false,
                 embed: embed,
-                options: null,
+                options: new() { CancelToken = cancellationToken },
                 allowedMentions: allowedMentions,
                 messageReference: reference,
                 components: components,
@@ -111,7 +111,7 @@ public class SendMessageEventHandler(
         }
     }
 
-    private Task PublishCreatedMessageAsync(DiscordSendMessagePayload payload, IUserMessage message)
+    private Task PublishCreatedMessageAsync(DiscordSendMessagePayload payload, IUserMessage message, CancellationToken cancellationToken = default)
     {
         return RabbitPublisher.PublishAsync(new CreatedDiscordMessagePayload(
             payload.GuildId?.ToString(),
@@ -119,6 +119,6 @@ public class SendMessageEventHandler(
             message.Id.ToString(),
             payload.ServiceId,
             payload.ServiceData
-        ));
+        ), cancellationToken: cancellationToken);
     }
 }

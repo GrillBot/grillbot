@@ -7,15 +7,8 @@ using Microsoft.Extensions.Logging;
 
 namespace GrillBot.App.Handlers.RabbitMQ;
 
-public class FileDeleteEventHandler : RabbitMessageHandlerBase<FileDeletePayload>
+public class FileDeleteEventHandler(ILoggerFactory loggerFactory, BlobManagerFactoryHelper _blobManagerFactory) : RabbitMessageHandlerBase<FileDeletePayload>(loggerFactory)
 {
-    private readonly BlobManagerFactoryHelper _blobManagerFactory;
-
-    public FileDeleteEventHandler(ILoggerFactory loggerFactory, BlobManagerFactoryHelper blobManagerFactory) : base(loggerFactory)
-    {
-        _blobManagerFactory = blobManagerFactory;
-    }
-
     protected override async Task<RabbitConsumptionResult> HandleInternalAsync(
         FileDeletePayload message,
         ICurrentUserProvider currentUser,

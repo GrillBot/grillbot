@@ -26,24 +26,24 @@ public class EditMessageEventHandler(
     {
         await DiscordClient.WaitOnConnectedState(cancellationToken);
 
-        var channel = await GetChannelAsync(message.GuildId, message.ChannelId);
-        var embed = await CreateEmbedAsync(message);
+        var channel = await GetChannelAsync(message.GuildId, message.ChannelId, cancellationToken);
+        var embed = await CreateEmbedAsync(message, cancellationToken);
         var allowedMentions = message.AllowedMentions?.ToAllowedMentions();
         var flags = message.Flags ?? MessageFlags.None;
         var components = (message.Components?.BuildComponents() ?? []).Select(o => o.ToBuilder());
         var wrappedComponents = components is null ? null : ComponentsHelper.CreateWrappedComponents(components.ToList().AsReadOnly());
-        var content = await CreateContentAsync(message);
+        var content = await CreateContentAsync(message, cancellationToken);
         var fileAttachments = message.Attachments.ConvertAll(o => o.ToFileAttachment());
 
         if (channel is null)
         {
-            await LogWarningAsync(message.GuildId, message.ChannelId, $"Unable to find channel with ID {message.ChannelId}", message);
+            await LogWarningAsync(message.GuildId, message.ChannelId, $"Unable to find channel with ID {message.ChannelId}", message, cancellationToken);
             return RabbitConsumptionResult.Success;
         }
 
         if (embed is null && string.IsNullOrEmpty(content) && message.Attachments.Count == 0)
         {
-            await LogWarningAsync(message.GuildId, message.ChannelId, "Unable to edit discord message without content.", message);
+            await LogWarningAsync(message.GuildId, message.ChannelId, "Unable to edit discord message without content.", message, cancellationToken);
             return RabbitConsumptionResult.Success;
         }
 

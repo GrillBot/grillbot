@@ -21,18 +21,18 @@ public abstract class BaseDataResolver<TDiscordEntity, TDatabaseEntity, TMappedV
     protected abstract TMappedValue Map(TDiscordEntity discordEntity);
     protected abstract TMappedValue Map(TDatabaseEntity entity);
 
-    private async Task<TMappedValue> MapAndStoreAsync(string key, TDiscordEntity entity)
+    private async Task<TMappedValue> MapAndStoreAsync(string key, TDiscordEntity entity, CancellationToken cancellationToken = default)
     {
         var mapped = Map(entity);
-        await _dataCache.SetValueAsync(key, mapped, TimeSpan.FromHours(1));
+        await _dataCache.SetValueAsync(key, mapped, TimeSpan.FromHours(1), cancellationToken);
 
         return mapped;
     }
 
-    private async Task<TMappedValue> MapAndStoreAsync(string key, TDatabaseEntity entity)
+    private async Task<TMappedValue> MapAndStoreAsync(string key, TDatabaseEntity entity, CancellationToken cancellationToken = default)
     {
         var mapped = Map(entity);
-        await _dataCache.SetValueAsync(key, mapped, TimeSpan.FromHours(1));
+        await _dataCache.SetValueAsync(key, mapped, TimeSpan.FromHours(1), cancellationToken);
 
         return mapped;
     }
@@ -40,20 +40,21 @@ public abstract class BaseDataResolver<TDiscordEntity, TDatabaseEntity, TMappedV
     protected async Task<TMappedValue?> GetMappedEntityAsync(
         string key,
         Func<Task<TDiscordEntity?>> readDiscordEntity,
-        Func<GrillBotRepository, Task<TDatabaseEntity?>> readDatabaseEntity
+        Func<GrillBotRepository, Task<TDatabaseEntity?>> readDatabaseEntity,
+        CancellationToken cancellationToken = default
     )
     {
-        var value = await _dataCache.GetValueAsync<TMappedValue>(key);
+        var value = await _dataCache.GetValueAsync<TMappedValue>(key, cancellationToken);
         if (value is not null)
             return value;
 
         var discordEntity = await readDiscordEntity();
         if (discordEntity is not null)
-            return await MapAndStoreAsync(key, discordEntity);
+            return await MapAndStoreAsync(key, discordEntity, cancellationToken);
 
         using var repository = _databaseBuilder.CreateRepository();
 
         var databaseEntity = await readDatabaseEntity(repository);
-        return databaseEntity is null ? default : await MapAndStoreAsync(key, databaseEntity);
+        return databaseEntity is null ? default : await MapAndStoreAsync(key, databaseEntity, cancellationToken);
     }
 }

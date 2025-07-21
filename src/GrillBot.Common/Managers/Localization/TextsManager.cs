@@ -1,5 +1,7 @@
 ﻿using System.Globalization;
 using System.Text.RegularExpressions;
+using GrillBot.Common.Extensions;
+using GrillBot.Core.Extensions;
 using GrillBot.Core.Services.GrillBot.Models;
 using Humanizer;
 using Newtonsoft.Json.Linq;
@@ -57,27 +59,39 @@ public partial class TextsManager(string _basePath, string _fileMask) : ITextsMa
     }
 
     public string this[string id, string locale]
-        => Get(id, locale);
+        => this[new LocalizedMessageContent(id, []), locale];
 
     public string this[LocalizedMessageContent content, string locale]
-        => Get(content, locale);
+        => Get(content, locale) ?? throw new ArgumentException($"Localized text with id {content.Key} for locale {locale} is missing and there is no default locale either.");
 
     public string? GetIfExists(string id, string locale)
-        => Get(new(GetKey(id, locale), [])) ?? Get(new(GetKey(id, DefaultLocale), []));
+        => Get(new(id, []), locale);
 
     public string? GetIfExists(LocalizedMessageContent content, string locale)
         => Get(content, locale) ?? Get(content, DefaultLocale);
 
-    private string Get(string id, string locale)
-    {
-        return GetIfExists(id, locale)
-            ?? throw new ArgumentException($"Localized text with id {id} for locale {locale} is missing and there is no default locale either.");
-    }
-
-    private string? Get(LocalizedMessageContent content)
+    private string? Get(LocalizedMessageContent content, string locale)
     {
         Init();
-        return !Data.TryGetValue(content.Key, out var value) ? null : value.FormatWith(content.Args);
+
+        var key = GetKey(content.Key, locale);
+        if (!Data.TryGetValue(key, out var value))
+            return null;
+
+        var args = new List<string>();
+        foreach (var arg in content.Args)
+        {
+            var transformedValue = arg;
+            if (transformedValue.StartsWith("DateTime:"))
+            {
+                if (DateTime.TryParseExact(arg.Replace("DateTime:", ""), "o", CultureInfo.InvariantCulture, DateTimeStyles.None, out var dateTime))
+                    transformedValue = (dateTime.Kind == DateTimeKind.Unspecified ? dateTime.WithKind(DateTimeKind.Utc) : dateTime).ToLocalTime().ToCzechFormat();
+            }
+
+            args.Add(transformedValue);
+        }
+
+        return args.Count == 0 ? value : value.FormatWith([.. args]);
     }
 
     private static string GetKey(string id, string locale) => $"{id}#{FixLocale(locale)}";

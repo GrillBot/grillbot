@@ -18,15 +18,20 @@ public class SendMessageEventHandler(
     LocalizationManager localizationManager
 ) : MessageEventHandlerBase<DiscordSendMessagePayload>(loggerFactory, discordClient, localizationManager, rabbitPublisher)
 {
-    protected override async Task<RabbitConsumptionResult> HandleInternalAsync(DiscordSendMessagePayload message, ICurrentUserProvider currentUser, Dictionary<string, string> headers)
+    protected override async Task<RabbitConsumptionResult> HandleInternalAsync(
+        DiscordSendMessagePayload message,
+        ICurrentUserProvider currentUser,
+        Dictionary<string, string> headers,
+        CancellationToken cancellationToken = default
+    )
     {
-        await DiscordClient.WaitOnConnectedState();
+        await DiscordClient.WaitOnConnectedState(cancellationToken);
 
         var channel = await GetChannelAsync(message.GuildId, message.ChannelId);
         var embed = await CreateEmbedAsync(message);
         var allowedMentions = message.AllowedMentions?.ToAllowedMentions();
         var flags = message.Flags ?? MessageFlags.None;
-        var components = message.Components?.BuildComponents();
+        var components = (message.Components?.BuildComponents() ?? []).Select(o => o.ToBuilder());
         var wrappedComponents = components is null ? null : ComponentsHelper.CreateWrappedComponents(components.ToList().AsReadOnly());
         var content = await CreateContentAsync(message);
         var reference = message.Reference?.ToDiscordReference();

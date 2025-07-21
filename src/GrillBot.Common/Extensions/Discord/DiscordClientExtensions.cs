@@ -5,15 +5,15 @@ namespace GrillBot.Common.Extensions.Discord;
 
 public static class DiscordClientExtensions
 {
-    public static async Task<IUser?> FindUserAsync(this IDiscordClient client, ulong id)
+    public static async Task<IUser?> FindUserAsync(this IDiscordClient client, ulong id, CancellationToken cancellationToken = default)
     {
-        var user = await client.GetUserAsync(id);
+        var user = await client.GetUserAsync(id, options: new() { CancelToken = cancellationToken });
         if (user is not null)
             return user;
 
-        foreach (var guild in await client.GetGuildsAsync())
+        foreach (var guild in await client.GetGuildsAsync(options: new() { CancelToken = cancellationToken }))
         {
-            user = await guild.GetUserAsync(id);
+            user = await guild.GetUserAsync(id, options: new() { CancelToken = cancellationToken });
 
             if (user is not null)
                 return user;
@@ -39,14 +39,15 @@ public static class DiscordClientExtensions
             .FirstOrDefault(r => r is not null);
     }
 
-    public static async Task WaitOnConnectedState(this IDiscordClient discordClient)
+    public static async Task WaitOnConnectedState(this IDiscordClient discordClient, CancellationToken cancellationToken = default)
     {
-        using var cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(5));
+        using var timeoutCancellation = new CancellationTokenSource(TimeSpan.FromMinutes(5));
+        using var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(timeoutCancellation.Token, cancellationToken);
 
         while (discordClient.ConnectionState != ConnectionState.Connected)
         {
-            await Task.Delay(500, cancellation.Token);
-            if (cancellation.IsCancellationRequested)
+            await Task.Delay(500, tokenSource.Token);
+            if (tokenSource.IsCancellationRequested)
                 throw new TaskCanceledException("Waiting on discord connection state expired.");
         }
     }

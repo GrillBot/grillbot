@@ -124,7 +124,7 @@ public class Startup
             .Where(o => o.Name!.StartsWith("GrillBot"))
             .Select(Assembly.Load)
             .ToArray();
-        services.AddAutoMapper(new[] { new[] { currentAssembly }, referencedAssemblies }.SelectMany(o => o));
+        services.AddAutoMapper(_ => { }, new[] { new[] { currentAssembly }, referencedAssemblies }.SelectMany(o => o));
 
         services
             .AddHandlers()

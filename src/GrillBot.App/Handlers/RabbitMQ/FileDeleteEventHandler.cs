@@ -16,7 +16,12 @@ public class FileDeleteEventHandler : RabbitMessageHandlerBase<FileDeletePayload
         _blobManagerFactory = blobManagerFactory;
     }
 
-    protected override async Task<RabbitConsumptionResult> HandleInternalAsync(FileDeletePayload message, ICurrentUserProvider currentUser, Dictionary<string, string> headers)
+    protected override async Task<RabbitConsumptionResult> HandleInternalAsync(
+        FileDeletePayload message,
+        ICurrentUserProvider currentUser,
+        Dictionary<string, string> headers,
+        CancellationToken cancellationToken = default
+    )
     {
         var blobManager = await _blobManagerFactory.CreateAsync(BlobConstants.AuditLogDeletedAttachments);
         var legacyManager = await _blobManagerFactory.CreateLegacyAsync();

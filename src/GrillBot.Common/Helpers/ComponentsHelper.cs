@@ -23,7 +23,7 @@ public static class ComponentsHelper
         return builder.Build();
     }
 
-    public static MessageComponent? CreateWrappedComponents(IReadOnlyList<IMessageComponent> components)
+    public static MessageComponent? CreateWrappedComponents(IReadOnlyList<IMessageComponentBuilder> components)
     {
         if (components.Count == 0)
             return null;

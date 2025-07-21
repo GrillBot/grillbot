@@ -14,7 +14,12 @@ public class CreatedDiscordMessageEventHandler(
     IRabbitPublisher _rabbitPublisher
 ) : RabbitMessageHandlerBase<CreatedDiscordMessagePayload>(loggerFactory)
 {
-    protected override async Task<RabbitConsumptionResult> HandleInternalAsync(CreatedDiscordMessagePayload message, ICurrentUserProvider currentUser, Dictionary<string, string> headers)
+    protected override async Task<RabbitConsumptionResult> HandleInternalAsync(
+        CreatedDiscordMessagePayload message,
+        ICurrentUserProvider currentUser,
+        Dictionary<string, string> headers,
+        CancellationToken cancellationToken = default
+    )
     {
         switch (message.ServiceId)
         {

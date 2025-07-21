@@ -11,16 +11,17 @@ using Serilog.Data;
 
 namespace GrillBot.App.Handlers.RabbitMQ;
 
-public class RabbitHandlerErrorHandler : RabbitMessageHandlerBase<RabbitErrorMessage>
+public class RabbitHandlerErrorHandler(
+    ILoggerFactory loggerFactory,
+    IRabbitPublisher _rabbitPublisher
+) : RabbitMessageHandlerBase<RabbitErrorMessage>(loggerFactory)
 {
-    private readonly IRabbitPublisher _rabbitPublisher;
-
-    public RabbitHandlerErrorHandler(ILoggerFactory loggerFactory, IRabbitPublisher publisher) : base(loggerFactory)
-    {
-        _rabbitPublisher = publisher;
-    }
-
-    protected override async Task<RabbitConsumptionResult> HandleInternalAsync(RabbitErrorMessage message, ICurrentUserProvider currentUser, Dictionary<string, string> headers)
+    protected override async Task<RabbitConsumptionResult> HandleInternalAsync(
+        RabbitErrorMessage message,
+        ICurrentUserProvider currentUser,
+        Dictionary<string, string> headers,
+        CancellationToken cancellationToken = default
+    )
     {
         await PublishErrorNotificationAsync(message);
         await PublishAuditLogMessageAsync(message);

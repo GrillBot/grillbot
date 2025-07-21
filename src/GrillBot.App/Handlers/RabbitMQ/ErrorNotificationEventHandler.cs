@@ -21,9 +21,14 @@ public class ErrorNotificationEventHandler(
     IConfiguration _configuration
 ) : RabbitMessageHandlerBase<ErrorNotificationPayload>(loggerFactory)
 {
-    protected override async Task<RabbitConsumptionResult> HandleInternalAsync(ErrorNotificationPayload message, ICurrentUserProvider currentUser, Dictionary<string, string> headers)
+    protected override async Task<RabbitConsumptionResult> HandleInternalAsync(
+        ErrorNotificationPayload message,
+        ICurrentUserProvider currentUser,
+        Dictionary<string, string> headers,
+        CancellationToken cancellationToken = default
+    )
     {
-        await _discordClient.WaitOnConnectedState();
+        await _discordClient.WaitOnConnectedState(cancellationToken);
 
         var withoutAccidentImage = await CreateWithoutAccidentImageAsync(message.UserId);
 
@@ -45,11 +50,11 @@ public class ErrorNotificationEventHandler(
         return RabbitConsumptionResult.Success;
     }
 
-    private async Task<TemporaryFile?> CreateWithoutAccidentImageAsync(ulong? userId)
+    private async Task<TemporaryFile?> CreateWithoutAccidentImageAsync(ulong? userId, CancellationToken cancellationToken = default)
     {
         try
         {
-            var user = userId is null ? _discordClient.CurrentUser : await _discordClient.FindUserAsync(userId.Value);
+            var user = userId is null ? _discordClient.CurrentUser : await _discordClient.FindUserAsync(userId.Value, cancellationToken);
             return await _renderer.RenderAsync(user!);
         }
         catch (Exception)
@@ -94,12 +99,12 @@ public class ErrorNotificationEventHandler(
     {
         return new DiscordMessageEmbed(
             null,
-            payload.Title,
+            new(payload.Title ?? "", []),
             null,
             null,
             Color.Red.RawValue,
             DiscordMessageEmbedFooter.FromEmbed(new EmbedFooterBuilder().WithUser(_discordClient.CurrentUser)),
-            withoutAccidentName is null ? null : $"attachment://{withoutAccidentName}",
+            withoutAccidentName is null ? null : new($"attachment://{withoutAccidentName}", []),
             null,
             payload.Fields.Select(o => new DiscordMessageEmbedField(o.Key, o.Value, o.IsInline)),
             null,

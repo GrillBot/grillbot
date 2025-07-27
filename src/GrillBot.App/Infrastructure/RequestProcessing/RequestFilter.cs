@@ -13,30 +13,19 @@ using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace GrillBot.App.Infrastructure.RequestProcessing;
 
-public class RequestFilter : IAsyncActionFilter
+public class RequestFilter(
+    ApiRequestContext _apiRequestContext,
+    IDiscordClient _discordClient,
+    UserManager _userManager
+) : IAsyncActionFilter
 {
-    private ApiRequestContext ApiRequestContext { get; }
-    private IDiscordClient DiscordClient { get; }
-    private UserManager UserManager { get; }
-
-    private readonly ICurrentUserProvider _currentUser;
-
-    public RequestFilter(ApiRequestContext apiRequestContext, IDiscordClient discordClient, UserManager userManager,
-        ICurrentUserProvider currentUser)
-    {
-        ApiRequestContext = apiRequestContext;
-        DiscordClient = discordClient;
-        UserManager = userManager;
-        _currentUser = currentUser;
-    }
-
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
         SetApiRequest(context);
         await SetApiRequestContext(context);
 
-        if (ApiRequestContext.LoggedUser != null)
-            await UserManager.SetHearthbeatAsync(true, ApiRequestContext);
+        if (_apiRequestContext.LoggedUser != null)
+            await _userManager.SetHearthbeatAsync(true, _apiRequestContext);
 
         if (!IsAuthorized(context))
         {
@@ -63,54 +52,54 @@ public class RequestFilter : IAsyncActionFilter
             if (!TextsManager.IsSupportedLocale(value.ToString()))
                 throw new ValidationException(new ValidationResult("Unsupported language header value.", ["Language"]), null, value);
 
-            ApiRequestContext.Language = TextsManager.FixLocale(value.ToString());
+            _apiRequestContext.Language = TextsManager.FixLocale(value.ToString());
         }
 
-        ApiRequestContext.LogRequest.Language = ApiRequestContext.Language;
-        ApiRequestContext.RemoteIp = context.HttpContext.GetRemoteIp();
+        _apiRequestContext.LogRequest.Language = _apiRequestContext.Language;
+        _apiRequestContext.RemoteIp = context.HttpContext.GetRemoteIp();
     }
 
     private async Task SetLoggedUserAsync(ActionContext context)
     {
-        ApiRequestContext.LoggedUserData = context.HttpContext.User;
+        _apiRequestContext.LoggedUserData = context.HttpContext.User;
 
-        var publicType = ApiRequestContext.IsPublic() ? "Public" : "Private";
-        if (!(ApiRequestContext.LoggedUserData.Identity?.IsAuthenticated ?? false))
+        var publicType = _apiRequestContext.IsPublic() ? "Public" : "Private";
+        if (!(_apiRequestContext.LoggedUserData.Identity?.IsAuthenticated ?? false))
         {
-            ApiRequestContext.LogRequest.Identification = $"ApiV1({publicType}/Anonymous)";
+            _apiRequestContext.LogRequest.Identification = $"ApiV1({publicType}/Anonymous)";
             return;
         }
 
-        var loggedUserId = ApiRequestContext.GetUserId();
-        ApiRequestContext.LoggedUser = await DiscordClient.FindUserAsync(loggedUserId);
-        ApiRequestContext.LogRequest.Identification = $"ApiV1({publicType}/{ApiRequestContext.LoggedUser!.GetFullName()})";
-        ApiRequestContext.LogRequest.Role = ApiRequestContext.GetRole();
+        var loggedUserId = _apiRequestContext.GetUserId();
+        _apiRequestContext.LoggedUser = await _discordClient.FindUserAsync(loggedUserId);
+        _apiRequestContext.LogRequest.Identification = $"ApiV1({publicType}/{_apiRequestContext.LoggedUser!.GetFullName()})";
+        _apiRequestContext.LogRequest.Role = _apiRequestContext.GetRole();
     }
 
     private void SetApiRequest(ActionContext context)
     {
         var descriptor = (ControllerActionDescriptor)context.ActionDescriptor;
-        ApiRequestContext.LogRequest.StartAt = DateTime.UtcNow;
-        ApiRequestContext.LogRequest.TemplatePath = descriptor.AttributeRouteInfo!.Template!;
-        ApiRequestContext.LogRequest.Path = context.HttpContext.Request.Path.ToString();
-        ApiRequestContext.LogRequest.ActionName = descriptor.MethodInfo.Name;
-        ApiRequestContext.LogRequest.ControllerName = descriptor.ControllerTypeInfo.Name;
-        ApiRequestContext.LogRequest.Method = context.HttpContext.Request.Method;
-        ApiRequestContext.LogRequest.ApiGroupName = (descriptor.EndpointMetadata.OfType<ApiExplorerSettingsAttribute>().LastOrDefault()?.GroupName ?? "V1").ToUpper();
-        ApiRequestContext.LogRequest.Ip = context.HttpContext.Connection.RemoteIpAddress?.ToString()!;
+        _apiRequestContext.LogRequest.StartAt = DateTime.UtcNow;
+        _apiRequestContext.LogRequest.TemplatePath = descriptor.AttributeRouteInfo!.Template!;
+        _apiRequestContext.LogRequest.Path = context.HttpContext.Request.Path.ToString();
+        _apiRequestContext.LogRequest.ActionName = descriptor.MethodInfo.Name;
+        _apiRequestContext.LogRequest.ControllerName = descriptor.ControllerTypeInfo.Name;
+        _apiRequestContext.LogRequest.Method = context.HttpContext.Request.Method;
+        _apiRequestContext.LogRequest.ApiGroupName = (descriptor.EndpointMetadata.OfType<ApiExplorerSettingsAttribute>().LastOrDefault()?.GroupName ?? "V1").ToUpper();
+        _apiRequestContext.LogRequest.Ip = context.HttpContext.Connection.RemoteIpAddress?.ToString()!;
 
         foreach (var item in context.HttpContext.Request.Query)
-            ApiRequestContext.LogRequest.AddParameter(item.Key, item.Value.ToString());
+            _apiRequestContext.LogRequest.AddParameter(item.Key, item.Value.ToString());
         foreach (var (name, values) in context.HttpContext.Request.Headers)
         {
             if (name is "Authorization" or "ApiKey")
-                ApiRequestContext.LogRequest.AddHeaders(name, $"<{name} header removed>");
+                _apiRequestContext.LogRequest.AddHeaders(name, $"<{name} header removed>");
             else
-                ApiRequestContext.LogRequest.AddHeaders(name, values);
+                _apiRequestContext.LogRequest.AddHeaders(name, values);
         }
     }
 
-    private bool IsAuthorized(ActionExecutingContext context)
+    private static bool IsAuthorized(ActionExecutingContext context)
     {
         var apiVersion = (context.ActionDescriptor.EndpointMetadata.OfType<ApiExplorerSettingsAttribute>().LastOrDefault()?.GroupName ?? "V1").ToUpper();
         if (apiVersion != "V3")
@@ -120,7 +109,11 @@ public class RequestFilter : IAsyncActionFilter
         if (jwtAuthorizeAttribute is null)
             return true;
 
-        var requiredPermissions = jwtAuthorizeAttribute.RequiredPermissions ?? Array.Empty<string>();
-        return requiredPermissions.Length > 0 && requiredPermissions.Intersect(_currentUser.Permissions.Select(p => p.Trim())).Any();
+        var requiredPermissions = jwtAuthorizeAttribute.RequiredPermissions ?? [];
+        var currentPermissions = context.HttpContext.User
+            .FindFirst(CurrentUserProvider.GRILLBOT_PERMISSIONS_KEY)?.Value?
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) ?? [];
+
+        return requiredPermissions.Length > 0 && requiredPermissions.Intersect(currentPermissions.Select(o => o.Trim())).Any();
     }
 }

@@ -69,7 +69,7 @@ public abstract class MessageEventHandlerBase<TPayload>(
         if (string.IsNullOrEmpty(payload.Content?.Key))
             return null;
         if (!payload.CanUseLocalization)
-            return payload.Content;
+            return payload.Content.Key;
 
         var locale = payload.Locale ?? TextsManager.DefaultLocale;
         return await _localizationManager.TransformValueAsync(payload.Content!, locale, payload.ServiceData, cancellationToken);

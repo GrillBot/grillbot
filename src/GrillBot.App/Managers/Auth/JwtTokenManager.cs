@@ -147,6 +147,7 @@ public class JwtTokenManager(
             yield return "Searching(Admin)";
             yield return "Invite(Admin)";
             yield return "Message(Admin)";
+            yield return "Unverify(Admin)";
         }
         else
         {

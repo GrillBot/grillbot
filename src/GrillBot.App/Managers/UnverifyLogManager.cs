@@ -28,57 +28,6 @@ public class UnverifyLogManager
         return SaveAsync(UnverifyOperation.Selfunverify, data, profile.Destination, guild, profile.Destination);
     }
 
-    public async Task LogAutoremoveAsync(List<IRole> returnedRoles, List<ChannelOverride> returnedChannels, IGuildUser toUser, IGuild guild, string language)
-    {
-        var data = new UnverifyLogRemove
-        {
-            ReturnedOverwrites = returnedChannels,
-            ReturnedRoles = returnedRoles.ConvertAll(o => o.Id),
-            Language = language,
-            Force = false
-        };
-
-        var currentUser = await guild.GetUserAsync(DiscordClient.CurrentUser.Id);
-        await SaveAsync(UnverifyOperation.Autoremove, data, currentUser, guild, toUser);
-    }
-
-    public Task LogRemoveAsync(List<IRole> returnedRoles, List<ChannelOverride> returnedChannels, IGuild guild, IGuildUser from, IGuildUser to, bool fromWeb, bool force, string language)
-    {
-        var data = new UnverifyLogRemove
-        {
-            ReturnedOverwrites = returnedChannels,
-            ReturnedRoles = returnedRoles.ConvertAll(o => o.Id),
-            FromWeb = fromWeb,
-            Language = language,
-            Force = force
-        };
-
-        return SaveAsync(UnverifyOperation.Remove, data, from, guild, to);
-    }
-
-    public Task LogUpdateAsync(DateTime start, DateTime end, IGuild guild, IGuildUser from, IGuildUser to, string? reason)
-    {
-        var data = new UnverifyLogUpdate
-        {
-            End = end,
-            Start = start,
-            Reason = reason
-        };
-
-        return SaveAsync(UnverifyOperation.Update, data, from, guild, to);
-    }
-
-    public Task LogRecoverAsync(List<IRole> returnedRoles, List<ChannelOverride> returnedChannels, IGuild guild, IGuildUser from, IGuildUser to)
-    {
-        var data = new UnverifyLogRemove
-        {
-            ReturnedOverwrites = returnedChannels,
-            ReturnedRoles = returnedRoles.ConvertAll(o => o.Id)
-        };
-
-        return SaveAsync(UnverifyOperation.Recover, data, from, guild, to);
-    }
-
     private async Task<UnverifyLog> SaveAsync(UnverifyOperation operation, object data, IGuildUser from, IGuild guild, IGuildUser toUser)
     {
         var entity = new UnverifyLog

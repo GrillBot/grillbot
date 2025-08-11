@@ -9,12 +9,15 @@ public class RoleResolver : BaseDataResolver<IRole, object, Data.Models.API.Role
     {
     }
 
-    public Task<Data.Models.API.Role?> GetRoleAsync(ulong roleId)
+    public Task<Data.Models.API.Role?> GetRoleAsync(ulong roleId, CancellationToken cancellationToken = default)
     {
         return GetMappedEntityAsync(
             $"Role({roleId})",
-            async () => (await _discordClient.GetGuildsAsync(CacheMode.CacheOnly)).Select(o => o.GetRole(roleId)).FirstOrDefault(o => o is not null),
-            _ => Task.FromResult<object?>(null)
+            async () => (await _discordClient.GetGuildsAsync(CacheMode.CacheOnly, new() { CancelToken = cancellationToken }))
+                .Select(o => o.GetRole(roleId))
+                .FirstOrDefault(o => o is not null),
+            _ => Task.FromResult<object?>(null),
+            cancellationToken
         );
     }
 

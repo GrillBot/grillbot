@@ -1,51 +1,76 @@
-﻿using AutoMapper;
+﻿using GrillBot.App.Managers.DataResolve;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Models;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Models.Pagination;
-using GrillBot.Data.Models.API;
+using GrillBot.Core.Services.Common.Executor;
 using GrillBot.Data.Models.API.Unverify;
-using GrillBot.Database.Entity;
 using GrillBot.Database.Enums;
+using System.Text.Json;
+using UnverifyService;
+using UnverifyService.Core.Enums;
+using UnverifyService.Models.Request.Logs;
 
 namespace GrillBot.App.Actions.Api.V1.Unverify;
 
-public class GetLogs : ApiAction
+public class GetLogs(
+    ApiRequestContext apiContext,
+    IDiscordClient _discordClient,
+    IServiceClientExecutor<IUnverifyServiceClient> _unverifyClient,
+    DataResolveManager _dataResolve
+) : ApiAction(apiContext)
 {
-    private IDiscordClient DiscordClient { get; }
-    private IMapper Mapper { get; }
-    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-
-    public GetLogs(ApiRequestContext apiContext, IDiscordClient discordClient, IMapper mapper, GrillBotDatabaseBuilder databaseBuilder) : base(apiContext)
-    {
-        DiscordClient = discordClient;
-        Mapper = mapper;
-        DatabaseBuilder = databaseBuilder;
-    }
-
     public override async Task<ApiResult> ProcessAsync()
     {
         var parameters = (UnverifyLogParams)Parameters[0]!;
         var mutualGuilds = await GetMutualGuildsAsync();
         UpdatePublicAccess(parameters, mutualGuilds);
 
-        using var repository = DatabaseBuilder.CreateRepository();
+        var request = new UnverifyLogListRequest
+        {
+            CreatedFrom = parameters.Created?.From?.ToUniversalTime(),
+            CreatedTo = parameters.Created?.To?.ToUniversalTime(),
+            FromUserId = parameters.FromUserId,
+            ToUserId = parameters.ToUserId,
+            GuildId = parameters.GuildId,
+            Operation = parameters.Operation switch
+            {
+                UnverifyOperation.Unverify => UnverifyOperationType.Unverify,
+                UnverifyOperation.Selfunverify => UnverifyOperationType.SelfUnverify,
+                UnverifyOperation.Autoremove => UnverifyOperationType.AutoRemove,
+                UnverifyOperation.Remove => UnverifyOperationType.ManualRemove,
+                UnverifyOperation.Update => UnverifyOperationType.Update,
+                UnverifyOperation.Recover => UnverifyOperationType.Recovery,
+                _ => null
+            },
+            Pagination = parameters.Pagination,
+            Sort = new Core.Models.SortParameters
+            {
+                Descending = parameters.Sort.Descending,
+                OrderBy = parameters.Sort.OrderBy
+            }
+        };
 
-        var data = await repository.Unverify.GetLogsAsync(parameters, parameters.Pagination, mutualGuilds);
-        var result = await PaginatedResponse<UnverifyLogItem>.CopyAndMapAsync(data, MapItemAsync);
+        var logs = await _unverifyClient.ExecuteRequestAsync(
+            async (client, ctx) => await client.GetUnverifyLogsAsync(request, ctx.CancellationToken),
+            CancellationToken
+        );
+
+        var result = await PaginatedResponse<UnverifyLogItem>.CopyAndMapAsync(logs, MapItemAsync);
         return ApiResult.Ok(result);
     }
 
     private async Task<List<string>> GetMutualGuildsAsync()
     {
-        if (!ApiContext.IsPublic()) return new List<string>();
+        if (!ApiContext.IsPublic())
+            return [];
 
-        var mutualGuilds = await DiscordClient.FindMutualGuildsAsync(ApiContext.GetUserId());
+        var mutualGuilds = await _discordClient.FindMutualGuildsAsync(ApiContext.GetUserId());
         return mutualGuilds.ConvertAll(o => o.Id.ToString());
     }
 
-    private void UpdatePublicAccess(UnverifyLogParams parameters, ICollection<string> mutualGuilds)
+    private void UpdatePublicAccess(UnverifyLogParams parameters, List<string> mutualGuilds)
     {
         if (!ApiContext.IsPublic()) return;
 
@@ -55,70 +80,172 @@ public class GetLogs : ApiAction
             parameters.GuildId = null;
     }
 
-    private async Task<UnverifyLogItem> MapItemAsync(UnverifyLog entity)
+    private async Task<UnverifyLogItem> MapItemAsync(UnverifyService.Models.Response.Logs.UnverifyLogItem item)
     {
-        var guild = await DiscordClient.GetGuildAsync(entity.GuildId.ToUlong());
-        var result = Mapper.Map<UnverifyLogItem>(entity);
-
-        switch (entity.Operation)
+        var result = new UnverifyLogItem
         {
-            case UnverifyOperation.Autoremove:
-            case UnverifyOperation.Recover:
-            case UnverifyOperation.Remove:
+            CreatedAt = item.CreatedAtUtc.ToLocalTime(),
+            FromUser = (await _dataResolve.GetGuildUserAsync(item.GuildId.ToUlong(), item.FromUserId.ToUlong(), CancellationToken))!,
+            Guild = (await _dataResolve.GetGuildAsync(item.GuildId.ToUlong(), CancellationToken))!,
+            Id = item.LogNumber,
+            Operation = item.Type switch
+            {
+                UnverifyOperationType.Unverify => UnverifyOperation.Unverify,
+                UnverifyOperationType.SelfUnverify => UnverifyOperation.Selfunverify,
+                UnverifyOperationType.AutoRemove => UnverifyOperation.Autoremove,
+                UnverifyOperationType.ManualRemove => UnverifyOperation.Remove,
+                UnverifyOperationType.Update => UnverifyOperation.Update,
+                UnverifyOperationType.Recovery => UnverifyOperation.Recover,
+                _ => throw new ArgumentOutOfRangeException($"Invalid operation type ({item.Type})", nameof(item.Type))
+            },
+            ToUser = (await _dataResolve.GetGuildUserAsync(item.GuildId.ToUlong(), item.ToUserId.ToUlong(), CancellationToken))!
+        };
+
+        var logDetail = await _unverifyClient.ExecuteRequestAsync(
+            async (client, ctx) => await client.GetUnverifyLogDetailAsync(item.Id, ctx.CancellationToken),
+            CancellationToken
+        );
+
+        if (logDetail is null || logDetail.Data is not JsonElement element)
+            return result;
+
+        var serializerOptions = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        };
+
+        switch (item.Type)
+        {
+            case UnverifyOperationType.AutoRemove:
                 {
-                    var jsonData = JsonConvert.DeserializeObject<Data.Models.Unverify.UnverifyLogRemove>(entity.Data)!;
+                    var jsonData = element.Deserialize<UnverifyService.Models.Response.Logs.Detail.AutoRemoveOperationDetailData>(serializerOptions)!;
+
                     result.RemoveData = new UnverifyLogRemove
                     {
-                        ReturnedChannelIds = jsonData.ReturnedOverwrites.ConvertAll(o => o.ChannelId.ToString()),
-                        ReturnedRoles = MapRoles(guild, jsonData.ReturnedRoles),
-                        FromWeb = jsonData.FromWeb,
-                        Force = jsonData.Force,
-                        Language = jsonData.Language
+                        Language = jsonData.Language,
+                        ReturnedChannelIds = [.. jsonData.ReturnedChannels.Select(o => o.ChannelId.ToString())]
                     };
+
+                    foreach (var roleId in jsonData.ReturnedRoles)
+                    {
+                        var role = await _dataResolve.GetRoleAsync(roleId.ToUlong(), CancellationToken);
+                        if (role is not null)
+                            result.RemoveData.ReturnedRoles.Add(role);
+                    }
                 }
                 break;
-            case UnverifyOperation.Selfunverify:
-            case UnverifyOperation.Unverify:
+            case UnverifyOperationType.ManualRemove:
                 {
-                    var jsonData = JsonConvert.DeserializeObject<Data.Models.Unverify.UnverifyLogSet>(entity.Data)!;
+                    var jsonData = element.Deserialize<UnverifyService.Models.Response.Logs.Detail.ManualRemoveOperationDetailData>(serializerOptions)!;
+
+                    result.RemoveData = new UnverifyLogRemove
+                    {
+                        Force = jsonData.IsForceRemove,
+                        FromWeb = jsonData.IsFromWeb,
+                        Language = jsonData.Language,
+                        ReturnedChannelIds = [.. jsonData.ReturnedChannels.Select(o => o.ChannelId.ToString())]
+                    };
+
+                    foreach (var roleId in jsonData.ReturnedRoles)
+                    {
+                        var role = await _dataResolve.GetRoleAsync(roleId.ToUlong(), CancellationToken);
+                        if (role is not null)
+                            result.RemoveData.ReturnedRoles.Add(role);
+                    }
+                }
+                break;
+            case UnverifyOperationType.Recovery:
+                {
+                    var jsonData = element.Deserialize<UnverifyService.Models.Response.Logs.Detail.RecoveryOperationDetailData>(serializerOptions)!;
+
+                    result.RemoveData = new UnverifyLogRemove
+                    {
+                        ReturnedChannelIds = [.. jsonData.ReturnedChannels.Select(o => o.ChannelId.ToString())],
+                    };
+
+                    foreach (var roleId in jsonData.ReturnedRoles)
+                    {
+                        var role = await _dataResolve.GetRoleAsync(roleId.ToUlong(), CancellationToken);
+                        if (role is not null)
+                            result.RemoveData.ReturnedRoles.Add(role);
+                    }
+                }
+                break;
+            case UnverifyOperationType.SelfUnverify:
+                {
+                    var jsonData = element.Deserialize<UnverifyService.Models.Response.Logs.Detail.SelfUnverifyOperationDetailData>(serializerOptions)!;
+
                     result.SetData = new UnverifyLogSet
                     {
-                        ChannelIdsToKeep = jsonData.ChannelsToKeep.ConvertAll(o => o.ChannelId.ToString()),
-                        ChannelIdsToRemove = jsonData.ChannelsToRemove.ConvertAll(o => o.ChannelId.ToString()),
-                        End = jsonData.End,
-                        IsSelfUnverify = jsonData.IsSelfUnverify,
-                        Reason = jsonData.Reason,
-                        RolesToKeep = MapRoles(guild, jsonData.RolesToKeep),
-                        RolesToRemove = MapRoles(guild, jsonData.RolesToRemove),
-                        Start = jsonData.Start,
-                        Language = jsonData.Language
+                        ChannelIdsToKeep = [.. jsonData.KeepedChannels.Select(o => o.ChannelId.ToString())],
+                        ChannelIdsToRemove = [.. jsonData.RemovedChannels.Select(o => o.ChannelId.ToString())],
+                        End = jsonData.EndAtUtc.ToLocalTime(),
+                        IsSelfUnverify = true,
+                        Language = jsonData.Language,
+                        Reason = null,
+                        Start = jsonData.StartAtUtc.ToLocalTime()
                     };
+
+                    foreach (var roleId in jsonData.KeepedRoles)
+                    {
+                        var role = await _dataResolve.GetRoleAsync(roleId.ToUlong(), CancellationToken);
+                        if (role is not null)
+                            result.SetData.RolesToKeep.Add(role);
+                    }
+
+                    foreach (var roleId in jsonData.RemovedRoles)
+                    {
+                        var role = await _dataResolve.GetRoleAsync(roleId.ToUlong(), CancellationToken);
+                        if (role is not null)
+                            result.SetData.RolesToRemove.Add(role);
+                    }
                 }
                 break;
-            case UnverifyOperation.Update:
+            case UnverifyOperationType.Unverify:
                 {
-                    var jsonData = JsonConvert.DeserializeObject<Data.Models.Unverify.UnverifyLogUpdate>(entity.Data)!;
+                    var jsonData = element.Deserialize<UnverifyService.Models.Response.Logs.Detail.UnverityOperationDetailData>(serializerOptions)!;
+
+                    result.SetData = new UnverifyLogSet
+                    {
+                        ChannelIdsToKeep = [.. jsonData.KeepedChannels.Select(o => o.ChannelId.ToString())],
+                        ChannelIdsToRemove = [.. jsonData.RemovedChannels.Select(o => o.ChannelId.ToString())],
+                        End = jsonData.EndAtUtc.ToLocalTime(),
+                        Language = jsonData.Language,
+                        Reason = jsonData.Reason,
+                        Start = jsonData.StartAtUtc.ToLocalTime()
+                    };
+
+                    foreach (var roleId in jsonData.KeepedRoles)
+                    {
+                        var role = await _dataResolve.GetRoleAsync(roleId.ToUlong(), CancellationToken);
+                        if (role is not null)
+                            result.SetData.RolesToKeep.Add(role);
+                    }
+
+                    foreach (var roleId in jsonData.RemovedRoles)
+                    {
+                        var role = await _dataResolve.GetRoleAsync(roleId.ToUlong(), CancellationToken);
+                        if (role is not null)
+                            result.SetData.RolesToRemove.Add(role);
+                    }
+                }
+                break;
+            case UnverifyOperationType.Update:
+                {
+                    var jsonData = element.Deserialize<UnverifyService.Models.Response.Logs.Detail.UpdateOperationDetailData>(serializerOptions)!;
+
                     result.UpdateData = new UnverifyLogUpdate
                     {
-                        End = jsonData.End,
-                        Start = jsonData.Start,
+                        End = jsonData.NewEndAtUtc.ToLocalTime(),
+                        Start = jsonData.NewStartAtUtc.ToLocalTime(),
                         Reason = jsonData.Reason
                     };
                 }
                 break;
             default:
-                throw new ArgumentOutOfRangeException($"Invalid operation type ({entity.Operation})", nameof(entity.Operation));
+                throw new ArgumentOutOfRangeException($"Invalid operation type ({item.Type})", nameof(item.Type));
         }
 
         return result;
-    }
-
-    private List<Role> MapRoles(IGuild guild, List<ulong> roleIds)
-    {
-        return roleIds
-            .Select(id => guild.GetRole(id))
-            .Where(role => role is not null)
-            .Select(role => Mapper.Map<Role>(role))
-            .ToList();
     }
 }

@@ -1,60 +1,104 @@
-﻿using AutoMapper;
-using GrillBot.App.Managers;
+﻿using GrillBot.App.Managers.DataResolve;
 using GrillBot.Common.Models;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Infrastructure.Actions;
+using GrillBot.Core.Services.Common.Executor;
 using GrillBot.Data.Models.API.Unverify;
+using System.Text.Json;
+using UnverifyService;
+using UnverifyService.Core.Enums;
+using UnverifyService.Models.Request;
+using UnverifyService.Models.Response.Logs.Detail;
 
 namespace GrillBot.App.Actions.Api.V1.Unverify;
 
-public class GetCurrentUnverifies : ApiAction
+public class GetCurrentUnverifies(
+    ApiRequestContext apiContext,
+    IDiscordClient _discordClient,
+    IServiceClientExecutor<IUnverifyServiceClient> _unverifyClient,
+    DataResolveManager _dataResolve
+    ) : ApiAction(apiContext)
 {
-    private IMapper Mapper { get; }
-    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private IDiscordClient DiscordClient { get; }
-
-    public GetCurrentUnverifies(ApiRequestContext apiContext, IMapper mapper, IDiscordClient discordClient, GrillBotDatabaseBuilder databaseBuilder) : base(apiContext)
-    {
-        Mapper = mapper;
-        DatabaseBuilder = databaseBuilder;
-        DiscordClient = discordClient;
-    }
-
     public override async Task<ApiResult> ProcessAsync()
     {
-        var data = await GetAllUnverifiesAsync(
-            ApiContext.IsPublic() ? ApiContext.GetUserId() : null
-        );
+        var request = new ActiveUnverifyListRequest();
+
+        var unverifies = await _unverifyClient.ExecuteRequestAsync(async (client, ctx) =>
+        {
+            return ApiContext.IsPublic() ?
+                await client.GetCurrentUserUnverifyListAsync(request, ctx.AuthorizationToken, ctx.CancellationToken) :
+                await client.GetActiveUnverifyListAsync(request, ctx.CancellationToken);
+        }, CancellationToken);
 
         var result = new List<UnverifyUserProfile>();
-        foreach (var entity in data)
+        foreach (var unverify in unverifies.Data)
         {
-            var profile = Mapper.Map<UnverifyUserProfile>(entity.profile);
-            profile.Guild = Mapper.Map<Data.Models.API.Guilds.Guild>(entity.guild);
+            var logDetail = await _unverifyClient.ExecuteRequestAsync(
+                async (client, ctx) => await client.GetUnverifyLogDetailAsync(unverify.Id, ctx.CancellationToken),
+                CancellationToken
+            );
 
-            result.Add(profile);
+            if (logDetail is not null)
+            {
+                var profile = await CreateProfileAsync(logDetail);
+                if (profile is not null)
+                    result.Add(profile);
+            }
         }
 
         return ApiResult.Ok(result);
     }
 
-    private async Task<List<(Data.Models.Unverify.UnverifyUserProfile profile, IGuild guild)>> GetAllUnverifiesAsync(ulong? userId = null)
+    private async Task<UnverifyUserProfile?> CreateProfileAsync(UnverifyLogDetail detail)
     {
-        using var repository = DatabaseBuilder.CreateRepository();
-        var unverifies = await repository.Unverify.GetUnverifiesAsync(userId);
+        if (detail.Data is not JsonElement detailData)
+            return null;
 
-        var profiles = new List<(Data.Models.Unverify.UnverifyUserProfile profile, IGuild guild)>();
-        foreach (var unverify in unverifies)
+        var options = new JsonSerializerOptions
         {
-            var guild = await DiscordClient.GetGuildAsync(unverify.GuildId.ToUlong());
-            if (guild is null) continue;
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
 
-            var user = await guild.GetUserAsync(unverify.UserId.ToUlong());
-            var profile = UnverifyProfileManager.Reconstruct(unverify, user, guild);
+        var unverifyDetailData = detail.OperationType == UnverifyOperationType.Unverify ? detailData.Deserialize<UnverityOperationDetailData>(options) : null;
+        var selfUnverifyDetailData = detail.OperationType == UnverifyOperationType.SelfUnverify ? detailData.Deserialize<SelfUnverifyOperationDetailData>(options) : null;
 
-            profiles.Add((profile, guild));
+        if (unverifyDetailData is null && selfUnverifyDetailData is null)
+            return null;
+
+        var startAt = (unverifyDetailData?.EndAtUtc ?? selfUnverifyDetailData?.EndAtUtc)!.Value.WithKind(DateTimeKind.Utc).ToLocalTime();
+        var endAt = (unverifyDetailData?.EndAtUtc ?? selfUnverifyDetailData?.EndAtUtc)!.Value.WithKind(DateTimeKind.Utc).ToLocalTime();
+        var guild = await _discordClient.GetGuildAsync(detail.GuildId.ToUlong(), options: new() { CancelToken = CancellationToken });
+
+        if (guild is null)
+            return null;
+
+        var profile = new UnverifyUserProfile
+        {
+            End = endAt,
+            ChannelsToKeep = (unverifyDetailData?.KeepedChannels ?? selfUnverifyDetailData?.KeepedChannels)?.Select(o => o.ChannelId.ToString())?.ToList() ?? [],
+            ChannelsToRemove = (unverifyDetailData?.RemovedChannels ?? selfUnverifyDetailData?.RemovedChannels)?.Select(o => o.ChannelId.ToString())?.ToList() ?? [],
+            EndTo = endAt - DateTime.Now,
+            Guild = (await _dataResolve.GetGuildAsync(detail.GuildId.ToUlong(), CancellationToken))!,
+            IsSelfUnverify = detail.OperationType == UnverifyOperationType.SelfUnverify,
+            Reason = unverifyDetailData?.Reason ?? "",
+            Start = startAt,
+            User = (await _dataResolve.GetUserAsync(detail.ToUserId.ToUlong(), CancellationToken))!
+        };
+
+        foreach (var roleId in unverifyDetailData?.KeepedRoles ?? selfUnverifyDetailData?.KeepedRoles ?? [])
+        {
+            var role = await _dataResolve.GetRoleAsync(roleId.ToUlong(), CancellationToken);
+            if (role is not null)
+                profile.RolesToKeep.Add(role);
         }
 
-        return profiles;
+        foreach (var roleId in unverifyDetailData?.RemovedRoles ?? selfUnverifyDetailData?.RemovedRoles ?? [])
+        {
+            var role = await _dataResolve.GetRoleAsync(roleId.ToUlong(), CancellationToken);
+            if (role is not null)
+                profile.RolesToRemove.Add(role);
+        }
+
+        return profile;
     }
 }

@@ -43,7 +43,7 @@ public class UnverifyModule : InteractionsModuleBase
     [SlashCommand("update", "Updates time of an existing unverify")]
     public async Task UpdateUnverifyAsync(IGuildUser user, DateTime newEnd, [Discord.Interactions.MaxLength(500)] string? reason = null)
     {
-        using var action = GetActionAsCommand<Actions.Api.V1.Unverify.UpdateUnverify>();
+        using var action = await GetActionAsCommandAsync<Actions.Api.V1.Unverify.UpdateUnverify>();
 
         try
         {
@@ -69,7 +69,7 @@ public class UnverifyModule : InteractionsModuleBase
     [RequireBotPermission(GuildPermission.ManageRoles)]
     public async Task RemoveUnverifyAsync(IGuildUser user)
     {
-        using var action = GetActionAsCommand<Actions.Api.V1.Unverify.RemoveUnverify>();
+        using var action = await GetActionAsCommandAsync<Actions.Api.V1.Unverify.RemoveUnverify>();
 
         var result = await action.Command.ProcessAsync(Context.Guild.Id, user.Id);
         await SetResponseAsync(result);

@@ -11,16 +11,19 @@ public class GuildUserResolver : BaseDataResolver<IGuildUser, Database.Entity.Gu
     {
     }
 
-    public Task<Data.Models.API.Users.GuildUser?> GetGuildUserAsync(ulong guildId, ulong userId)
+    public Task<Data.Models.API.Users.GuildUser?> GetGuildUserAsync(ulong guildId, ulong userId, CancellationToken cancellationToken = default)
     {
         return GetMappedEntityAsync(
             $"GuildUser({guildId}-{userId})",
             async () =>
             {
-                var guild = await _discordClient.GetGuildAsync(guildId, CacheMode.CacheOnly);
-                return guild is null ? null : await guild.GetUserAsync(userId, CacheMode.CacheOnly);
+                var options = new RequestOptions { CancelToken = cancellationToken };
+
+                var guild = await _discordClient.GetGuildAsync(guildId, CacheMode.CacheOnly, options);
+                return guild is null ? null : await guild.GetUserAsync(userId, CacheMode.CacheOnly, options);
             },
-            repo => repo.GuildUser.FindGuildUserByIdAsync(guildId, userId, true)
+            repo => repo.GuildUser.FindGuildUserByIdAsync(guildId, userId, true),
+            cancellationToken
         );
     }
 

@@ -1,50 +1,46 @@
-﻿using Discord.Net;
-using GrillBot.App.Helpers;
-using GrillBot.App.Managers;
+﻿using GrillBot.App.Managers;
+using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Managers.Logging;
 using GrillBot.Common.Models;
 using GrillBot.Core.Exceptions;
 using GrillBot.Core.Infrastructure.Actions;
-using GrillBot.Data.Models;
+using GrillBot.Core.Services.Common.Exceptions;
+using GrillBot.Core.Services.Common.Executor;
 using GrillBot.Data.Models.API;
-using Microsoft.EntityFrameworkCore;
+using UnverifyService;
 
 namespace GrillBot.App.Actions.Api.V1.Unverify;
 
 public class RemoveUnverify : ApiAction
 {
+    private readonly IServiceClientExecutor<IUnverifyServiceClient> _unverifyClient;
+    private readonly ITextsManager _texts;
+    private readonly IDiscordClient _discordClient;
+
     private IDiscordClient DiscordClient { get; }
-    private ITextsManager Texts { get; }
     private GrillBotDatabaseBuilder DatabaseBuilder { get; }
     private UnverifyMessageManager MessageManager { get; }
-    private UnverifyLogManager UnverifyLogManager { get; }
     private LoggingManager LoggingManager { get; }
-    private UnverifyHelper UnverifyHelper { get; }
-    private UnverifyRabbitMQManager UnverifyRabbitMQ { get; }
-
-    private bool IsAutoRemove { get; set; }
-    private bool IsForceRemove { get; set; }
 
     public RemoveUnverify(ApiRequestContext apiContext, IDiscordClient discordClient, ITextsManager texts, GrillBotDatabaseBuilder databaseBuilder, UnverifyMessageManager messageManager,
-        UnverifyLogManager unverifyLogManager, LoggingManager loggingManager, UnverifyHelper unverifyHelper, UnverifyRabbitMQManager unverifyRabbitMQ) : base(apiContext)
+        LoggingManager loggingManager, IServiceClientExecutor<IUnverifyServiceClient> unverifyClient) : base(apiContext)
     {
         DiscordClient = discordClient;
-        Texts = texts;
         DatabaseBuilder = databaseBuilder;
         MessageManager = messageManager;
-        UnverifyLogManager = unverifyLogManager;
         LoggingManager = loggingManager;
-        UnverifyHelper = unverifyHelper;
-        UnverifyRabbitMQ = unverifyRabbitMQ;
+        _unverifyClient = unverifyClient;
+        _texts = texts;
+        _discordClient = discordClient;
     }
 
+    // Bot
     public async Task ProcessAutoRemoveAsync(ulong guildId, ulong userId)
     {
         try
         {
-            UpdateContext("cs", DiscordClient.CurrentUser);
-            IsAutoRemove = true;
+            UpdateContext("cs", DiscordClient.CurrentUser, null);
             await ProcessAsync(guildId, userId);
         }
         catch (NotFoundException)
@@ -54,6 +50,7 @@ public class RemoveUnverify : ApiAction
         }
     }
 
+    // API
     public override async Task<ApiResult> ProcessAsync()
     {
         var guildId = (ulong)Parameters[0]!;
@@ -64,38 +61,34 @@ public class RemoveUnverify : ApiAction
         return ApiResult.Ok(new MessageResponse(result));
     }
 
+    // Command
     public async Task<string> ProcessAsync(ulong guildId, ulong userId, bool force = false)
     {
-        IsForceRemove = force;
+        var toUser = await _discordClient.FindGuildUserAsync(guildId, userId, CancellationToken);
 
-        var (guild, toUser, fromUser) = await InitAsync(guildId, userId);
         try
         {
-            return await ProcessAsync(guild, fromUser, toUser);
+            var response = await _unverifyClient.ExecuteRequestAsync(
+                async (client, ctx) => await client.RemoveUnverifyAsync(guildId, userId, force, ctx.AuthorizationToken, ctx.CancellationToken),
+                CancellationToken
+            );
+
+            return _texts[response!.Message, ApiContext.Language];
         }
-        catch (Exception ex) when (!IsAutoRemove)
+        catch (ClientNotFoundException)
         {
-            await LoggingManager.ErrorAsync(nameof(RemoveUnverify), "An error occured when unverify returning access.", ex);
-            return MessageManager.CreateRemoveAccessManuallyFailed(toUser, ex, "cs");
+            return MessageManager.CreateRemoveAccessUnverifyNotFound(toUser!, ApiContext.Language);
         }
-    }
+        catch (ClientException ex) when (ex.StatusCode == HttpStatusCode.Forbidden)
+        {
+            return _texts["Unverify/Forbidden", ApiContext.Language];
+        }
+        catch (ClientException ex)
+        {
+            await LoggingManager.ErrorAsync(nameof(RemoveUnverify), "An error occurred when removing unverify.", ex);
 
-    private async Task<(IGuild guild, IGuildUser toUser, IGuildUser fromUser)> InitAsync(ulong guildId, ulong userId)
-    {
-        var guild = await DiscordClient.GetGuildAsync(guildId);
-        var toUser = guild == null ? null : await guild.GetUserAsync(userId);
-        var fromUser = guild == null ? null : await guild.GetUserAsync(ApiContext.GetUserId());
-
-        ValidateData(guild, toUser);
-        return (guild!, toUser!, fromUser!);
-    }
-
-    private void ValidateData(IGuild? guild, IGuildUser? toUser)
-    {
-        if (guild is null)
-            throw new NotFoundException(Texts["Unverify/GuildNotFound", ApiContext.Language]);
-        if (toUser is null)
-            throw new NotFoundException(Texts["Unverify/DestUserNotFound", ApiContext.Language]);
+            return MessageManager.CreateRemoveAccessManuallyFailed(toUser!, ex, "cs");
+        }
     }
 
     private async Task ForceRemoveAsync(ulong guildId, ulong userId)
@@ -107,74 +100,6 @@ public class RemoveUnverify : ApiAction
         {
             repository.Remove(unverify);
             await repository.CommitAsync();
-        }
-    }
-
-    private async Task<string> ProcessAsync(IGuild guild, IGuildUser fromUser, IGuildUser toUser)
-    {
-        using var repository = DatabaseBuilder.CreateRepository();
-
-        var unverify = await repository.Unverify.FindUnverifyAsync(guild.Id, toUser.Id, includeLogs: true);
-        if (unverify == null)
-            return MessageManager.CreateRemoveAccessUnverifyNotFound(toUser, ApiContext.Language);
-
-        var profile = UnverifyProfileManager.Reconstruct(unverify, toUser, guild);
-        await WriteToLogAsync(profile.RolesToRemove, profile.ChannelsToRemove, fromUser, toUser, guild, profile.Language, unverify.SetOperationId);
-
-        if (!IsForceRemove)
-        {
-            var muteRole = await UnverifyHelper.GetMuteRoleAsync(guild);
-            if (muteRole != null && profile.Destination.RoleIds.Contains(muteRole.Id) && !profile.KeepMutedRole)
-                await profile.Destination.RemoveRoleAsync(muteRole);
-
-            await profile.ReturnChannelsAsync(guild);
-            await profile.ReturnRolesAsync();
-        }
-
-        try
-        {
-            repository.Remove(unverify);
-            await repository.CommitAsync();
-        }
-        catch (DbUpdateConcurrencyException ex)
-        {
-            await LoggingManager.WarningAsync(nameof(RemoveUnverify), "A database error occurred while processing unverify.", ex);
-        }
-
-        if (IsAutoRemove)
-            return MessageManager.CreateRemoveAccessManuallyToChannel(toUser, ApiContext.Language);
-
-        try
-        {
-            var dmMessage = MessageManager.CreateRemoveAccessManuallyPmMessage(guild, profile.Language);
-            await toUser.SendMessageAsync(dmMessage);
-        }
-        catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.CannotSendMessageToUser)
-        {
-            // User have disabled DMs.
-        }
-
-        return MessageManager.CreateRemoveAccessManuallyToChannel(toUser, ApiContext.Language);
-    }
-
-    private async Task WriteToLogAsync(List<IRole> roles, List<ChannelOverride> channels, IGuildUser fromUser, IGuildUser toUser, IGuild guild, string userLanguage,
-        long logSetId)
-    {
-        if (IsAutoRemove)
-        {
-            await UnverifyLogManager.LogAutoremoveAsync(roles, channels, toUser, guild, userLanguage);
-        }
-        else
-        {
-            if (IsForceRemove)
-            {
-                await UnverifyLogManager.LogRemoveAsync(new List<IRole>(), new List<ChannelOverride>(), guild, fromUser, toUser, IsApiRequest, true, userLanguage);
-            }
-            else
-            {
-                await UnverifyLogManager.LogRemoveAsync(roles, channels, guild, fromUser, toUser, IsApiRequest, IsForceRemove, userLanguage);
-                await UnverifyRabbitMQ.SendModifyAsync(logSetId, DateTime.UtcNow);
-            }
         }
     }
 }

@@ -15,9 +15,6 @@ public class UnverifyRabbitMQManager
         RabbitMQ = rabbitMQ;
     }
 
-    public Task SendModifyAsync(long logSetId, DateTime newEndUtc)
-        => RabbitMQ.PublishAsync(new UnverifyModifyPayload(logSetId, newEndUtc));
-
     public async Task SendUnverifyAsync(UnverifyUserProfile profile, UnverifyLog unverifyLog)
     {
         var payload = new UnverifyPayload(

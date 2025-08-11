@@ -36,16 +36,16 @@ public class DataResolveManager
         return await _channelResolver.GetChannelAsync(channelId);
     }
 
-    public async Task<ApiModels.Guilds.Guild?> GetGuildAsync(ulong guildId)
+    public async Task<ApiModels.Guilds.Guild?> GetGuildAsync(ulong guildId, CancellationToken cancellationToken = default)
     {
         _guildResolver ??= new GuildResolver(_discordClient, _databaseBuilder, _cache);
-        return await _guildResolver.GetGuildAsync(guildId);
+        return await _guildResolver.GetGuildAsync(guildId, cancellationToken);
     }
 
-    public async Task<ApiModels.Users.GuildUser?> GetGuildUserAsync(ulong guildId, ulong userId)
+    public async Task<ApiModels.Users.GuildUser?> GetGuildUserAsync(ulong guildId, ulong userId, CancellationToken cancellationToken = default)
     {
         _guildUserResolver ??= new GuildUserResolver(_discordClient, _databaseBuilder, _cache);
-        return await _guildUserResolver.GetGuildUserAsync(guildId, userId);
+        return await _guildUserResolver.GetGuildUserAsync(guildId, userId, cancellationToken);
     }
 
     public async Task<ApiModels.Users.User?> GetUserAsync(ulong userId, CancellationToken cancellationToken = default)
@@ -54,9 +54,9 @@ public class DataResolveManager
         return await _userResolver.GetUserAsync(userId, cancellationToken);
     }
 
-    public async Task<ApiModels.Role?> GetRoleAsync(ulong roleId)
+    public async Task<ApiModels.Role?> GetRoleAsync(ulong roleId, CancellationToken cancellationToken = default)
     {
         _roleResolver ??= new RoleResolver(_discordClient, _databaseBuilder, _cache);
-        return await _roleResolver.GetRoleAsync(roleId);
+        return await _roleResolver.GetRoleAsync(roleId, cancellationToken);
     }
 }

@@ -22,6 +22,15 @@ public static class DiscordClientExtensions
         return user;
     }
 
+    public static async Task<IGuildUser?> FindGuildUserAsync(this IDiscordClient client, ulong guildId, ulong userId, CancellationToken cancellationToken = default)
+    {
+        var guild = await client.GetGuildAsync(guildId, options: new() { CancelToken = cancellationToken });
+        if (guild is null)
+            return null;
+
+        return await guild.GetUserAsync(userId, options: new() { CancelToken = cancellationToken });
+    }
+
     public static async Task<List<IGuild>> FindMutualGuildsAsync(this IDiscordClient client, ulong userId)
     {
         var guilds = (await client.GetGuildsAsync()).ToList();

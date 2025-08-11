@@ -322,7 +322,12 @@
             "MinimalTime": "Minimální čas pro unverify je {0}",
             "HigherRoles": "Nelze provést odebírání přístupu, protože uživatel **{0}** má vyšší role. **({1})**",
             "UnverifyWithoutReason": "Nelze bezdůvodně odebrat přístup. Přečti si nápovědu a pak to zkus znovu.",
-            "UndefinedKeepable": "{0} není ponechatelné."
+            "UndefinedKeepable": "{0} není ponechatelné.",
+            "Recovery": {
+                "LogNotFound": "Záznam o provedeném odebrání přístupu nebyl nalezen.",
+                "LogIdOrNumberRequired": "Zadej ID nebo číslo záznamu o provedeném odebrání přístupu.",
+                "ActiveUnverifyExists": "Nelze provést obnovení přístupu uživateli, protože má aktuálně platné unverify."
+            }
         },
         "Update": {
             "UnverifyNotFound": "Aktualizaci času nelze pro hledaného uživatele provést. Unverify nenalezeno.",
@@ -382,7 +387,8 @@
                     "Other": "Ostatní"
                 }
             }
-        }
+        },
+        "Forbidden": "Nelze vrátit přístup, protože se tě nepodařilo ověřit."
     },
     "AuditLog": {
         "RemoveItem": {

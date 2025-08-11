@@ -36,17 +36,6 @@ public class UnverifyRepository : SubRepositoryBase<GrillBotContext>
         }
     }
 
-    public async Task<PaginatedResponse<UnverifyLog>> GetLogsAsync(IQueryableModel<UnverifyLog> model, PaginatedParams pagination, List<string> mutualGuilds)
-    {
-        using (CreateCounter())
-        {
-            var query = CreateQuery(model, true);
-            if (mutualGuilds.Count > 0)
-                query = query.Where(o => mutualGuilds.Contains(o.GuildId));
-            return await PaginatedResponse<UnverifyLog>.CreateWithEntityAsync(query, pagination);
-        }
-    }
-
     public async Task<Unverify?> GetFirstPendingUnverifyAsync()
     {
         using (CreateCounter())
@@ -54,32 +43,6 @@ public class UnverifyRepository : SubRepositoryBase<GrillBotContext>
             return await DbContext.Unverifies.AsNoTracking()
                 .Include(o => o.GuildUser!.User).Include(o => o.Guild)
                 .FirstOrDefaultAsync(o => o.EndAt <= DateTime.Now);
-        }
-    }
-
-    public async Task<UnverifyLog?> FindUnverifyLogByIdAsync(long id)
-    {
-        using (CreateCounter())
-        {
-            return await DbContext.UnverifyLogs.AsNoTracking()
-                .Include(o => o.Guild)
-                .Include(o => o.ToUser!.Unverify)
-                .FirstOrDefaultAsync(o => o.Id == id);
-        }
-    }
-
-    public async Task<List<Unverify>> GetUnverifiesAsync(ulong? userId = null)
-    {
-        using (CreateCounter())
-        {
-            var query = DbContext.Unverifies
-                .Include(o => o.UnverifyLog)
-                .AsQueryable();
-
-            if (userId != null)
-                query = query.Where(o => o.UserId == userId.Value.ToString());
-
-            return await query.ToListAsync();
         }
     }
 

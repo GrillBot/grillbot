@@ -9,12 +9,13 @@ public class GuildResolver : BaseDataResolver<IGuild, Database.Entity.Guild, Dat
     {
     }
 
-    public Task<Data.Models.API.Guilds.Guild?> GetGuildAsync(ulong guildId)
+    public Task<Data.Models.API.Guilds.Guild?> GetGuildAsync(ulong guildId, CancellationToken cancellationToken = default)
     {
         return GetMappedEntityAsync(
             $"Guild({guildId})",
-            () => _discordClient.GetGuildAsync(guildId, CacheMode.CacheOnly),
-            repo => repo.Guild.FindGuildByIdAsync(guildId, true)
+            () => _discordClient.GetGuildAsync(guildId, CacheMode.CacheOnly, new() { CancelToken = cancellationToken }),
+            repo => repo.Guild.FindGuildByIdAsync(guildId, true),
+            cancellationToken
         );
     }
 

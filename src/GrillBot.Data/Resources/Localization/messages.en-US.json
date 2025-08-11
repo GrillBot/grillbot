@@ -322,7 +322,12 @@
             "MinimalTime": "Minimum time for unverify is {0}",
             "HigherRoles": "Unable to remove access because user **{0}** has higher roles. **({1})**",
             "UnverifyWithoutReason": "Access cannot be revoked without reason. Read the help and then try again.",
-            "UndefinedKeepable": "{0} is not retainable."
+            "UndefinedKeepable": "{0} is not retainable.",
+            "Recovery": {
+                "LogNotFound": "Unable to find the log entry for the unverify.",
+                "LogIdOrNumberRequired": "Log ID or number is required.",
+                "ActiveUnverifyExists": "Unable to recover access because the user currently has an active unverify."
+            }
         },
         "Update": {
             "UnverifyNotFound": "Unable to update the time for the searched user. Unverify not found.",
@@ -382,7 +387,8 @@
                     "Other": "Other"
                 }
             }
-        }
+        },
+        "Forbidden": "Cannot restore access because you could not be verified.",
     },
     "AuditLog": {
         "RemoveItem": {

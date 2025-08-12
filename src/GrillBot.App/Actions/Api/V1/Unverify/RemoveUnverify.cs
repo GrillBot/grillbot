@@ -40,7 +40,7 @@ public class RemoveUnverify : ApiAction
     {
         try
         {
-            UpdateContext("cs", DiscordClient.CurrentUser, null);
+            UpdateContext("cs", DiscordClient.CurrentUser);
             await ProcessAsync(guildId, userId);
         }
         catch (NotFoundException)

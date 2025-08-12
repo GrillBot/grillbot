@@ -23,16 +23,12 @@ public class BotModule : InteractionsModuleBase
     }
 
     [Group("selfunverify", "Configuring selfunverify.")]
-    public class SelfUnverifyConfig : InteractionsModuleBase
+    public class SelfUnverifyConfig(IServiceProvider serviceProvider) : InteractionsModuleBase(serviceProvider)
     {
-        public SelfUnverifyConfig(IServiceProvider serviceProvider) : base(serviceProvider)
-        {
-        }
-
         [SlashCommand("list-keepables", "List of allowable accesses when selfunverify")]
         public async Task ListAsync(string? group = null)
         {
-            using var command = GetCommand<Actions.Commands.Unverify.SelfUnverifyKeepables>();
+            using var command = await GetCommandAsync<Actions.Commands.Unverify.SelfUnverifyKeepables>();
 
             try
             {

@@ -46,29 +46,6 @@ public class UnverifyRepository : SubRepositoryBase<GrillBotContext>
         }
     }
 
-    public async Task<Unverify?> FindUnverifyPageAsync(IGuild guild, int page)
-    {
-        using (CreateCounter())
-        {
-            return await DbContext.Unverifies.AsNoTracking()
-                .Include(o => o.UnverifyLog)
-                .Where(o => o.GuildId == guild.Id.ToString())
-                .OrderBy(o => o.StartAt)
-                .ThenBy(o => o.EndAt)
-                .Skip(page)
-                .FirstOrDefaultAsync();
-        }
-    }
-
-    public async Task<int> GetUnverifyCountsAsync(IGuild guild)
-    {
-        using (CreateCounter())
-        {
-            return await DbContext.Unverifies.AsNoTracking()
-                .CountAsync(o => o.GuildId == guild.Id.ToString());
-        }
-    }
-
     public async Task<Unverify?> FindUnverifyAsync(ulong guildId, ulong userId, bool disableTracking = false, bool includeLogs = false)
     {
         using (CreateCounter())

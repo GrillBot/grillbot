@@ -10,16 +10,12 @@ namespace GrillBot.App.Modules.Interactions.Unverify;
 [Group("unverify", "Unverify management")]
 [DefaultMemberPermissions(GuildPermission.UseApplicationCommands | GuildPermission.ManageRoles)]
 [RequireUserPerms]
-public class UnverifyModule : InteractionsModuleBase
+public class UnverifyModule(IServiceProvider serviceProvider) : InteractionsModuleBase(serviceProvider)
 {
-    public UnverifyModule(IServiceProvider serviceProvider) : base(serviceProvider)
-    {
-    }
-
     [SlashCommand("list", "List of all current unverifies")]
     public async Task UnverifyListAsync()
     {
-        using var command = GetCommand<Actions.Commands.Unverify.UnverifyList>();
+        using var command = await GetCommandAsync<Actions.Commands.Unverify.UnverifyList>();
 
         try
         {

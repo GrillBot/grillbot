@@ -8,7 +8,6 @@ namespace GrillBot.App.Actions.Api.V1.Unverify;
 
 public class GetKeepablesList(
     ApiRequestContext apiContext,
-    GrillBotDatabaseBuilder databaseBuilder,
     IServiceClientExecutor<IUnverifyServiceClient> unverifyClient
 ) : ApiAction(apiContext)
 {
@@ -39,14 +38,5 @@ public class GetKeepablesList(
             );
 
         return ApiResult.Ok(result);
-    }
-
-    public async Task<Dictionary<string, List<string>>> ProcessAsync(string? group)
-    {
-        using var repository = databaseBuilder.CreateRepository();
-
-        var items = await repository.SelfUnverify.GetKeepablesAsync(group);
-        return items.GroupBy(o => o.GroupName.ToUpper())
-            .ToDictionary(o => o.Key, o => o.Select(x => x.Name.ToUpper()).ToList());
     }
 }

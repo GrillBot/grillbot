@@ -389,6 +389,7 @@
             }
         },
         "Forbidden": "Cannot restore access because you could not be verified.",
+        "UnverifyStarted": "The access removal for user **{0}** has been started."
     },
     "AuditLog": {
         "RemoveItem": {

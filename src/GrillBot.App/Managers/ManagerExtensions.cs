@@ -10,12 +10,9 @@ public static class ManagerExtensions
             .AddSingleton<EmoteChainManager>()
             .AddSingleton<AuditLogManager>()
             .AddSingleton<UserManager>() // TODO Review and change to scoped
-            .AddScoped<UnverifyLogManager>()
             .AddScoped<UnverifyProfileManager>()
             .AddScoped<UnverifyMessageManager>()
-            .AddScoped<UnverifyCheckManager>()
             .AddSingleton<PinManager>()
-            .AddScoped<UnverifyRabbitMQManager>()
             .AddScoped<DataResolve.DataResolveManager>()
             .AddScoped<Points.PointsManager>()
             .AddScoped<Points.PointsSynchronizationManager>()

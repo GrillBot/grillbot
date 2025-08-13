@@ -75,7 +75,7 @@ public class UnverifyModule(IServiceProvider serviceProvider) : InteractionsModu
     [RequireBotPermission(GuildPermission.ManageRoles)]
     public async Task SetUnverifyAsync(DateTime end, string reason, IEnumerable<IUser> users)
     {
-        using var command = GetCommand<Actions.Commands.Unverify.SetUnverify>();
+        using var command = await GetCommandAsync<Actions.Commands.Unverify.SetUnverify>();
 
         try
         {
@@ -94,7 +94,7 @@ public class UnverifyModule(IServiceProvider serviceProvider) : InteractionsModu
     [SlashCommand("fun", "Set funverify to user.")]
     public async Task SetFunverifyAsync(DateTime end, string reason, IEnumerable<IUser> users)
     {
-        var command = GetCommand<Actions.Commands.Unverify.SetUnverify>();
+        var command = await GetCommandAsync<Actions.Commands.Unverify.SetUnverify>();
         var configuration = command.Resolve<IConfiguration>();
 
         try

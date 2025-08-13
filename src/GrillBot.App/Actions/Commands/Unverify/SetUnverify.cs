@@ -1,137 +1,72 @@
-﻿using Discord.Net;
-using GrillBot.App.Helpers;
-using GrillBot.App.Managers;
-using GrillBot.Common.Extensions.Discord;
-using GrillBot.Common.Managers.Logging;
-using GrillBot.Data.Models.Unverify;
-using GrillBot.Database.Entity;
+﻿using GrillBot.Common.Extensions.Discord;
+using GrillBot.Common.Managers.Localization;
+using GrillBot.Core.Extensions;
+using GrillBot.Core.Infrastructure.Auth;
+using GrillBot.Core.RabbitMQ.V2.Publisher;
+using GrillBot.Core.Services.Common.Exceptions;
+using GrillBot.Core.Services.Common.Executor;
+using GrillBot.Core.Services.GrillBot.Models;
+using UnverifyService;
+using UnverifyService.Models.Events;
+using UnverifyService.Models.Request;
 
 namespace GrillBot.App.Actions.Commands.Unverify;
 
-public class SetUnverify : CommandAction
+public class SetUnverify(
+    ITextsManager _texts,
+    IServiceClientExecutor<IUnverifyServiceClient> _unverifyClient,
+    IRabbitPublisher _rabbitPublisher,
+    ICurrentUserProvider _currentUser
+) : CommandAction
 {
-    private UnverifyHelper UnverifyHelper { get; }
-    private UnverifyCheckManager CheckManager { get; }
-    private UnverifyProfileManager ProfileManager { get; }
-    private UnverifyMessageManager MessageManager { get; }
-    private UnverifyLogManager LogManager { get; }
-    private LoggingManager LoggingManager { get; }
-    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private UnverifyRabbitMQManager UnverifyRabbitMQ { get; }
 
-    private IRole? MutedRole { get; set; }
-    private IGuildUser? ExecutingUser { get; set; }
-
-    public SetUnverify(UnverifyHelper unverifyHelper, UnverifyCheckManager checkManager, UnverifyProfileManager profileManager, UnverifyMessageManager messageManager, UnverifyLogManager logManager,
-        LoggingManager loggingManager, GrillBotDatabaseBuilder databaseBuilder, UnverifyRabbitMQManager unverifyRabbitMQ)
-    {
-        UnverifyHelper = unverifyHelper;
-        CheckManager = checkManager;
-        ProfileManager = profileManager;
-        MessageManager = messageManager;
-        LogManager = logManager;
-        LoggingManager = loggingManager;
-        DatabaseBuilder = databaseBuilder;
-        UnverifyRabbitMQ = unverifyRabbitMQ;
-    }
-
+    // Command (Unverify)
     public async Task<List<string>> ProcessAsync(List<IGuildUser> users, DateTime end, string reason, bool testRun)
     {
         var messages = new List<string>();
         foreach (var user in users)
         {
-            var message = await ProcessAsync(user, end, reason, false, new List<string>(), testRun);
+            var message = await ProcessAsync(user, end, reason, false, [], testRun);
             messages.Add(message);
         }
 
         return messages;
     }
 
+    // Command (Unverify + Selfunverify)
     public async Task<string> ProcessAsync(IUser user, DateTime end, string? reason, bool selfUnverify, List<string> toKeep, bool testRun)
     {
-        var guildUser = user as IGuildUser ?? await Context.Guild.GetUserAsync(user.Id);
-        await CheckManager.ValidateUnverifyAsync(guildUser, Context.Guild, selfUnverify, end, toKeep.Count, Locale);
-
-        await InitAsync();
-
-        var userLanguage = await UnverifyHelper.GetUserLanguageAsync(guildUser, Locale, selfUnverify);
-        var profile = await ProfileManager.CreateAsync(guildUser, Context.Guild, end, reason, selfUnverify, toKeep, MutedRole, userLanguage, Locale);
-        if (testRun)
-            return MessageManager.CreateUnverifyMessageToChannel(profile, Locale);
+        var request = new UnverifyRequest
+        {
+            ChannelId = Context.Channel.Id,
+            EndAtUtc = (end.Kind == DateTimeKind.Unspecified ? end.WithKind(DateTimeKind.Local) : end).ToUniversalTime(),
+            GuildId = Context.Guild.Id,
+            UserId = user.Id,
+            IsSelfUnverify = selfUnverify,
+            MessageId = Context.Interaction.Id,
+            Reason = reason,
+            RequiredKeepables = toKeep,
+            TestRun = testRun
+        };
 
         try
         {
-            var logItem = await LogUnverifyAsync(profile, selfUnverify);
-
-            await ProcessAsync(profile, logItem);
-            await SendSuccessRemovalPmAsync(profile);
-            return MessageManager.CreateUnverifyMessageToChannel(profile, Locale);
+            await _unverifyClient.ExecuteRequestAsync(
+                async (client, ctx) => await client.CheckUnverifyRequirementsAsync(request, ctx.CancellationToken)
+            );
         }
-        catch (Exception ex)
+        catch (ClientBadRequestException ex) when (!string.IsNullOrEmpty(ex.RawData))
         {
-            await LoggingManager.ErrorAsync("Unverify", $"An error occured while removing access to {user.GetFullName()}", ex);
-            await ReverseAsync(profile);
-            return MessageManager.CreateUnverifyFailedToChannel(profile.Destination, Locale);
+            var validationError = JsonConvert.DeserializeObject<LocalizedMessageContent>(ex.RawData)!;
+            var validationMessage = _texts[validationError, Locale];
+
+            throw new ValidationException(validationMessage);
         }
-    }
 
-    private async Task InitAsync()
-    {
-        MutedRole ??= await UnverifyHelper.GetMuteRoleAsync(Context.Guild);
-        ExecutingUser ??= await GetExecutingUserAsync();
-    }
+        var setRequest = new SetUnverifyMessage(request);
+        var headers = _currentUser.ToDictionary();
 
-    private async Task<UnverifyLog> LogUnverifyAsync(UnverifyUserProfile profile, bool selfunverify)
-    {
-        if (selfunverify)
-            return await LogManager.LogSelfunverifyAsync(profile, Context.Guild);
-
-        var unverifyLog = await LogManager.LogUnverifyAsync(profile, Context.Guild, ExecutingUser!);
-        await UnverifyRabbitMQ.SendUnverifyAsync(profile, unverifyLog);
-
-        return unverifyLog;
-    }
-
-    private async Task ProcessAsync(UnverifyUserProfile profile, UnverifyLog logItem)
-    {
-        if (MutedRole != null)
-            await profile.Destination.TryAddRoleAsync(MutedRole);
-
-        await profile.RemoveRolesAsync();
-        await profile.RemoveChannelsAsync(Context.Guild);
-
-        using var repository = DatabaseBuilder.CreateRepository();
-
-        await repository.Guild.GetOrCreateGuildAsync(Context.Guild);
-        await repository.User.GetOrCreateUserAsync(ExecutingUser!);
-        await repository.GuildUser.GetOrCreateGuildUserAsync(ExecutingUser!);
-        await repository.User.GetOrCreateUserAsync(profile.Destination);
-
-        var guildUserEntity = await repository.GuildUser.GetOrCreateGuildUserAsync(profile.Destination, true);
-        guildUserEntity.Unverify = profile.CreateRecord(Context.Guild, logItem.Id);
-
-        await repository.CommitAsync();
-    }
-
-    private async Task SendSuccessRemovalPmAsync(UnverifyUserProfile profile)
-    {
-        try
-        {
-            var message = MessageManager.CreateUnverifyPmMessage(profile, Context.Guild, Locale);
-            await profile.Destination.SendMessageAsync(message);
-        }
-        catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.CannotSendMessageToUser)
-        {
-            // User have disabled DMs.
-        }
-    }
-
-    private async Task ReverseAsync(UnverifyUserProfile profile)
-    {
-        await profile.ReturnRolesAsync();
-        await profile.ReturnChannelsAsync(Context.Guild);
-
-        if (!profile.KeepMutedRole && MutedRole != null)
-            await profile.Destination.TryRemoveRoleAsync(MutedRole);
+        await _rabbitPublisher.PublishAsync(setRequest, headers!);
+        return _texts["Unverify/UnverifyStarted", Locale].FormatWith(user.GetDisplayName());
     }
 }

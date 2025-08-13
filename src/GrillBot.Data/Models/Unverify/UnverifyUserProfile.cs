@@ -1,8 +1,6 @@
 ﻿using Discord;
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using GrillBot.Database.Entity;
 
 namespace GrillBot.Data.Models.Unverify;
 
@@ -32,53 +30,5 @@ public class UnverifyUserProfile
         RolesToRemove = new List<IRole>();
         ChannelsToKeep = new List<ChannelOverride>();
         ChannelsToRemove = new List<ChannelOverride>();
-    }
-
-    public Task ReturnRolesAsync(RequestOptions? options = null)
-        => Destination.AddRolesAsync(RolesToRemove, options);
-
-    public async Task ReturnChannelsAsync(IGuild guild, RequestOptions? options = null)
-    {
-        foreach (var channelToRemove in ChannelsToRemove)
-        {
-            var channel = await guild.GetChannelAsync(channelToRemove.ChannelId, options: options);
-            if (channel == null) continue;
-
-            await channel.AddPermissionOverwriteAsync(Destination, channelToRemove.Permissions, options);
-        }
-    }
-
-    public Task RemoveRolesAsync(RequestOptions? options = null)
-        => Destination.RemoveRolesAsync(RolesToRemove, options);
-
-    public async Task RemoveChannelsAsync(IGuild guild, RequestOptions? options = null)
-    {
-        foreach (var channelToRemove in ChannelsToRemove)
-        {
-            var channel = await guild.GetChannelAsync(channelToRemove.ChannelId);
-            if (channel == null) continue;
-
-            await channel.RemovePermissionOverwriteAsync(Destination, options);
-        }
-    }
-
-    public Database.Entity.Unverify CreateRecord(IGuild guild, long logId)
-    {
-        return new Database.Entity.Unverify
-        {
-            Reason = Reason,
-            Channels = ChannelsToRemove.ConvertAll(o => new GuildChannelOverride
-            {
-                ChannelId = o.ChannelId,
-                AllowValue = o.AllowValue,
-                DenyValue = o.DenyValue
-            }),
-            Roles = RolesToRemove.ConvertAll(o => o.Id.ToString()),
-            EndAt = End,
-            GuildId = guild.Id.ToString(),
-            StartAt = Start,
-            UserId = Destination.Id.ToString(),
-            SetOperationId = logId
-        };
     }
 }

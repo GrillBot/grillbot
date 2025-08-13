@@ -43,21 +43,8 @@ public static class UserExtensions
         return roles.MaxBy(o => o.Position);
     }
 
-    public static Task TryAddRoleAsync(this IGuildUser user, IRole role)
-    {
-        return user.RoleIds.Any(o => o == role.Id) ? Task.CompletedTask : user.AddRoleAsync(role);
-    }
-
-    public static Task TryRemoveRoleAsync(this IGuildUser user, IRole role)
-    {
-        return user.RoleIds.All(o => o != role.Id) ? Task.CompletedTask : user.RemoveRoleAsync(role);
-    }
-
     public static UserStatus GetStatus(this IUser user)
         => FixStatus(user.Status);
-
-    public static UserStatus GetStatus(this IPresence presence)
-        => FixStatus(presence.Status);
 
     private static UserStatus FixStatus(this UserStatus status)
     {

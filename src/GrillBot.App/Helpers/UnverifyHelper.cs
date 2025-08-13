@@ -1,5 +1,4 @@
-﻿using GrillBot.Common.Managers.Localization;
-using GrillBot.Core.Extensions;
+﻿using GrillBot.Core.Extensions;
 
 namespace GrillBot.App.Helpers;
 
@@ -18,14 +17,5 @@ public class UnverifyHelper
 
         var guildData = await repository.Guild.FindGuildAsync(guild, true);
         return string.IsNullOrEmpty(guildData?.MuteRoleId) ? null : guild.GetRole(guildData.MuteRoleId.ToUlong());
-    }
-
-    public async Task<string> GetUserLanguageAsync(IGuildUser user, string commandLanguage, bool selfunverify)
-    {
-        if (selfunverify) return commandLanguage;
-
-        using var repository = DatabaseBuilder.CreateRepository();
-        var userEntity = await repository.User.FindUserAsync(user, true);
-        return userEntity?.Language ?? TextsManager.DefaultLocale;
     }
 }

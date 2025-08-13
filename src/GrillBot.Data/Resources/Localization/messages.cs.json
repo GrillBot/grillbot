@@ -388,7 +388,8 @@
                 }
             }
         },
-        "Forbidden": "Nelze vrátit přístup, protože se tě nepodařilo ověřit."
+        "Forbidden": "Nelze vrátit přístup, protože se tě nepodařilo ověřit.",
+        "UnverifyStarted": "Odebírání přístupu pro uživatele **{0}** bylo spuštěno."
     },
     "AuditLog": {
         "RemoveItem": {

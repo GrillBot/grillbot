@@ -1,7 +1,5 @@
-using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Localization;
-using GrillBot.Data.Models.Unverify;
 
 namespace GrillBot.App.Managers;
 
@@ -12,32 +10,6 @@ public class UnverifyMessageManager
     public UnverifyMessageManager(ITextsManager texts)
     {
         Texts = texts;
-    }
-
-    public string CreateUnverifyMessageToChannel(UnverifyUserProfile profile, string locale)
-    {
-        var endDateTime = profile.End.ToCzechFormat();
-        var username = profile.Destination.GetDisplayName();
-
-        return profile.IsSelfUnverify
-            ? Texts["Unverify/Message/UnverifyToChannelWithoutReason", locale].FormatWith(username, endDateTime)
-            : Texts["Unverify/Message/UnverifyToChannelWithReason", locale].FormatWith(username, endDateTime, profile.Reason);
-    }
-
-    public string CreateUnverifyPmMessage(UnverifyUserProfile profile, IGuild guild, string locale)
-    {
-        var endDateTime = profile.End.ToCzechFormat();
-
-        return profile.IsSelfUnverify
-            ? Texts["Unverify/Message/PrivateUnverifyWithoutReason", locale].FormatWith(guild.Name, endDateTime)
-            : Texts["Unverify/Message/PrivateUnverifyWithReason", locale].FormatWith(guild.Name, endDateTime, profile.Reason);
-    }
-
-    public string CreateRemoveAccessManuallyToChannel(IGuildUser user, string locale)
-    {
-        var username = user.GetDisplayName();
-
-        return Texts["Unverify/Message/ManuallyRemoveToChannel", locale].FormatWith(username);
     }
 
     public string CreateRemoveAccessManuallyFailed(IGuildUser user, Exception ex, string locale)
@@ -52,12 +24,5 @@ public class UnverifyMessageManager
         var username = user.GetDisplayName();
 
         return Texts["Unverify/Message/RemoveAccessUnverifyNotFound", locale].FormatWith(username);
-    }
-
-    public string CreateUnverifyFailedToChannel(IGuildUser user, string locale)
-    {
-        var username = user.GetDisplayName();
-
-        return Texts["Unverify/Message/UnverifyFailedToChannel", locale].FormatWith(username);
     }
 }

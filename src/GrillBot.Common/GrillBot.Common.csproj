@@ -22,7 +22,7 @@
 		<PackageReference Include="Discord.Net" Version="3.18.0" />
 		<PackageReference Include="GrillBot.Core" Version="2.4.2" />
 		<PackageReference Include="GrillBot.Core.RabbitMQ.V2" Version="2.3.9" />
-		<PackageReference Include="GrillBot.Core.Services" Version="2.10.2" />
+		<PackageReference Include="GrillBot.Core.Services" Version="2.10.3" />
 		<PackageReference Include="GrillBot.Core.Metrics" Version="1.2.6" />
 		<PackageReference Include="GrillBot.Core.Redis" Version="1.1.5" />
         <PackageReference Include="GrillBot.Core.Healthcheck" Version="1.1.0" />

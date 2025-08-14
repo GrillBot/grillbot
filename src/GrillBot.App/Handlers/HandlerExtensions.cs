@@ -59,9 +59,6 @@ public static class HandlerExtensions
         services
             .AddScoped<IThreadUpdatedEvent, ThreadUpdated.ForumThreadTagsUpdated>();
 
-        services
-            .AddScoped<IUserLeftEvent, UserLeft.UnverifyUserLeftHandler>();
-
         return services;
     }
 
@@ -105,6 +102,7 @@ public static class HandlerExtensions
         RegisterServiceOrchestration<ServiceOrchestration.InviteOrchestrationHandler>(services);
         RegisterServiceOrchestration<ServiceOrchestration.UserManagementOrchestrationHandler>(services);
         RegisterServiceOrchestration<ServiceOrchestration.MessageOrchestrationHandler>(services);
+        RegisterServiceOrchestration<ServiceOrchestration.UnverifyOrchestrationHandler>(services);
     }
 
     private static void RegisterServiceOrchestration<TOrchestrationHandler>(IServiceCollection services) where TOrchestrationHandler : class

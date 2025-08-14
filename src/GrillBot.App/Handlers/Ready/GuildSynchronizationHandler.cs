@@ -3,22 +3,16 @@ using GrillBot.Core.Extensions;
 
 namespace GrillBot.App.Handlers.Ready;
 
-public class GuildSynchronizationHandler : IReadyEvent
+public class GuildSynchronizationHandler(
+    GrillBotDatabaseBuilder _databaseBuilder,
+    IDiscordClient _discordClient
+) : IReadyEvent
 {
-    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private IDiscordClient DiscordClient { get; }
-
-    public GuildSynchronizationHandler(GrillBotDatabaseBuilder databaseBuilder, IDiscordClient discordClient)
-    {
-        DatabaseBuilder = databaseBuilder;
-        DiscordClient = discordClient;
-    }
-
     public async Task ProcessAsync()
     {
-        var guilds = await DiscordClient.GetGuildsAsync();
+        var guilds = await _discordClient.GetGuildsAsync();
 
-        using var repository = DatabaseBuilder.CreateRepository();
+        using var repository = _databaseBuilder.CreateRepository();
 
         foreach (var guild in guilds)
         {
@@ -32,8 +26,6 @@ public class GuildSynchronizationHandler : IReadyEvent
                 dbGuild.BotRoomChannelId = null;
             if (await CanResetChannelIdAsync(dbGuild.VoteChannelId, guild))
                 dbGuild.VoteChannelId = null;
-            if (CanResetRoleId(dbGuild.MuteRoleId, guild))
-                dbGuild.MuteRoleId = null;
             if (CanResetRoleId(dbGuild.AssociationRoleId, guild))
                 dbGuild.AssociationRoleId = null;
         }
@@ -54,8 +46,6 @@ public class GuildSynchronizationHandler : IReadyEvent
     {
         if (string.IsNullOrEmpty(expectedRoleId))
             return false;
-
-        var role = guild.GetRole(expectedRoleId.ToUlong());
-        return role is null;
+        return guild.GetRole(expectedRoleId.ToUlong()) is null;
     }
 }

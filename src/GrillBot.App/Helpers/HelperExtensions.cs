@@ -9,7 +9,6 @@ public static class ServiceExtensions
         services
             .AddScoped<DownloadHelper>()
             .AddScoped<ChannelHelper>()
-            .AddScoped<UnverifyHelper>()
             .AddSingleton<BlobManagerFactoryHelper>();
 
         return services;

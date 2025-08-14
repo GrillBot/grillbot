@@ -108,7 +108,7 @@ public class UnverifyController(IServiceProvider serviceProvider) : ServiceContr
     public Task<IActionResult> ModifyUserAsync(
         [FromRoute, DiscordId] ulong userId,
         [FromBody] ModifyUserRequest request
-    ) => ExecuteAsync(async (client, ctx) => await client.ModifyUserAsync(userId, request, ctx.CancellationToken));
+    ) => ExecuteAsync(async (client, ctx) => await client.ModifyUserAsync(userId, request, ctx.AuthorizationToken, ctx.CancellationToken));
 
     [HttpGet("{userId}")]
     [ProducesResponseType<UserInfo>(StatusCodes.Status200OK)]

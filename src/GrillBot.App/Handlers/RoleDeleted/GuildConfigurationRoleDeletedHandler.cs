@@ -26,7 +26,6 @@ public class GuildConfigurationRoleDeletedHandler : IRoleDeletedEvent
             return;
 
         var log = new List<string>();
-        ModifyMutedRoleId(role, guild, log);
         ModifyAssociationRoleId(role, guild, log);
 
         if (log.Count == 0)
@@ -34,15 +33,6 @@ public class GuildConfigurationRoleDeletedHandler : IRoleDeletedEvent
 
         await WriteToAuditLogAsync(role.Guild, log);
         await repository.CommitAsync();
-    }
-
-    private static void ModifyMutedRoleId(IRole role, Database.Entity.Guild guild, List<string> log)
-    {
-        if (string.IsNullOrEmpty(guild.MuteRoleId) || guild.MuteRoleId != role.Id.ToString())
-            return;
-
-        log.Add($"Removed MutedRoleId value. OldValue: {guild.MuteRoleId}");
-        guild.MuteRoleId = null;
     }
 
     private static void ModifyAssociationRoleId(IRole role, Database.Entity.Guild guild, List<string> log)

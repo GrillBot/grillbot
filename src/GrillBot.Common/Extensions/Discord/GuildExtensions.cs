@@ -25,7 +25,7 @@ public static class GuildExtensions
         return await allChannels.FindAllAsync(async o => await o.HaveAccessAsync(user));
     }
 
-    public static long GetMemberCount(this IGuild guild)
+    public static int GetMemberCount(this IGuild guild)
     {
         return guild switch
         {

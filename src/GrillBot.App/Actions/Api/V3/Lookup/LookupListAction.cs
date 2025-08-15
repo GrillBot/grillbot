@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure.Actions;
@@ -6,23 +6,17 @@ using GrillBot.Data.Enums;
 using GrillBot.Data.Models.API.Channels;
 using GrillBot.Data.Models.API.Guilds;
 using GrillBot.Data.Models.API.Users;
+using GrillBot.Database.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace GrillBot.App.Actions.Api.V3.Lookup;
 
-public class LookupListAction : ApiAction
+public class LookupListAction(
+    ApiRequestContext apiContext,
+    IDiscordClient _discordClient,
+    GrillBotContext _dbContext
+) : ApiAction(apiContext)
 {
-    private readonly IDiscordClient _discordClient;
-    private readonly IMapper _mapper;
-    private readonly GrillBotContext _dbContext;
-
-    public LookupListAction(ApiRequestContext apiContext, IDiscordClient discordClient, IMapper mapper, GrillBotContext dbContext) : base(apiContext)
-    {
-        _discordClient = discordClient;
-        _mapper = mapper;
-        _dbContext = dbContext;
-    }
-
     public override Task<ApiResult> ProcessAsync()
     {
         var type = GetParameter<DataResolveType>(0);
@@ -41,13 +35,26 @@ public class LookupListAction : ApiAction
         if (ApiContext.IsPublic())
         {
             var mutualGuilds = await GetMutualGuildsAsync();
-            return ApiResult.Ok(_mapper.Map<Guild>(mutualGuilds));
+
+            return ApiResult.Ok(mutualGuilds.ConvertAll(o => new Guild
+            {
+                Id = o.Id.ToString(),
+                IsConnected = true,
+                MemberCount = o.GetMemberCount(),
+                Name = o.Name,
+            }));
         }
 
-        var query = _dbContext.Guilds.AsNoTracking().OrderBy(o => o.Name);
-        var mappedQuery = _mapper.ProjectTo<Guild>(query);
-        var guilds = await mappedQuery.ToListAsync();
+        var query = _dbContext.Guilds.AsNoTracking()
+            .OrderBy(o => o.Name)
+            .Select(o => new Guild
+            {
+                Name = o.Name,
+                Id = o.Id,
+                MemberCount = o.Users.Count()
+            });
 
+        var guilds = await query.ToListAsync();
         return ApiResult.Ok(guilds);
     }
 
@@ -65,9 +72,16 @@ public class LookupListAction : ApiAction
             query = query.Where(o => o.Guilds.Any(g => mutualGuilds.Contains(g.GuildId)));
         }
 
-        var mappedQuery = _mapper.ProjectTo<User>(query);
-        var users = await mappedQuery.ToListAsync();
+        var mappedQuery = query.Select(o => new User
+        {
+            Id = o.Id,
+            AvatarUrl = o.AvatarUrl ?? "",
+            GlobalAlias = o.GlobalAlias,
+            IsBot = (o.Flags & (int)UserFlags.NotUser) != 0,
+            Username = o.Username
+        });
 
+        var users = await mappedQuery.ToListAsync();
         return ApiResult.Ok(users);
     }
 
@@ -90,7 +104,12 @@ public class LookupListAction : ApiAction
                 var user = await guild.GetUserAsync(userId);
                 visibleChannels.AddRange(
                     (await guild.GetAvailableChannelsAsync(user))
-                        .Select(_mapper.Map<Channel>)
+                        .Select(o => new Channel
+                        {
+                            Id = o.Id.ToString(),
+                            Name = o.HaveCategory() ? $"{o.Name} ({o.GetCategory().GetPropertyValue(x => x.Name)})".Replace("()", "").TrimEnd() : o.Name,
+                            Type = o.GetChannelType()
+                        })
                         .Where(ch => ch.Type != ChannelType.Category && ch.Type != ChannelType.DM)
                 );
             }
@@ -103,9 +122,15 @@ public class LookupListAction : ApiAction
             .OrderBy(o => o.Name)
             .AsNoTracking();
 
-        var query = _mapper.ProjectTo<Channel>(baseQuery);
-        var channels = await query.ToListAsync();
+        var query = baseQuery.Select(o => new Channel
+        {
+            Name = o.Name,
+            Flags = o.Flags,
+            Id = o.ChannelId,
+            Type = o.ChannelType
+        });
 
+        var channels = await query.ToListAsync();
         return ApiResult.Ok(channels);
     }
 }

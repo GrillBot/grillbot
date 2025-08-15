@@ -57,33 +57,6 @@ public class AuditLogClearingJob(
         }
     }
 
-    private static IEnumerable<JObject> TransformChannels(IEnumerable<GuildChannel?> channels)
-    {
-        return channels
-            .Where(o => o is not null)
-            .DistinctBy(o => $"{o!.ChannelId}/{o.GuildId}").Select(ch =>
-            {
-                var channel = new JObject
-                {
-                    ["Id"] = ch!.ChannelId,
-                    ["Name"] = ch.Name,
-                    ["Type"] = ch.ChannelType.ToString(),
-                    ["GuildId"] = ch.GuildId
-                };
-
-                if (ch.UserPermissionsCount > 0)
-                    channel["UserPermissionsCount"] = ch.UserPermissionsCount;
-                if (ch.RolePermissionsCount > 0)
-                    channel["RolePermissionsCount"] = ch.RolePermissionsCount;
-                if (ch.Flags > 0)
-                    channel["Flags"] = ch.Flags;
-                if (!string.IsNullOrEmpty(ch.ParentChannelId))
-                    channel["ParentChannelId"] = ch.ParentChannelId;
-
-                return channel;
-            });
-    }
-
     private async Task<long> StoreDataAsync(JObject json, IEnumerable<string> files)
     {
         var jsonBaseName = $"AuditLog_{DateTime.Now:yyyyMMdd_HHmmss}";

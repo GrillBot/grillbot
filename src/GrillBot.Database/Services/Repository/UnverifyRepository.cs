@@ -36,16 +36,6 @@ public class UnverifyRepository : SubRepositoryBase<GrillBotContext>
         }
     }
 
-    public async Task<Unverify?> GetFirstPendingUnverifyAsync()
-    {
-        using (CreateCounter())
-        {
-            return await DbContext.Unverifies.AsNoTracking()
-                .Include(o => o.GuildUser!.User).Include(o => o.Guild)
-                .FirstOrDefaultAsync(o => o.EndAt <= DateTime.Now);
-        }
-    }
-
     public async Task<Unverify?> FindUnverifyAsync(ulong guildId, ulong userId, bool disableTracking = false, bool includeLogs = false)
     {
         using (CreateCounter())
@@ -81,29 +71,6 @@ public class UnverifyRepository : SubRepositoryBase<GrillBotContext>
                 .OrderBy(o => o.Key.Year).ThenBy(o => o.Key.Month)
                 .Select(o => new { Date = $"{o.Key.Year}-{o.Key.Month.ToString().PadLeft(2, '0')}", Count = o.Count() })
                 .ToDictionaryAsync(o => o.Date, o => o.Count);
-        }
-    }
-
-    private IQueryable<UnverifyLog> GetLogsForArchivationQuery(DateTime expirationMilestone)
-    {
-        return DbContext.UnverifyLogs.AsQueryable()
-            .Include(o => o.Guild)
-            .Include(o => o.FromUser!.User)
-            .Include(o => o.ToUser!.User)
-            .Where(o => o.CreatedAt <= expirationMilestone);
-    }
-
-    public async Task<int> GetCountForArchivationAsync(DateTime expirationMilestone)
-    {
-        using (CreateCounter())
-            return await GetLogsForArchivationQuery(expirationMilestone).CountAsync();
-    }
-
-    public async Task<List<UnverifyLog>> GetLogsForArchivationAsync(DateTime exiprationMilestone)
-    {
-        using (CreateCounter())
-        {
-            return await GetLogsForArchivationQuery(exiprationMilestone).ToListAsync();
         }
     }
 }

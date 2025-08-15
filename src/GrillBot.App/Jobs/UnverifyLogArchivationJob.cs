@@ -1,71 +1,79 @@
-﻿using System.IO.Compression;
-using GrillBot.App.Helpers;
+﻿using GrillBot.App.Helpers;
 using GrillBot.App.Jobs.Abstractions;
 using GrillBot.Common.FileStorage;
+using GrillBot.Database.Entity;
+using GrillBot.Database.Services.Repository;
 using Quartz;
+using System.IO.Compression;
+using UnverifyService;
+using UnverifyService.Models.Response;
 
 namespace GrillBot.App.Jobs;
 
 [DisallowConcurrentExecution]
 public class UnverifyLogArchivationJob(
     IServiceProvider serviceProvider,
-    IConfiguration _configuration
+    IUnverifyServiceClient _unverifyClient
 ) : ArchivationJobBase(serviceProvider)
 {
     protected override async Task RunAsync(IJobExecutionContext context)
     {
-        using var repository = DatabaseBuilder.CreateRepository();
-
-        var expirationMilestone = DateTime.Now.AddYears(-2);
-        var minimalCount = _configuration.GetValue<int>("Unverify:MinimalCountToArchivation");
-        var countToArchivation = await repository.Unverify.GetCountForArchivationAsync(expirationMilestone);
-
-        if (countToArchivation <= minimalCount)
+        var archivationData = await CreateArchivationData(context.CancellationToken);
+        if (archivationData is null)
             return;
 
-        var data = await repository.Unverify.GetLogsForArchivationAsync(expirationMilestone);
-        var logRoot = new JObject
-        {
-            ["CreatedAt"] = DateTime.Now.ToString("o"),
-            ["Count"] = data.Count,
-            ["Guilds"] = TransformGuilds(data.Select(o => o.Guild))
-        };
+        var jsonData = JObject.Parse(archivationData.Content);
+        using var repository = DatabaseBuilder.CreateRepository();
 
-        var users = data
-            .Select(o => o.FromUser!)
-            .Concat(data.Select(o => o.ToUser!))
-            .Where(o => o is not null)
-            .DistinctBy(o => $"{o!.UserId}/{o.GuildId}");
-        logRoot.Add("Users", TransformGuildUsers(users));
+        await ProcessUsersAsync(repository, archivationData.UserIds, jsonData);
+        await ProcessChannelsAsync(repository, archivationData.ChannelIds, jsonData);
+        await ProcessGuildsAsync(repository, archivationData.GuildIds, jsonData);
 
-        var items = new JArray();
-        foreach (var item in data)
-        {
-            var jsonElement = new JObject
-            {
-                ["Id"] = item.Id,
-                ["Operation"] = item.Operation.ToString(),
-                ["GuildId"] = item.GuildId,
-                ["FromUserId"] = item.FromUserId,
-                ["ToUserId"] = item.ToUserId,
-                ["CreatedAt"] = item.CreatedAt.ToString("o"),
-                ["Data"] = item.Data
-            };
-
-            items.Add(jsonElement);
-            repository.Remove(item);
-        }
-
-        logRoot.Add("Items", items);
-
-        var archiveSize = await SaveDataAsync(logRoot);
-        await repository.CommitAsync();
-
-        var xmlSize = Encoding.UTF8.GetBytes(logRoot.ToString(Formatting.None)).Length.Bytes().ToString();
+        var archiveSize = await SaveDataAsync(jsonData);
+        var jsonSize = Encoding.UTF8.GetBytes(jsonData.ToString(Formatting.None)).Length.Bytes().ToString();
         var zipSize = archiveSize.Bytes().ToString();
 
-        context.Result = BuildReport(xmlSize, zipSize, data);
+        context.Result = BuildReport(jsonSize, zipSize, archivationData);
     }
+
+    private async Task<ArchivationResult?> CreateArchivationData(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return await _unverifyClient.CreateArchivationDataAsync(cancellationToken);
+        }
+        catch (Refit.ApiException ex) when (ex.StatusCode == HttpStatusCode.NoContent)
+        {
+            return null;
+        }
+    }
+
+    private static async Task ProcessUsersAsync(GrillBotRepository repository, List<ulong> userIds, JObject json)
+    {
+        var users = new List<User?>();
+        foreach (var userChunk in userIds.Chunk(100))
+            users.AddRange(await repository.User.GetUsersByIdsAsync([.. userChunk.Select(o => o.ToString())]));
+
+        json["Users"] = TransformUsers(users);
+    }
+
+    private static async Task ProcessChannelsAsync(GrillBotRepository repository, List<ulong> channelIds, JObject json)
+    {
+        var channels = new List<GuildChannel?>();
+        foreach (var channelChunk in channelIds.Chunk(100))
+            channels.AddRange(await repository.Channel.GetChannelsByIdsAsync([.. channelChunk.Select(o => o.ToString())]));
+
+        json["Channels"] = new JArray(TransformChannels(channels));
+    }
+
+    private static async Task ProcessGuildsAsync(GrillBotRepository repository, List<ulong> guildIds, JObject json)
+    {
+        var guilds = new List<Guild>();
+        foreach (var guildChunk in guildIds.Chunk(100))
+            guilds.AddRange(await repository.Guild.GetGuildsByIdsAsync([.. guildChunk.Select(o => o.ToString())]));
+        json["Guilds"] = new JArray(TransformGuilds(guilds));
+    }
+
 
     private async Task<long> SaveDataAsync(JObject json)
     {
@@ -97,7 +105,7 @@ public class UnverifyLogArchivationJob(
         return archiveSize;
     }
 
-    private static string BuildReport(string jsonSize, string zipSize, List<Database.Entity.UnverifyLog> data)
+    private static string BuildReport(string jsonSize, string zipSize, ArchivationResult data)
     {
         var builder = new StringBuilder()
             .AppendFormat("Items: {0}, JsonSize: {1}, ZipSize: {0}", jsonSize, zipSize)
@@ -105,13 +113,13 @@ public class UnverifyLogArchivationJob(
             .AppendLine();
 
         builder.AppendLine("Archived types: (");
-        foreach (var type in data.GroupBy(o => o.Operation.ToString()).OrderBy(o => o.Key))
-            builder.AppendFormat("{0}{1}: {2}", Indent, type.Key, type.Count()).AppendLine();
+        foreach (var type in data.PerType)
+            builder.AppendFormat("{0}{1}: {2}", Indent, type.Key, type.Value).AppendLine();
         builder.AppendLine(")");
 
         builder.AppendLine("Archived months: (");
-        foreach (var month in data.OrderBy(o => o.CreatedAt).GroupBy(o => $"{o.CreatedAt.Month}-{o.CreatedAt.Year}"))
-            builder.AppendFormat("{0}{1}: {2}", Indent, month.Key, month.Count()).AppendLine();
+        foreach (var month in data.PerMonths)
+            builder.AppendFormat("{0}{1}: {2}", Indent, month.Key, month.Value).AppendLine();
         builder.Append(')');
 
         return builder.ToString();

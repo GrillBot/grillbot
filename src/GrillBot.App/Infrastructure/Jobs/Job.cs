@@ -7,6 +7,8 @@ using GrillBot.Core.Services.AuditLog.Enums;
 using Microsoft.Extensions.DependencyInjection;
 using GrillBot.Core.Services.AuditLog.Models.Events.Create;
 using GrillBot.Core.RabbitMQ.V2.Publisher;
+using GrillBot.App.Managers.Auth;
+using GrillBot.Core.Infrastructure.Auth;
 
 namespace GrillBot.App.Infrastructure.Jobs;
 
@@ -20,6 +22,7 @@ public abstract class Job(IServiceProvider serviceProvider) : IJob
 
     private string JobName => GetType().Name;
     private bool RequireInitialization => GetType().GetCustomAttribute<DisallowUninitializedAttribute>() != null;
+    private bool RequireAuthentication => GetType().GetCustomAttribute<RequireAuthenticationAttribute>() != null;
 
     protected abstract Task RunAsync(IJobExecutionContext context);
 
@@ -29,6 +32,9 @@ public abstract class Job(IServiceProvider serviceProvider) : IJob
 
         var user = context.MergedJobDataMap.Get("User") as IUser;
         await LoggingManager.InfoAsync(JobName, $"Triggered processing at {DateTime.Now}");
+
+        if (RequireAuthentication)
+            await ProcessAuthenticationAsync();
 
         var logRequest = new JobExecutionRequest
         {
@@ -87,4 +93,13 @@ public abstract class Job(IServiceProvider serviceProvider) : IJob
 
     protected TService ResolveService<TService>() where TService : class
         => serviceProvider.GetRequiredService<TService>();
+
+    private async Task ProcessAuthenticationAsync()
+    {
+        var jwtManager = ResolveService<JwtTokenManager>();
+        var jwtToken = await jwtManager.CreateTokenForUserAsync(DiscordClient.CurrentUser, "cs-CZ", "127.0.0.1");
+
+        if (string.IsNullOrEmpty(jwtToken?.ErrorMessage) && !string.IsNullOrEmpty(jwtToken?.AccessToken))
+            ResolveService<ICurrentUserProvider>().SetCustomToken(jwtToken.AccessToken);
+    }
 }

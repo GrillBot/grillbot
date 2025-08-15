@@ -1,45 +1,46 @@
 ﻿using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure.Actions;
-using GrillBot.Database.Enums;
+using GrillBot.Core.Services.Common.Executor;
+using UnverifyService;
+using UnverifyService.Core.Enums;
 
 namespace GrillBot.App.Actions.Api.V1.Statistics;
 
-public class GetUnverifyStatistics : ApiAction
+public class GetUnverifyStatistics(
+    ApiRequestContext apiContext,
+    IServiceClientExecutor<IUnverifyServiceClient> _unverifyClient
+) : ApiAction(apiContext)
 {
-    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-
-    public GetUnverifyStatistics(ApiRequestContext apiContext, GrillBotDatabaseBuilder databaseBuilder) : base(apiContext)
-    {
-        DatabaseBuilder = databaseBuilder;
-    }
-
     public override async Task<ApiResult> ProcessAsync()
     {
-        switch((string)Parameters[0]!)
+        return (string)Parameters[0]! switch
         {
-            case "ByOperation":
-                return ApiResult.Ok(await ProcessByOperationAsync());
-            case "ByDate":
-                return ApiResult.Ok(await ProcessByDateAsync());
-            default:
-                return ApiResult.BadRequest();
+            "ByOperation" => ApiResult.Ok(new Dictionary<string, int>()),
+            "ByDate" => ApiResult.Ok(await ProcessByDateAsync()),
+            _ => ApiResult.BadRequest(),
+        };
+    }
+
+    private async Task<Dictionary<string, long>> ProcessByDateAsync()
+    {
+        var result = new Dictionary<string, long>();
+
+        foreach (var type in Enum.GetValues<UnverifyOperationType>())
+        {
+            var statistics = await _unverifyClient.ExecuteRequestAsync(
+                async (client, ctx) => await client.GetPeriodStatisticsAsync("ByMonth", type, ctx.CancellationToken),
+                CancellationToken
+            );
+
+            foreach (var item in statistics)
+            {
+                if (!result.TryGetValue(item.Key, out var count))
+                    result.Add(item.Key, item.Value);
+                else
+                    result[item.Key] = count + item.Value;
+            }
         }
-    }
 
-    private async Task<Dictionary<string, int>> ProcessByOperationAsync()
-    {
-        using var repository = DatabaseBuilder.CreateRepository();
-        var statistics = await repository.Unverify.GetStatisticsByTypeAsync();
-
-        return Enum.GetValues<UnverifyOperation>()
-            .Select(o => new { Key = o.ToString(), Value = statistics.TryGetValue(o, out var val) ? val : 0 })
-            .OrderByDescending(o => o.Value).ThenBy(o => o.Key)
-            .ToDictionary(o => o.Key, o => o.Value);
-    }
-
-    private async Task<Dictionary<string, int>> ProcessByDateAsync()
-    {
-        using var repository = DatabaseBuilder.CreateRepository();
-        return await repository.Unverify.GetStatisticsByDateAsync();
+        return result;
     }
 }

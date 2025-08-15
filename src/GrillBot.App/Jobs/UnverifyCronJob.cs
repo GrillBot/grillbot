@@ -54,7 +54,7 @@ public class UnverifyCronJob(
 
     private async Task MigrateLogItemAsync(List<string> log, CancellationToken cancellationToken = default)
     {
-        await using var context = ResolveService<GrillBotDatabaseBuilder>().CreateContext();
+        var context = ResolveService<GrillBotContext>();
 
         var logItem = await context.UnverifyLogs.OrderBy(o => o.CreatedAt)
             .FirstOrDefaultAsync(cancellationToken);
@@ -75,7 +75,7 @@ public class UnverifyCronJob(
 
     private async Task MigrateKeepableAsync(List<string> log, CancellationToken cancellationToken = default)
     {
-        await using var context = ResolveService<GrillBotDatabaseBuilder>().CreateContext();
+        var context = ResolveService<GrillBotContext>();
 
         var keepables = await context.SelfunverifyKeepables
             .OrderBy(o => o.GroupName)

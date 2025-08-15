@@ -15,12 +15,9 @@ public class GrillBotDatabaseBuilder
         Options = options;
     }
 
-    public GrillBotContext CreateContext()
-        => new(Options);
-
     public GrillBotRepository CreateRepository()
     {
-        var context = CreateContext();
+        var context = new GrillBotContext(Options);
         return new GrillBotRepository(context, CounterManager);
     }
 }

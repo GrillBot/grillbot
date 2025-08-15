@@ -3,13 +3,14 @@ using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Core.Services.PointsService;
 using GrillBot.Core.Extensions;
-using GrillBot.Data.Models.Unverify;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Services.Repository;
 using GrillBot.Core.Services.Common.Executor;
 using GrillBot.Core.Services.InviteService;
 using GrillBot.Core.Services.InviteService.Models.Request;
 using GrillBot.App.Managers.DataResolve;
+using UnverifyService;
+using GrillBot.Core.Services.Common.Exceptions;
 
 namespace GrillBot.App.Actions.Commands;
 
@@ -21,14 +22,15 @@ public class UserInfo : CommandAction
 
     private bool OverLimit { get; set; }
     private Database.Entity.User ExecutorEntity { get; set; } = null!;
-    private IEnumerable<IGuildUser> GuildUsers { get; set; } = new List<IGuildUser>();
+    private IEnumerable<IGuildUser> GuildUsers { get; set; } = [];
 
     private readonly IServiceClientExecutor<IPointsServiceClient> _pointsServiceClient;
     private readonly IServiceClientExecutor<IInviteServiceClient> _inviteServiceClient;
+    private readonly IServiceClientExecutor<IUnverifyServiceClient> _unverifyClient;
     private readonly DataResolveManager _dataResolve;
 
     public UserInfo(GrillBotDatabaseBuilder databaseBuilder, IConfiguration configuration, ITextsManager texts, IServiceClientExecutor<IPointsServiceClient> pointsServiceClient,
-        IServiceClientExecutor<IInviteServiceClient> inviteServiceClient, DataResolveManager dataResolve)
+        IServiceClientExecutor<IInviteServiceClient> inviteServiceClient, DataResolveManager dataResolve, IServiceClientExecutor<IUnverifyServiceClient> unverifyClient)
     {
         DatabaseBuilder = databaseBuilder;
         Configuration = configuration;
@@ -36,6 +38,7 @@ public class UserInfo : CommandAction
         _pointsServiceClient = pointsServiceClient;
         _inviteServiceClient = inviteServiceClient;
         _dataResolve = dataResolve;
+        _unverifyClient = unverifyClient;
     }
 
     public async Task<Embed> ProcessAsync(IGuildUser user)
@@ -190,19 +193,33 @@ public class UserInfo : CommandAction
     {
         if (OverLimit) return;
 
-        var (unverifyCount, selfunverifyCount) = await repository.Unverify.GetUserStatsAsync(user.GuildId.ToString(), user.Id.ToString());
-        if (unverifyCount > 0) AddField(builder, "UnverifyCount", unverifyCount.ToString(), true);
-        if (selfunverifyCount > 0) AddField(builder, "SelfUnverifyCount", selfunverifyCount.ToString(), true);
-
-        if (OverLimit) return;
-        var unverify = await repository.Unverify.FindUnverifyAsync(Context.Guild.Id, user.Id, true, true);
-        if (unverify != null)
+        try
         {
-            var unverifyLogData = JsonConvert.DeserializeObject<UnverifyLogSet>(unverify.UnverifyLog!.Data)!;
-            var unverifyType = unverifyLogData.IsSelfUnverify ? "self" : "";
-            var reason = unverifyLogData.IsSelfUnverify ? "" : Texts["User/InfoEmbed/ReasonRow", Locale].FormatWith(unverify.Reason);
-            var row = Texts["User/InfoEmbed/UnverifyRow", Locale].FormatWith(unverifyType, unverify.EndAt.ToCzechFormat(), reason);
-            AddField(builder, "UnverifyInfo", row.Cut(EmbedFieldBuilder.MaxFieldValueLength, true)!, false);
+            var userInfo = await _unverifyClient.ExecuteRequestAsync(
+                async (client, ctx) => await client.GetUserInfoAsync(user.Id, ctx.CancellationToken)
+            );
+
+            if (userInfo is null)
+                return;
+
+            if (userInfo.UnverifyCount.TryGetValue(user.GuildId.ToString(), out var cnt) && cnt > 0)
+                AddField(builder, "UnverifyCount", cnt.ToString(), true);
+
+            if (!OverLimit && userInfo.SelfUnverifyCount.TryGetValue(user.GuildId.ToString(), out var selfCnt) && selfCnt > 0)
+                AddField(builder, "SelfUnverifyCount", selfCnt.ToString(), true);
+
+            if (!OverLimit && userInfo.CurrentUnverifies.TryGetValue(user.GuildId.ToString(), out var unverifyInfo))
+            {
+                var unverifyType = unverifyInfo.IsSelfUnverify ? "self" : "";
+                var reason = unverifyInfo.IsSelfUnverify ? "" : Texts["User/InfoEmbed/ReasonRow", Locale].FormatWith(unverifyInfo.Reason);
+                var endAt = (unverifyInfo.EndAtUtc.Kind == DateTimeKind.Unspecified ? unverifyInfo.EndAtUtc.WithKind(DateTimeKind.Utc) : unverifyInfo.EndAtUtc).ToLocalTime();
+                var row = Texts["User/InfoEmbed/UnverifyRow", Locale].FormatWith(unverifyType, endAt.ToCzechFormat(), reason);
+
+                AddField(builder, "UnverifyInfo", row.Cut(EmbedFieldBuilder.MaxFieldValueLength, true)!, false);
+            }
+        }
+        catch (ClientNotFoundException)
+        {
         }
     }
 

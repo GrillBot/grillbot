@@ -45,21 +45,11 @@ public class GrillBotContext : DbContext
             builder.HasOne(o => o.ParentChannel).WithMany().HasForeignKey(o => new { o.GuildId, o.ParentChannelId });
         });
 
-        modelBuilder.Entity<Unverify>(builder =>
-        {
-            builder.HasKey(o => new { o.GuildId, o.UserId });
-            builder.HasOne(o => o.GuildUser).WithOne(o => o.Unverify).HasForeignKey<Unverify>(o => new { o.GuildId, o.UserId });
-            builder.HasOne(o => o.UnverifyLog).WithOne(o => o.Unverify);
-            builder.HasOne(o => o.Guild).WithMany(o => o.Unverifies);
-            builder.Property(o => o.Roles).HasConversion(new JsonValueConverter<List<string>>());
-            builder.Property(o => o.Channels).HasConversion(new JsonValueConverter<List<GuildChannelOverride>>());
-        });
-
         modelBuilder.Entity<UnverifyLog>(builder =>
         {
             builder.HasOne(o => o.FromUser).WithMany().HasForeignKey(o => new { o.GuildId, o.FromUserId });
             builder.HasOne(o => o.ToUser).WithMany().HasForeignKey(o => new { o.GuildId, o.ToUserId });
-            builder.HasOne(o => o.Guild).WithMany(o => o.UnverifyLogs);
+            builder.HasOne(o => o.Guild).WithMany();
         });
 
         modelBuilder.Entity<SelfunverifyKeepable>(builder => builder.HasKey(o => new { o.GroupName, o.Name }));
@@ -73,7 +63,6 @@ public class GrillBotContext : DbContext
     public DbSet<GuildUser> GuildUsers => Set<GuildUser>();
     public DbSet<GuildChannel> Channels => Set<GuildChannel>();
     public DbSet<GuildUserChannel> UserChannels => Set<GuildUserChannel>();
-    public DbSet<Unverify> Unverifies => Set<Unverify>();
     public DbSet<UnverifyLog> UnverifyLogs => Set<UnverifyLog>();
     public DbSet<SelfunverifyKeepable> SelfunverifyKeepables => Set<SelfunverifyKeepable>();
     public DbSet<ApiClient> ApiClients => Set<ApiClient>();

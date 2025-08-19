@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using GrillBot.App.Managers;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
@@ -20,8 +19,8 @@ using GrillBot.Core.Services.UserMeasures.Models.Measures;
 using GrillBot.Core.Services.Common.Executor;
 using GrillBot.Core.Services.InviteService;
 using GrillBot.Core.Services.InviteService.Models.Request;
-using GrillBot.Core.Services.UserManagementService;
-using GrillBot.Core.Services.UserManagementService.Models.Response;
+using UserManagementService;
+using UserManagementService.Models.Response;
 using GrillBot.Core.Services.Common.Exceptions;
 
 namespace GrillBot.App.Actions.Api.V1.User;
@@ -105,6 +104,7 @@ public class GetUserDetail(
         await SetUserMeasuresAsync(result, guildUserEntity);
         await SetPointsInfoAsync(result, guildUserEntity);
         await SetEmotesAsync(result, guildUserEntity);
+        SetUnverify(result, guildUserInfo);
 
         await UpdateGuildDetailAsync(result, guildUserEntity);
         return result;
@@ -121,17 +121,8 @@ public class GetUserDetail(
         if (guildUser is null) return;
 
         detail.IsUserInGuild = true;
-        SetUnverify(detail, entity.Unverify, guildUser, guild);
         await SetVisibleChannelsAsync(detail, guildUser, guild);
         detail.Roles = _mapper.Map<List<ApiModels.Role>>(guildUser.GetRoles().OrderByDescending(o => o.Position).ToList());
-    }
-
-    private void SetUnverify(ApiModels.Users.GuildUserDetail detail, Entity.Unverify? unverify, IGuildUser user, IGuild guild)
-    {
-        if (unverify == null) return;
-
-        var profile = UnverifyProfileManager.Reconstruct(unverify, user, guild);
-        detail.Unverify = _mapper.Map<ApiModels.Unverify.UnverifyInfo>(profile);
     }
 
     private async Task SetVisibleChannelsAsync(ApiModels.Users.GuildUserDetail detail, IGuildUser user, IGuild guild)
@@ -273,6 +264,29 @@ public class GetUserDetail(
             CreatedAt = inviteInfo.Data[0].CreatedAt?.ToLocalTime(),
             Creator = creator,
             UsedUsersCount = inviteInfo.Data[0].Uses,
+        };
+    }
+
+    private void SetUnverify(ApiModels.Users.GuildUserDetail detail, GuildUser? guildUser)
+    {
+        if (guildUser?.CurrentUnverify is null)
+            return;
+
+        var endAtUtc = guildUser.CurrentUnverify.EndAtUtc.Kind == DateTimeKind.Unspecified ?
+            guildUser.CurrentUnverify.EndAtUtc.WithKind(DateTimeKind.Utc) :
+            guildUser.CurrentUnverify.EndAtUtc;
+
+        var startAtUtc = guildUser.CurrentUnverify.StartAtUtc.Kind == DateTimeKind.Unspecified ?
+            guildUser.CurrentUnverify.StartAtUtc.WithKind(DateTimeKind.Utc) :
+            guildUser.CurrentUnverify.StartAtUtc;
+
+        detail.Unverify = new ApiModels.Unverify.UnverifyInfo
+        {
+            End = endAtUtc.ToLocalTime(),
+            EndTo = endAtUtc - DateTimeOffset.UtcNow,
+            IsSelfUnverify = guildUser.CurrentUnverify.IsSelfUnverify,
+            Reason = guildUser.CurrentUnverify.Reason,
+            Start = startAtUtc.ToLocalTime()
         };
     }
 

@@ -18,11 +18,11 @@ public class UnverifyInfo
     /// End to
     /// </summary>
     public TimeSpan EndTo { get; set; }
-    
+
     /// <summary>
     /// Reason of remove.
     /// </summary>
-    public string Reason { get; set; }
+    public string? Reason { get; set; }
 
     /// <summary>
     /// Is this unverify selfunverify?

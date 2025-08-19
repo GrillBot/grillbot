@@ -39,10 +39,4 @@ public class PointsValidationManager
         var userEntity = await repository.User.FindUserAsync(user, true);
         return userEntity?.HaveFlags(UserFlags.NotUser) == false;
     }
-
-    public static bool IsMissingData(Dictionary<string, string[]> validationErrors)
-    {
-        var errors = validationErrors.SelectMany(o => o.Value).Distinct().ToList();
-        return errors.Contains("UnknownChannel") || errors.Contains("UnknownUser");
-    }
 }

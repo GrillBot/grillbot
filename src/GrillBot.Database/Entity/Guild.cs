@@ -40,15 +40,11 @@ public class Guild
 
     public ISet<GuildUser> Users { get; set; }
     public ISet<GuildChannel> Channels { get; set; }
-    public ISet<Unverify> Unverifies { get; set; }
-    public ISet<UnverifyLog> UnverifyLogs { get; set; }
 
     public Guild()
     {
         Users = new HashSet<GuildUser>();
         Channels = new HashSet<GuildChannel>();
-        Unverifies = new HashSet<Unverify>();
-        UnverifyLogs = new HashSet<UnverifyLog>();
     }
 
     public static Guild FromDiscord(IGuild guild)

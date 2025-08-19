@@ -47,13 +47,21 @@ public class UserInfo : CommandAction
 
         using var repository = DatabaseBuilder.CreateRepository();
         ExecutorEntity = (await repository.User.FindUserAsync(Context.User, true))!;
-        var userEntity = (await repository.GuildUser.FindGuildUserAsync(user, true, true))!;
+        var userEntity = (await repository.GuildUser.FindGuildUserAsync(user, true))!;
 
         var builder = Init(user);
         SetAuthor(builder, user);
         SetCommonInfo(builder, user);
         SetGuildInfo(builder, user);
-        await SetDatabaseInfoAsync(builder, user, userEntity, repository);
+        await SetPointsInfoAsync(builder, user);
+
+        if (userEntity.GivenReactions + userEntity.ObtainedReactions > 0)
+            AddField(builder, "Reactions", $"{userEntity.GivenReactions} / {userEntity.ObtainedReactions}", true);
+
+        await SetMessageInfoAsync(builder, user, repository);
+        await SetUnverifyInfoAsync(builder, user);
+        await SetUserInviteAsync(builder, userEntity);
+        await SetChannelInfoAsync(builder, user, repository);
 
         if (!OverLimit || !ExecutorEntity.HaveFlags(UserFlags.WebAdmin))
             return builder.Build();
@@ -159,19 +167,6 @@ public class UserInfo : CommandAction
             AddField(builder, "PremiumSince", user.PremiumSince.Value.ToTimestampMention(), true);
     }
 
-    private async Task SetDatabaseInfoAsync(EmbedBuilder builder, IGuildUser user, Database.Entity.GuildUser userEntity, GrillBotRepository repository)
-    {
-        await SetPointsInfoAsync(builder, user);
-
-        if (userEntity.GivenReactions + userEntity.ObtainedReactions > 0)
-            AddField(builder, "Reactions", $"{userEntity.GivenReactions} / {userEntity.ObtainedReactions}", true);
-
-        await SetMessageInfoAsync(builder, user, repository);
-        await SetUnverifyInfoAsync(builder, user, repository);
-        await SetUserInviteAsync(builder, userEntity);
-        await SetChannelInfoAsync(builder, user, repository);
-    }
-
     private async Task SetPointsInfoAsync(EmbedBuilder builder, IGuildUser user)
     {
         if (OverLimit) return;
@@ -189,7 +184,7 @@ public class UserInfo : CommandAction
             AddField(builder, "MessageCount", messageCount.ToString(), true);
     }
 
-    private async Task SetUnverifyInfoAsync(EmbedBuilder builder, IGuildUser user, GrillBotRepository repository)
+    private async Task SetUnverifyInfoAsync(EmbedBuilder builder, IGuildUser user)
     {
         if (OverLimit) return;
 

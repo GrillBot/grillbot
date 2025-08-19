@@ -7,7 +7,7 @@ using GrillBot.Core.Services.PointsService.Enums;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.App.Managers.DataResolve;
 using GrillBot.Core.Services.Common.Executor;
-using GrillBot.Core.Services.UserManagementService;
+using UserManagementService;
 
 namespace GrillBot.App.Actions.Api.V1.Points;
 

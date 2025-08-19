@@ -10,7 +10,6 @@ public static class ManagerExtensions
             .AddSingleton<EmoteChainManager>()
             .AddSingleton<AuditLogManager>()
             .AddSingleton<UserManager>() // TODO Review and change to scoped
-            .AddScoped<UnverifyProfileManager>()
             .AddScoped<UnverifyMessageManager>()
             .AddSingleton<PinManager>()
             .AddScoped<DataResolve.DataResolveManager>()

@@ -38,6 +38,4 @@ public class UnverifyLog
 
     [Required]
     public string Data { get; set; } = null!;
-
-    public Unverify? Unverify { get; set; }
 }

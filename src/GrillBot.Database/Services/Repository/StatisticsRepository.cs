@@ -23,9 +23,6 @@ public class StatisticsRepository : SubRepositoryBase<GrillBotContext>
                 { nameof(DbContext.GuildUsers), await DbContext.GuildUsers.CountAsync() },
                 { nameof(DbContext.Channels), await DbContext.Channels.CountAsync() },
                 { nameof(DbContext.UserChannels), await DbContext.UserChannels.CountAsync() },
-                { nameof(DbContext.Unverifies), await DbContext.Unverifies.CountAsync() },
-                { nameof(DbContext.UnverifyLogs), await DbContext.UnverifyLogs.CountAsync() },
-                { nameof(DbContext.SelfunverifyKeepables), await DbContext.SelfunverifyKeepables.CountAsync() },
                 { nameof(DbContext.ApiClients), await DbContext.ApiClients.CountAsync() }
             };
         }

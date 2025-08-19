@@ -32,8 +32,6 @@ public class GuildUser
     [Required]
     public long ObtainedReactions { get; set; } = 0;
 
-    public Unverify? Unverify { get; set; }
-
     [StringLength(32)]
     [MinLength(2)]
     public string? Nickname { get; set; }

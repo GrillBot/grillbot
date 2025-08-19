@@ -15,11 +15,11 @@ public class GuildUserRepository : SubRepositoryBase<GrillBotContext>
     {
     }
 
-    public async Task<GuildUser> GetOrCreateGuildUserAsync(IGuildUser user, bool includeAll = false)
+    public async Task<GuildUser> GetOrCreateGuildUserAsync(IGuildUser user)
     {
         using (CreateCounter())
         {
-            var entity = await FindGuildUserAsync(user, false, includeAll);
+            var entity = await FindGuildUserAsync(user, false);
             if (entity != null)
                 return entity;
 
@@ -30,9 +30,9 @@ public class GuildUserRepository : SubRepositoryBase<GrillBotContext>
         }
     }
 
-    public async Task<GuildUser?> FindGuildUserAsync(IGuildUser user, bool disableTracking = false, bool includeAll = false)
+    public async Task<GuildUser?> FindGuildUserAsync(IGuildUser user, bool disableTracking = false)
     {
-        var guildUser = await FindGuildUserByIdAsync(user.GuildId, user.Id, disableTracking, includeAll);
+        var guildUser = await FindGuildUserByIdAsync(user.GuildId, user.Id, disableTracking);
         if (guildUser is null) return null;
 
         if (!disableTracking)
@@ -40,19 +40,13 @@ public class GuildUserRepository : SubRepositoryBase<GrillBotContext>
         return guildUser;
     }
 
-    public async Task<GuildUser?> FindGuildUserByIdAsync(ulong guildId, ulong userId, bool disableTracking = false, bool includeAll = false)
+    public async Task<GuildUser?> FindGuildUserByIdAsync(ulong guildId, ulong userId, bool disableTracking = false)
     {
         using (CreateCounter())
         {
             var query = DbContext.GuildUsers
                 .Include(o => o.Guild).Include(o => o.User)
                 .AsQueryable();
-
-            if (includeAll)
-            {
-                query = query
-                    .Include(o => o.Unverify!.UnverifyLog);
-            }
 
             if (disableTracking)
                 query = query.AsNoTracking();

@@ -82,15 +82,6 @@ public class StatisticsController(IServiceProvider serviceProvider) : Core.Infra
     }
 
     /// <summary>
-    /// Get Discord event statistics.
-    /// </summary>
-    /// <response code="200">Returns dictionary of Discord event statistics (EventName, Count).</response>
-    [HttpGet("events")]
-    [ProducesResponseType(typeof(Dictionary<string, ulong>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetEventLogStatisticsAsync()
-        => await ProcessAsync<GetEventStatistics>();
-
-    /// <summary>
     /// Get average execution times.
     /// </summary>
     [HttpGet("avg-times")]

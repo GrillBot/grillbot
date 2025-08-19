@@ -24,13 +24,4 @@ public class SystemController : Core.Infrastructure.Actions.ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> ChangeBotStatusAsync(bool isActive)
         => await ProcessAsync<ChangeBotStatus>(isActive);
-
-    /// <summary>
-    /// Gets list of discord event logs.
-    /// </summary>
-    /// <response code="200">Returns last 1000 events from discord.</response>
-    [HttpGet("eventLog")]
-    [ProducesResponseType(typeof(string[]), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetEventLogAsync()
-        => await ProcessAsync<GetEventLog>();
 }

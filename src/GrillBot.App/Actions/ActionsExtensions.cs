@@ -116,15 +116,13 @@ public static class ActionsExtensions
         services
             .AddScoped<Api.V1.Statistics.GetApiUserStatistics>()
             .AddScoped<Api.V1.Statistics.GetDatabaseStatus>()
-            .AddScoped<Api.V1.Statistics.GetEventStatistics>()
             .AddScoped<Api.V1.Statistics.GetUnverifyStatistics>()
             .AddScoped<Api.V1.Statistics.GetOperationStats>()
             .AddScoped<Api.V1.Statistics.GetUserCommandStatistics>();
 
         // System
         services
-            .AddScoped<Api.V1.System.ChangeBotStatus>()
-            .AddScoped<Api.V1.System.GetEventLog>();
+            .AddScoped<Api.V1.System.ChangeBotStatus>();
 
         // Unverify
         services

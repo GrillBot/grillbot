@@ -52,7 +52,6 @@ public class GrillBotContext : DbContext
             builder.HasOne(o => o.Guild).WithMany();
         });
 
-        modelBuilder.Entity<SelfunverifyKeepable>(builder => builder.HasKey(o => new { o.GroupName, o.Name }));
         modelBuilder.Entity<ApiClient>(builder => builder.Property(o => o.AllowedMethods).HasConversion(new JsonValueConverter<List<string>>()));
 
         base.OnModelCreating(modelBuilder);
@@ -64,6 +63,5 @@ public class GrillBotContext : DbContext
     public DbSet<GuildChannel> Channels => Set<GuildChannel>();
     public DbSet<GuildUserChannel> UserChannels => Set<GuildUserChannel>();
     public DbSet<UnverifyLog> UnverifyLogs => Set<UnverifyLog>();
-    public DbSet<SelfunverifyKeepable> SelfunverifyKeepables => Set<SelfunverifyKeepable>();
     public DbSet<ApiClient> ApiClients => Set<ApiClient>();
 }

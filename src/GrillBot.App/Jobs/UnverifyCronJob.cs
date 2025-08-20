@@ -4,7 +4,6 @@ using GrillBot.Core.Services.Common.Executor;
 using Microsoft.EntityFrameworkCore;
 using Quartz;
 using UnverifyService;
-using UnverifyService.Models.Request.Keepables;
 
 namespace GrillBot.App.Jobs;
 
@@ -22,7 +21,6 @@ public class UnverifyCronJob(
 
         await ProcessPendingUnverifies(processed, context.CancellationToken);
         await MigrateLogItemAsync(processed, context.CancellationToken);
-        await MigrateKeepableAsync(processed, context.CancellationToken);
 
         if (processed.Count > 0)
             context.Result = string.Join("\n", processed);
@@ -70,35 +68,6 @@ public class UnverifyCronJob(
         );
 
         context.UnverifyLogs.Remove(logItem);
-        await context.SaveChangesAsync(cancellationToken);
-    }
-
-    private async Task MigrateKeepableAsync(List<string> log, CancellationToken cancellationToken = default)
-    {
-        var context = ResolveService<GrillBotContext>();
-
-        var keepables = await context.SelfunverifyKeepables
-            .OrderBy(o => o.GroupName)
-            .ThenBy(o => o.Name)
-            .Take(10)
-            .ToListAsync(cancellationToken);
-
-        if (keepables.Count == 0)
-            return;
-
-        log.Add($"Migrating {keepables.Count} keepables.");
-        var requests = keepables.ConvertAll(o => new CreateKeepableRequest
-        {
-            Group = o.GroupName == "_" ? "-" : o.GroupName,
-            Name = o.Name,
-        });
-
-        await _unverifyClient.ExecuteRequestAsync(
-            async (client, ctx) => await client.CreateKeepablesAsync(requests, cancellationToken),
-            cancellationToken
-        );
-
-        context.RemoveRange(keepables);
         await context.SaveChangesAsync(cancellationToken);
     }
 }

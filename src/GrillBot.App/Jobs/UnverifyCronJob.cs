@@ -1,7 +1,6 @@
 ﻿using GrillBot.App.Infrastructure.Jobs;
 using GrillBot.Core.Extensions.Discord;
 using GrillBot.Core.Services.Common.Executor;
-using Microsoft.EntityFrameworkCore;
 using Quartz;
 using UnverifyService;
 
@@ -18,9 +17,7 @@ public class UnverifyCronJob(
     protected override async Task RunAsync(IJobExecutionContext context)
     {
         var processed = new List<string>();
-
         await ProcessPendingUnverifies(processed, context.CancellationToken);
-        await MigrateLogItemAsync(processed, context.CancellationToken);
 
         if (processed.Count > 0)
             context.Result = string.Join("\n", processed);
@@ -48,26 +45,5 @@ public class UnverifyCronJob(
 
             log.Add($"{guild.Name} - {user?.GetDisplayName()} (Roles:{unverify.RolesToReturnCount}, Channels:{unverify.ChannelsToReturnCount})");
         }
-    }
-
-    private async Task MigrateLogItemAsync(List<string> log, CancellationToken cancellationToken = default)
-    {
-        var context = ResolveService<GrillBotContext>();
-
-        var logItem = await context.UnverifyLogs.OrderBy(o => o.CreatedAt)
-            .FirstOrDefaultAsync(cancellationToken);
-        if (logItem is null)
-            return;
-
-        log.Add($"Migrating log item #{logItem.Id}, created {logItem.CreatedAt}.");
-        var jsonData = System.Text.Json.JsonSerializer.SerializeToNode(logItem)!.AsObject();
-
-        await _unverifyClient.ExecuteRequestAsync(
-            async (client, ctx) => await client.ImportLegacyLogItemAsync(jsonData, cancellationToken),
-            cancellationToken
-        );
-
-        context.UnverifyLogs.Remove(logItem);
-        await context.SaveChangesAsync(cancellationToken);
     }
 }

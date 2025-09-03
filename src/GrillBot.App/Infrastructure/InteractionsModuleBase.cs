@@ -13,15 +13,15 @@ namespace GrillBot.App.Infrastructure;
 [DefaultMemberPermissions(GuildPermission.UseApplicationCommands)]
 public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInteractionContext>
 {
+    private CancellationTokenSource _cancellationToken = null!;
+
     protected ITextsManager Texts { get; }
     protected IServiceProvider ServiceProvider { get; }
 
     protected IGuild Guild => Context.Guild;
     protected ISocketMessageChannel Channel => Context.Channel;
     protected IUser User => Context.User;
-
-    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
-    private ICounterManager CounterManager { get; }
+    protected CancellationToken CancellationToken => _cancellationToken.Token;
 
     protected string Locale
     {
@@ -32,6 +32,8 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
         }
     }
 
+    private GrillBotDatabaseBuilder DatabaseBuilder { get; }
+    private ICounterManager CounterManager { get; }
     private bool IsEphemeralChannel { get; set; }
 
     protected InteractionsModuleBase(IServiceProvider serviceProvider)
@@ -78,19 +80,29 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
         await base.BeforeExecuteAsync(command);
 
         var (canDefer, ephemeral) = await CheckDeferAsync(command);
-        if (canDefer) await DeferAsync(ephemeral);
+
+        if (canDefer)
+            await DeferAsync(ephemeral);
+
+        _cancellationToken = new CancellationTokenSource(TimeSpan.FromMinutes(15));
+    }
+
+    public override async Task AfterExecuteAsync(ICommandInfo command)
+    {
+        await base.AfterExecuteAsync(command);
+        _cancellationToken.Dispose();
     }
 
     protected override async Task DeleteOriginalResponseAsync()
     {
         IUserMessage? userMessage;
         using (CounterManager.Create("Discord.API.Interactions"))
-            userMessage = await GetOriginalResponseAsync();
+            userMessage = await GetOriginalResponseAsync(new() { CancelToken = CancellationToken });
 
         if (userMessage != null)
         {
             using (CounterManager.Create("Discord.API.Messages"))
-                await userMessage.DeleteAsync();
+                await userMessage.DeleteAsync(new() { CancelToken = CancellationToken });
         }
     }
 
@@ -99,7 +111,9 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
     {
         using (CounterManager.Create("Discord.API.Interactions"))
         {
-            var attachmentsList = (attachments ?? Enumerable.Empty<FileAttachment>()).ToList();
+            requestOptions ??= new RequestOptions { CancelToken = CancellationToken };
+
+            var attachmentsList = (attachments ?? []).ToList();
             secret = secret || IsEphemeralChannel;
 
             if (!Context.Interaction.HasResponded)
@@ -108,7 +122,7 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
                     await RespondWithFilesAsync(attachments, content, embeds, false, secret, allowedMentions, components, embed, requestOptions);
                 else
                     await RespondAsync(content, embeds, false, secret, allowedMentions, requestOptions, components, embed);
-                return await Context.Interaction.GetOriginalResponseAsync();
+                return await Context.Interaction.GetOriginalResponseAsync(requestOptions);
             }
 
             if (Context.Interaction.IsValidToken && !suppressFollowUp)
@@ -141,7 +155,7 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
     protected ScopedCommand<TCommand> GetCommand<TCommand>() where TCommand : CommandAction
     {
         var command = new ScopedCommand<TCommand>(ServiceProvider.CreateScope());
-        command.Command.Init(Context);
+        command.Command.Init(Context, CancellationToken);
 
         return command;
     }
@@ -151,7 +165,7 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
         var command = new ScopedCommand<TCommand>(ServiceProvider.CreateScope());
 
         await InitializeCommandAsync(command);
-        command.Command.Init(Context);
+        command.Command.Init(Context, CancellationToken);
 
         return command;
     }
@@ -161,6 +175,7 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
     {
         var command = new ScopedCommand<TAction>(ServiceProvider.CreateScope());
         command.Command.UpdateContext(Locale, Context.User);
+        command.Command.SetCancellationToken(CancellationToken);
 
         return command;
     }
@@ -171,6 +186,7 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
 
         await InitializeCommandAsync(command);
         command.Command.UpdateContext(Locale, Context.User);
+        command.Command.SetCancellationToken(CancellationToken);
 
         return command;
     }
@@ -189,7 +205,8 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
         using var publisher = await GetActionAsCommandAsync<RabbitMQPublisherAction>();
         var currentUser = publisher.Resolve<ICurrentUserProvider>();
 
-        publisher.Command.Init(null!, new object[] { payload }, currentUser);
+        publisher.Command.Init(null!, [payload], currentUser);
+        publisher.Command.SetCancellationToken(CancellationToken);
         await publisher.Command.ProcessAsync();
     }
 }

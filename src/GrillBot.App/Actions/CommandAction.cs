@@ -8,6 +8,7 @@ public abstract class CommandAction
     private IGuildUser? _executingUser;
 
     protected IInteractionContext Context { get; private set; } = null!;
+    protected CancellationToken CancellationToken { get; private set; }
 
     protected string Locale
     {
@@ -18,9 +19,10 @@ public abstract class CommandAction
         }
     }
 
-    public void Init(IInteractionContext context)
+    public void Init(IInteractionContext context, CancellationToken cancellationToken = default)
     {
         Context = context;
+        CancellationToken = cancellationToken;
     }
 
     protected async Task<IGuildUser> GetExecutingUserAsync()

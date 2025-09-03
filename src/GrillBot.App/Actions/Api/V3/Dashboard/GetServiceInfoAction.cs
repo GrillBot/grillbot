@@ -38,17 +38,17 @@ public class GetServiceInfoAction(
             });
     }
 
-    private static async Task<long> GetUptimeAsync(IServiceClient? client)
-        => client is null ? -1 : await client.GetUptimeAsync();
+    private async Task<long> GetUptimeAsync(IServiceClient? client)
+        => client is null ? -1 : await client.GetUptimeAsync(CancellationToken);
 
-    private static async Task<bool> IsServiceHealthyAsync(IServiceClient? client)
+    private async Task<bool> IsServiceHealthyAsync(IServiceClient? client)
     {
         try
         {
             if (client is null)
                 return false;
 
-            await client.IsHealthyAsync();
+            await client.IsHealthyAsync(CancellationToken);
             return true;
         }
         catch (Exception)

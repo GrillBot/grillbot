@@ -27,7 +27,7 @@ public class ServiceBridgeAction<TServiceClient>(
 
             if (actionExecutor is not null)
             {
-                await _client.ExecuteRequestAsync((c, ctx) => actionExecutor(c, ctx));
+                await _client.ExecuteRequestAsync((c, ctx) => actionExecutor(c, ctx), CancellationToken);
                 return ApiResult.Ok();
             }
         }
@@ -59,7 +59,7 @@ public class ServiceBridgeAction<TServiceClient>(
 
         try
         {
-            result = await _client.ExecuteRequestAsync((c, ctx) => funcExecutor(c, ctx));
+            result = await _client.ExecuteRequestAsync((c, ctx) => funcExecutor(c, ctx), CancellationToken);
 
             if (result is Stream stream)
             {

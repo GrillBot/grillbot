@@ -82,6 +82,13 @@ public class UnverifyController(IServiceProvider serviceProvider) : ServiceContr
     public Task<IActionResult> GetActiveUnverifyListAsync([FromBody] ActiveUnverifyListRequest request)
         => ExecuteAsync(async (client, ctx) => await client.GetActiveUnverifyListAsync(request, ctx.CancellationToken));
 
+    [HttpGet("unverify/{guildId}/{userId}")]
+    [ProducesResponseType<UnverifyDetail>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public Task<IActionResult> GetActiveUnverifyDetailAsync([FromRoute, DiscordId] ulong guildId, [FromRoute, DiscordId] ulong userId)
+        => ExecuteAsync(async (client, ctx) => (await client.GetActiveUnverifyDetailAsync(guildId, userId, ctx.CancellationToken))!);
+
     [HttpDelete("unverify/{guildId}/{userId}")]
     [ProducesResponseType<RemoveUnverifyResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]

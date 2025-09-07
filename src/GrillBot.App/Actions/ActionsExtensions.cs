@@ -7,6 +7,7 @@ using GrillBot.Core.Services.RemindService;
 using GrillBot.Core.Services.SearchingService;
 using GrillBot.Core.Services.UserMeasures;
 using Microsoft.Extensions.DependencyInjection;
+using UnverifyService;
 
 namespace GrillBot.App.Actions;
 
@@ -32,7 +33,8 @@ public static class ActionsExtensions
             .AddScoped<Api.ServiceBridgeAction<ISearchingServiceClient>>()
             .AddScoped<Api.ServiceBridgeAction<IEmoteServiceClient>>()
             .AddScoped<Api.ServiceBridgeAction<IInviteServiceClient>>()
-            .AddScoped<Api.ServiceBridgeAction<IMessageServiceClient>>();
+            .AddScoped<Api.ServiceBridgeAction<IMessageServiceClient>>()
+            .AddScoped<Api.ServiceBridgeAction<IUnverifyServiceClient>>();
     }
 
     private static IServiceCollection AddApiActions(this IServiceCollection services)

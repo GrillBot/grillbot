@@ -1,4 +1,5 @@
-﻿using GrillBot.App.Infrastructure.Auth;
+﻿using GrillBot.App.Actions.Api.V3.Unverify;
+using GrillBot.App.Infrastructure.Auth;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Core.Services.GrillBot.Models;
 using GrillBot.Core.Validation;
@@ -124,4 +125,10 @@ public class UnverifyController(IServiceProvider serviceProvider) : ServiceContr
     public Task<IActionResult> GetUserInfoAsync(
         [FromRoute, DiscordId] ulong userId
     ) => ExecuteAsync(async (client, ctx) => (await client.GetUserInfoAsync(userId, ctx.CancellationToken))!);
+
+    [HttpPost("logs/{id}/recover")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType<LocalizedMessageContent>(StatusCodes.Status400BadRequest)]
+    public Task<IActionResult> RecoverAccessAsync([FromRoute] Guid id)
+        => ExecuteAsync<RecoverState>(id);
 }

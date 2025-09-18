@@ -10,28 +10,28 @@ using GrillBot.Core.Services.Common.Executor;
 
 namespace GrillBot.App.Actions.Api.V1.Channel;
 
-public class GetPins : ApiAction
+public class GetPins(
+    ApiRequestContext apiContext,
+    ChannelHelper _channelHelper,
+    ITextsManager _texts,
+    IServiceClientExecutor<IRubbergodServiceClient> _rubbergodServiceClient
+) : ApiAction(apiContext)
 {
-    private ChannelHelper ChannelHelper { get; }
-    private ITextsManager Texts { get; }
-    private readonly IServiceClientExecutor<IRubbergodServiceClient> _rubbergodServiceClient;
-
-    public GetPins(ApiRequestContext apiContext, ChannelHelper channelHelper, ITextsManager texts, IServiceClientExecutor<IRubbergodServiceClient> rubbergodServiceClient) : base(apiContext)
-    {
-        ChannelHelper = channelHelper;
-        Texts = texts;
-        _rubbergodServiceClient = rubbergodServiceClient;
-    }
-
     public override async Task<ApiResult> ProcessAsync()
     {
-        var channelId = (ulong)Parameters[0]!;
-        var markdown = (bool)Parameters[1]!;
+        var channelId = GetParameter<ulong>(0);
+        var markdown = GetParameter<bool>(1);
 
-        var guild = await ChannelHelper.GetGuildFromChannelAsync(null, channelId)
-            ?? throw new NotFoundException(Texts["ChannelModule/ChannelDetail/ChannelNotFound", ApiContext.Language]);
+        var guild = await _channelHelper.GetGuildFromChannelAsync(null, channelId, CancellationToken)
+            ?? throw new NotFoundException(_texts["ChannelModule/ChannelDetail/ChannelNotFound", ApiContext.Language]);
 
-        var content = await _rubbergodServiceClient.ExecuteRequestAsync((c, ctx) => c.GetPinsAsync(guild.Id, channelId, markdown, ctx.CancellationToken));
+        using var response = await _rubbergodServiceClient.ExecuteRequestAsync(
+            (c, ctx) => c.GetPinsAsync(guild.Id, channelId, markdown, ctx.CancellationToken),
+            CancellationToken
+        );
+
+        var content = await response.ReadAsByteArrayAsync(CancellationToken);
+
         var apiResult = new ContentResult
         {
             Content = Encoding.UTF8.GetString(content),

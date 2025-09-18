@@ -11,31 +11,27 @@ using GrillBot.Core.Services.Common.Executor;
 
 namespace GrillBot.App.Actions.Api.V1.Channel;
 
-public class GetPinsWithAttachments : ApiAction
+public class GetPinsWithAttachments(
+    ApiRequestContext apiContext,
+    ChannelHelper _channelHelper,
+    ITextsManager _texts,
+    IServiceClientExecutor<IRubbergodServiceClient> _rubbergodService,
+    DownloadHelper _downloadHelper
+) : ApiAction(apiContext)
 {
-    private ChannelHelper ChannelHelper { get; }
-    private ITextsManager Texts { get; }
-    private DownloadHelper DownloadHelper { get; }
-
-    private readonly IServiceClientExecutor<IRubbergodServiceClient> _rubbergodServiceClient;
-
-    public GetPinsWithAttachments(ApiRequestContext apiContext, ChannelHelper channelHelper, ITextsManager texts,
-        IServiceClientExecutor<IRubbergodServiceClient> rubbergodService, DownloadHelper downloadHelper) : base(apiContext)
-    {
-        ChannelHelper = channelHelper;
-        Texts = texts;
-        _rubbergodServiceClient = rubbergodService;
-        DownloadHelper = downloadHelper;
-    }
-
     public override async Task<ApiResult> ProcessAsync()
     {
-        var channelId = (ulong)Parameters[0]!;
+        var channelId = GetParameter<ulong>(0);
 
-        var guild = await ChannelHelper.GetGuildFromChannelAsync(null, channelId)
-            ?? throw new NotFoundException(Texts["ChannelModule/ChannelDetail/ChannelNotFound", ApiContext.Language]);
+        var guild = await _channelHelper.GetGuildFromChannelAsync(null, channelId, CancellationToken)
+            ?? throw new NotFoundException(_texts["ChannelModule/ChannelDetail/ChannelNotFound", ApiContext.Language]);
 
-        var markdownContent = await _rubbergodServiceClient.ExecuteRequestAsync((c, ctx) => c.GetPinsAsync(guild.Id, channelId, true, ctx.CancellationToken));
+        using var response = await _rubbergodService.ExecuteRequestAsync(
+            (c, ctx) => c.GetPinsAsync(guild.Id, channelId, true, ctx.CancellationToken),
+            CancellationToken
+        );
+
+        var markdownContent = await response.ReadAsByteArrayAsync(CancellationToken);
 
         TemporaryFile? archiveFile = null;
 
@@ -46,7 +42,7 @@ public class GetPinsWithAttachments : ApiAction
             await AppendAttachmentsAsync(guild, channelId, archive);
             archive.Dispose();
 
-            var result = await archiveFile.ReadAllBytesAsync();
+            var result = await archiveFile.ReadAllBytesAsync(CancellationToken);
             var apiResult = new FileContentResult(result, "application/zip");
 
             return ApiResult.Ok(apiResult);
@@ -59,7 +55,12 @@ public class GetPinsWithAttachments : ApiAction
 
     private async Task AppendAttachmentsAsync(IGuild guild, ulong channelId, ZipArchive archive)
     {
-        var bytes = await _rubbergodServiceClient.ExecuteRequestAsync((c, ctx) => c.GetPinsAsync(guild.Id, channelId, false, ctx.CancellationToken));
+        using var response = await _rubbergodService.ExecuteRequestAsync(
+            (c, ctx) => c.GetPinsAsync(guild.Id, channelId, false, ctx.CancellationToken),
+            CancellationToken
+        );
+
+        var bytes = await response.ReadAsByteArrayAsync(CancellationToken);
         var rawData = Encoding.UTF8.GetString(bytes);
         var json = JObject.Parse(rawData);
 
@@ -71,7 +72,7 @@ public class GetPinsWithAttachments : ApiAction
                 if (string.IsNullOrEmpty(url))
                     continue;
 
-                var content = await DownloadHelper.DownloadFileAsync(url);
+                var content = await _downloadHelper.DownloadFileAsync(url, CancellationToken);
                 if (content is null)
                     continue;
 
@@ -79,19 +80,19 @@ public class GetPinsWithAttachments : ApiAction
                 var attachmentEntry = archive.CreateEntry(filename);
 
                 await using var attachmentEntryStream = attachmentEntry.Open();
-                await attachmentEntryStream.WriteAsync(content);
+                await attachmentEntryStream.WriteAsync(content, CancellationToken);
             }
         }
     }
 
-    private static async Task<(TemporaryFile, ZipArchive)> CreateTemporaryZipAsync(byte[] markdown)
+    private async Task<(TemporaryFile, ZipArchive)> CreateTemporaryZipAsync(byte[] markdown)
     {
         var archiveFile = new TemporaryFile("zip");
         var archive = ZipFile.Open(archiveFile.Path, ZipArchiveMode.Create);
 
         var markdownEntry = archive.CreateEntry("channel.md");
         await using (var markdownEntryStream = markdownEntry.Open())
-            await markdownEntryStream.WriteAsync(markdown);
+            await markdownEntryStream.WriteAsync(markdown, CancellationToken);
 
         return (archiveFile, archive);
     }

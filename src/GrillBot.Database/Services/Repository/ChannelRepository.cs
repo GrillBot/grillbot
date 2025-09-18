@@ -11,6 +11,7 @@ using GrillBot.Core.Database.Repository;
 using GrillBot.Core.Managers.Performance;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Database.Enums.Internal;
+using System.Threading;
 
 namespace GrillBot.Database.Services.Repository;
 
@@ -44,7 +45,8 @@ public class ChannelRepository : SubRepositoryBase<GrillBotContext>
     }
 
     public async Task<GuildChannel?> FindChannelByIdAsync(ulong channelId, ulong? guildId = null, bool disableTracking = false,
-        ChannelsIncludeUsersMode includeUsersMode = ChannelsIncludeUsersMode.None, bool includeParent = false, bool includeDeleted = false)
+        ChannelsIncludeUsersMode includeUsersMode = ChannelsIncludeUsersMode.None, bool includeParent = false, bool includeDeleted = false,
+        CancellationToken cancellationToken = default)
     {
         using (CreateCounter())
         {
@@ -54,7 +56,7 @@ public class ChannelRepository : SubRepositoryBase<GrillBotContext>
             if (includeParent)
                 query = query.Include(o => o.ParentChannel);
 
-            return await query.FirstOrDefaultAsync(o => o.ChannelId == channelId.ToString());
+            return await query.FirstOrDefaultAsync(o => o.ChannelId == channelId.ToString(), cancellationToken);
         }
     }
 

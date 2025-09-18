@@ -38,7 +38,7 @@ public class DownloadHelper
         }
     }
 
-    public async Task<byte[]?> DownloadFileAsync(string url)
+    public async Task<byte[]?> DownloadFileAsync(string url, CancellationToken cancellationToken = default)
     {
         var httpClient = HttpClientFactory.CreateClient();
 
@@ -46,7 +46,7 @@ public class DownloadHelper
         {
             try
             {
-                return await httpClient.GetByteArrayAsync(url);
+                return await httpClient.GetByteArrayAsync(url, cancellationToken);
             }
             catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
             {

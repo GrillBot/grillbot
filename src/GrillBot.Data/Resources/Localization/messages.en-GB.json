@@ -126,7 +126,7 @@
     "DuckModule": {
         "GetDuckInfo": {
             "CannotGetState": "Couldn't determine the club state. Try again later or look in {0}",
-            "DuckName": "U Kachnièky",
+            "DuckName": "U Kachniï¿½ky",
             "Closed": "Kachna is closed.",
             "NextAll": "It will open again (in the free-for-everyone access mode) {0}.",
             "NextBar": "next bar w/ beer",
@@ -677,7 +677,7 @@
             "Title": "Suggestion Vote",
             "ExpectedEnd": "Expected End"
         },
-        "NoVote": "No proposal that hasn’t been voted on has been approved.",
+        "NoVote": "No proposal that hasnï¿½t been voted on has been approved.",
         "VoteStarted": "Voting has started. Voting launched: {0}."
     }
 }

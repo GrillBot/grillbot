@@ -1,0 +1,639 @@
+{
+    "$schema": "https://gist.github.com/Cenngo/d46a881de24823302f66c3c7e2f7b254",
+    "selfunverify": {
+        "name": "selfunverify",
+        "description": "Temporarily deny access to yourself on the server.",
+        "end": {
+            "name": "end",
+            "description": "End date and time, or duration of access removal."
+        },
+        "keepables": {
+            "name": "keepables",
+            "description": "A list of channels or roles to keep access. Separate with a comma, space, or semicolon."
+        }
+    },
+    "me": {
+        "name": "me",
+        "description": "Information about me"
+    },
+    "user": {
+        "name": "user",
+        "description": "User management",
+        "access": {
+            "name": "access",
+            "description": "View a list of user permissions.",
+            "user": {
+                "name": "user",
+                "description": "User identification"
+            },
+            "secret": {
+                "name": "secret",
+                "description": "View result privately?",
+                "Yes": {
+                    "name": "Yes"
+                },
+                "No": {
+                    "name": "No"
+                }
+            }
+        },
+        "info": {
+            "name": "info",
+            "description": "User information",
+            "user": {
+                "name": "user",
+                "description": "The user about whom we want to find out information."
+            }
+        },
+        "warning": {
+            "name": "warning",
+            "description": "User warning record",
+            "user": {
+                "name": "user",
+                "description": "A user who has been warned."
+            },
+            "message": {
+                "name": "message",
+                "description": "Warning text"
+            },
+            "notification": {
+                "name": "notification",
+                "description": "Send a notification to the user in private messages."
+            }
+        }
+    },
+    "birthdays": {
+        "name": "birthdays",
+        "description": "Birthdays",
+        "today": {
+            "name": "today",
+            "description": "Find out whose birthday it is today."
+        },
+        "add": {
+            "name": "add",
+            "description": "Adding your date of birth.",
+            "when": {
+                "name": "when",
+                "description": "The date of your birthday. (Format: yyyy-mm-dd, if you don't want a year, enter 0001 as the year)."
+            }
+        },
+        "remove": {
+            "name": "remove",
+            "description": "Delete date of birth."
+        },
+        "have": {
+            "name": "have",
+            "description": "Ask if I have my birthday saved?"
+        }
+    },
+    "bot": {
+        "name": "bot",
+        "description": "Bot management",
+        "info": {
+            "name": "info",
+            "description": "Bot info"
+        },
+        "selfunverify": {
+            "name": "selfunverify",
+            "description": "Configuring selfunverify.",
+            "list-keepables": {
+                "name": "list-keepables",
+                "description": "List of allowable accesses when selfunverify"
+            }
+        }
+    },
+    "channel": {
+        "name": "channel",
+        "description": "Channel information",
+        "info": {
+            "name": "info",
+            "description": "Channel information",
+            "channel": {
+                "name": "channel"
+            },
+            "excludeThreads": {
+                "name": "exclude-threads",
+                "description": "Exclude threads from statistics?",
+                "Hide threads": {
+                    "name": "Exclude threads"
+                },
+                "Show threads": {
+                    "name": "Include threads"
+                }
+            }
+        },
+        "board": {
+            "name": "board",
+            "description": "Statistics of the most active channels on the server."
+        }
+    },
+    "duck": {
+        "name": "kachna",
+        "description": "Find out the current status of the U Kachnièky club."
+    },
+    "emote": {
+        "name": "emote",
+        "description": "Managing emotes",
+        "get": {
+            "name": "get",
+            "description": "Emote information",
+            "emote": {
+                "name": "emote",
+                "description": "Emote identification (ID/Name/Full emote)"
+            }
+        },
+        "list": {
+            "name": "list",
+            "description": "List of emote statistics",
+            "order": {
+                "name": "order",
+                "description": "Sort by",
+                "Number of uses": {
+                    "name": "Count of uses"
+                },
+                "Date and time of last use": {
+                    "name": "Date and time of last use"
+                }
+            },
+            "sort": {
+                "name": "direction",
+                "description": "Ascending/Descending",
+                "ascending": {
+                    "name": "Ascending"
+                },
+                "descending": {
+                    "name": "Descending"
+                }
+            },
+            "user": {
+                "name": "user",
+                "description": "Show statistics of only one user"
+            },
+            "animated": {
+                "name": "animated",
+                "description": "Do I want to show animated emotes in the list too?",
+                "Show animated emotes": {
+                    "name": "Show animated emotes"
+                },
+                "Hide animated emotes": {
+                    "name": "Don't show animated emotes"
+                }
+            }
+        }
+    },
+    "guild": {
+        "name": "guild",
+        "description": "Guild management",
+        "info": {
+            "name": "info",
+            "description": "Guild information"
+        }
+    },
+    "solve": {
+        "name": "solve",
+        "description": "Calculates a mathematical expression.",
+        "expression": {
+            "name": "expression",
+            "description": "Mathematical expression to calculate."
+        }
+    },
+    "kasparek": {
+        "name": "kasparek",
+        "description": "He asks your mum what kind of **** you have."
+    },
+    "hi": {
+        "name": "hi",
+        "description": "Hello user",
+        "base": {
+            "name": "base",
+            "description": "Tell the bot in which base to greet you.",
+            "Binary": {
+                "name": "Binary"
+            },
+            "Octal": {
+                "name": "Octal"
+            },
+            "Hexadecimal": {
+                "name": "Hexadecimal"
+            }
+        }
+    },
+    "peepolove": {
+        "name": "peepolove",
+        "description": "Generates an image where the peepo hugs the user.",
+        "user": {
+            "name": "user",
+            "description": "The user who will be in the picture. If you don't enter it, you will be there."
+        }
+    },
+    "peepoangry": {
+        "name": "peepoangry",
+        "description": "Generates an image where the peepo stares at the user.",
+        "user": {
+            "name": "user",
+            "description": "The user who will be in the picture. If you don't enter it, you will be there."
+        }
+    },
+    "emojize": {
+        "name": "emojize",
+        "description": "Create a text-based emoji message.",
+        "message": {
+            "name": "message",
+            "description": "Message to be converted. It is also possible to enter emoticons."
+        }
+    },
+    "rectjize": {
+        "name": "reactjize",
+        "description": "Convert text to emoji and set as reaction.",
+        "message": {
+            "name": "message",
+            "description": "Message to be converted. It is also possible to enter emoticons. Must not contain duplicate emotes/characters."
+        },
+        "reference": {
+            "name": "reference",
+            "description": "Link to the message to be responded to."
+        }
+    },
+    "mock": {
+        "name": "mock",
+        "description": "Mocks the specified message",
+        "message": {
+            "name": "message",
+            "description": "Message for mocking"
+        }
+    },
+    "permissions": {
+        "name": "permissions",
+        "description": "Manage channel permissions.",
+        "remove": {
+            "name": "remove",
+            "description": "Deleting permissions in channels.",
+            "all": {
+                "name": "all",
+                "description": "Remove all user permissions from channel.",
+                "channel": {
+                    "name": "channel",
+                    "description": "The channel in which permissions are to be deleted."
+                },
+                "excludedUsers": {
+                    "name": "excludedUsers",
+                    "description": "List of users to exclude from the process."
+                }
+            }
+        },
+        "set": {
+            "name": "set",
+            "description": "Set permissions",
+            "category": {
+                "name": "category",
+                "description": "Set permissions with a role for all channels in a category.",
+                "category": {
+                    "name": "category",
+                    "description": "Category"
+                },
+                "role": {
+                    "name": "role",
+                    "description": "Role"
+                },
+                "view-channel": {
+                    "name": "view",
+                    "description": "ViewChannel permission",
+                    "Allow": {
+                        "name": "Allow"
+                    },
+                    "Deny": {
+                        "name": "Deny"
+                    }
+                }
+            }
+        }
+    },
+    "pin": {
+        "name": "pin",
+        "description": "Pins management",
+        "purge": {
+            "name": "purge",
+            "description": "Unpins the last N messages.",
+            "count": {
+                "name": "count",
+                "description": "Count of messages to unpin."
+            },
+            "channel": {
+                "name": "channel",
+                "description": "Channel where to delete messages. If the channel is not specified, the execution channel is used."
+            }
+        }
+    },
+    "remind": {
+        "name": "remind",
+        "description": "A reminder for a specific date",
+        "create": {
+            "name": "create",
+            "description": "Create a reminder for a specific date.",
+            "who": {
+                "name": "recipient",
+                "description": "Designation of the user who wishes to receive notifications"
+            },
+            "when": {
+                "name": "when",
+                "description": "Reminder date and time. It must be in the future. (1h/1d/1w/... or 2023-02-16T00:00:00)"
+            },
+            "message": {
+                "name": "message",
+                "description": "The message that will be sent to the user."
+            },
+            "secret": {
+                "name": "secret",
+                "description": "No one should know about creating a reminder.",
+                "Yes": {
+                    "name": "Yes"
+                },
+                "No": {
+                    "name": "No"
+                }
+            }
+        },
+        "cancel": {
+            "name": "cancel",
+            "description": "Early cancellation of reminders.",
+            "ident": {
+                "name": "identification",
+                "description": "Reminder identification"
+            },
+            "notify": {
+                "name": "notify",
+                "description": "Whether to notify the target user early.",
+                "Yes": {
+                    "name": "Yes"
+                },
+                "No": {
+                    "name": "No"
+                }
+            }
+        },
+        "list": {
+            "name": "list",
+            "description": "List of currently pending reminders."
+        }
+    },
+    "search": {
+        "name": "search",
+        "description": "Searching",
+        "list": {
+            "name": "list",
+            "description": "Current search.",
+            "channel": {
+                "name": "channel",
+                "description": "The channel you want to find something in."
+            },
+            "substring": {
+                "name": "substring",
+                "description": "Search substring"
+            }
+        },
+        "create": {
+            "name": "create",
+            "description": "Create a new search.",
+            "message": {
+                "name": "message",
+                "description": "Message"
+            },
+            "valid-to": {
+                "name": "valid-to",
+                "description": "Optional expiration date and time."
+            }
+        },
+        "remove": {
+            "name": "remove",
+            "description": "Deletes the search",
+            "ident": {
+                "name": "identification",
+                "description": "Search identification"
+            }
+        }
+    },
+    "points": {
+        "name": "points",
+        "description": "Points",
+        "where": {
+            "name": "where",
+            "description": "Get the current status of user points.",
+            "user": {
+                "name": "user",
+                "description": "The user for whom you wish to show the points status. If you don't enter, yours will be displayed."
+            }
+        },
+        "chart": {
+            "name": "chart",
+            "description": "Create chart of points history.",
+            "type": {
+                "name": "type",
+                "description": "Type of chart",
+                "UserChart": {
+                    "name": "Chart of user points"
+                },
+                "GuildChart": {
+                    "name": "Chart of current guild points"
+                }
+            },
+            "filter": {
+                "name": "filter",
+                "description": "Shown charts",
+                "Messages": {
+                    "name": "Show points chart only from messages."
+                },
+                "Reactions": {
+                    "name": "Show points chart only from reactions."
+                },
+                "Summary": {
+                    "name": "Show points chart of combined points."
+                },
+                "All": {
+                    "name": "Show all charts"
+                }
+            },
+            "users": {
+                "name": "users",
+                "description": "Mentions of users. Can be used only with combination with UserChart."
+            }
+        },
+        "board": {
+            "name": "board",
+            "description": "Leaderboard TOP 10 most active users.",
+            "over-all-time": {
+                "name": "over-all-time",
+                "description": "Display the TOP 10 statistics, including expired points.",
+                "True": {
+                    "name": "Yes"
+                },
+                "False": {
+                    "name": "No"
+                }
+            }
+        }
+    },
+    "message": {
+        "name": "message",
+        "description": "Message management",
+        "clear": {
+            "name": "clear",
+            "description": "Deleting message content",
+            "react": {
+                "name": "react",
+                "description": "Deleting an emote from message reactions."
+            }
+        }
+    },
+    "role": {
+        "name": "role",
+        "description": "Role management",
+        "list": {
+            "name": "list",
+            "description": "List of roles on the server",
+            "sort-by": {
+                "name": "sort",
+                "description": "How should the roles be sorted?",
+                "Members": {
+                    "name": "Members",
+                    "description": "According to the count of members"
+                },
+                "Position": {
+                    "name": "Position",
+                    "description": "By position in the hierarchy"
+                }
+            }
+        },
+        "get": {
+            "name": "get",
+            "description": "Detailed information about the role",
+            "role": {
+                "name": "role",
+                "description": "Required role"
+            }
+        }
+    },
+    "admin": {
+        "name": "admin",
+        "description": "Administration commands",
+        "clean_messages": {
+            "name": "clean_messages",
+            "description": "Deletes messages from the channel until concrete message ID (excluding) or the last N messages.",
+            "criterium": {
+                "name": "criterium",
+                "description": "Count of messages, message ID or message link in the channel."
+            },
+            "channel": {
+                "name": "channel",
+                "description": "Channel where to delete messages. If the channel is not specified, the execution channel is used."
+            }
+        },
+        "send": {
+            "name": "send",
+            "description": "Post a message to a channel as a bot.",
+            "channel": {
+                "name": "channel",
+                "description": "The channel to send the message to."
+            },
+            "content": {
+                "name": "content",
+                "description": "The textual content of the message."
+            },
+            "reference": {
+                "name": "reference",
+                "description": "A link to the message to which this message should refer."
+            },
+            "attachment": {
+                "name": "attachment",
+                "description": "Attachment"
+            }
+        }
+    },
+    "unverify": {
+        "name": "unverify",
+        "description": "Temporary access removal in the guild.",
+        "list": {
+            "name": "list",
+            "description": "List of members with removed access."
+        },
+        "update": {
+            "name": "update",
+            "description": "Update the datetime of access removal.",
+            "user": {
+                "name": "user",
+                "description": "User with removed access."
+            },
+            "new-end": {
+                "name": "new-end",
+                "description": "Datetime of new end."
+            },
+            "reason": {
+                "name": "reason",
+                "description": "Optional reason, why was time updated."
+            }
+        },
+        "remove": {
+            "name": "remove",
+            "description": "Early return of user access",
+            "user": {
+                "name": "user",
+                "description": "User to whom access is to be returned."
+            }
+        },
+        "set": {
+            "name": "set",
+            "description": "Process temporary access removal.",
+            "end": {
+                "name": "end",
+                "description": "Date and time when access will be restored. (1h/1d/1w/... or 2023-02-16T00:00:00)"
+            },
+            "reason": {
+                "name": "reason",
+                "description": "Reason for removing access."
+            },
+            "users": {
+                "name": "users",
+                "description": "List of users"
+            }
+        },
+        "fun": {
+            "name": "fun",
+            "description": "Process fake temporary access removal.",
+            "end": {
+                "name": "end",
+                "description": "Date and time when access will be restored. (1h/1d/1w/... or 2023-02-16T00:00:00)"
+            },
+            "reason": {
+                "name": "reason",
+                "description": "Reason for removing access."
+            },
+            "users": {
+                "name": "users",
+                "description": "List of users"
+            }
+        }
+    },
+    "emote-suggestions": {
+        "name": "emote-suggestions",
+        "description": "Emote Suggestions",
+        "create": {
+            "name": "create",
+            "description": "Create a suggestion to add a new emote.",
+            "reason": {
+                "name": "reason",
+                "description": "The reason why the emote should be added."
+            },
+            "emoteName": {
+                "name": "name",
+                "description": "Name of the suggested emote. Not required if you're suggesting an existing emote."
+            },
+            "emote": {
+                "name": "emote",
+                "description": "The emote you want to suggest. Cannot be combined with an attachment."
+            },
+            "attachment": {
+                "name": "attachment",
+                "description": "An attachment to be used as the emote. Cannot be combined with an emote."
+            }
+        }
+    }
+}

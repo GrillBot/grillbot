@@ -1,6 +1,6 @@
 ﻿using GrillBot.App.Infrastructure.Jobs;
-using GrillBot.Core.Services.PointsService;
-using GrillBot.Core.Services.PointsService.Models;
+using PointsService;
+using PointsService.Models;
 using Quartz;
 
 namespace GrillBot.App.Jobs;

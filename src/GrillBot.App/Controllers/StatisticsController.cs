@@ -1,13 +1,13 @@
 ﻿using GrillBot.App.Actions.Api;
 using GrillBot.App.Actions.Api.V1.Statistics;
-using GrillBot.Core.Services.AuditLog;
+using AuditLog;
 using GrillBot.Core.Services.Common.Executor;
 using GrillBot.Data.Models.API.Statistics;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using AuditLog = GrillBot.Core.Services.AuditLog.Models.Response.Statistics;
+using AuditLog.Models.Response.Statistics;
 
 namespace GrillBot.App.Controllers;
 
@@ -32,7 +32,7 @@ public class StatisticsController(IServiceProvider serviceProvider) : Core.Infra
     /// </summary>
     /// <response code="200">Returns statistics about audit log (by type, by date, files by count, files by size)</response>
     [HttpGet("audit-log")]
-    [ProducesResponseType(typeof(AuditLog.AuditLogStatistics), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(AuditLogStatistics), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAuditLogStatisticsAsync()
     {
         var executor = new Func<IAuditLogServiceClient, ServiceExecutorContext, Task<object>>(async (client, ctx) => await client.GetAuditLogStatisticsAsync(ctx.CancellationToken));
@@ -44,7 +44,7 @@ public class StatisticsController(IServiceProvider serviceProvider) : Core.Infra
     /// </summary>
     /// <response code="200">Returns statistics about interaction commannds</response>
     [HttpGet("interactions")]
-    [ProducesResponseType(typeof(AuditLog.InteractionStatistics), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(InteractionStatistics), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetInteractionsStatusAsync()
     {
         var executor = new Func<IAuditLogServiceClient, ServiceExecutorContext, Task<object>>(async (client, ctx) => await client.GetInteractionStatisticsAsync(ctx.CancellationToken));
@@ -74,7 +74,7 @@ public class StatisticsController(IServiceProvider serviceProvider) : Core.Infra
     /// </summary>
     /// <returns></returns>
     [HttpGet("api")]
-    [ProducesResponseType(typeof(AuditLog.ApiStatistics), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiStatistics), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetApiStatisticsAsync()
     {
         var executor = new Func<IAuditLogServiceClient, ServiceExecutorContext, Task<object>>(async (client, ctx) => await client.GetApiStatisticsAsync(ctx.CancellationToken));
@@ -85,7 +85,7 @@ public class StatisticsController(IServiceProvider serviceProvider) : Core.Infra
     /// Get average execution times.
     /// </summary>
     [HttpGet("avg-times")]
-    [ProducesResponseType(typeof(AuditLog.AvgExecutionTimes), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(AvgExecutionTimes), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAvgTimesAsync()
     {
         var executor = new Func<IAuditLogServiceClient, ServiceExecutorContext, Task<object>>(async (client, ctx) => await client.GetAvgTimesAsync(ctx.CancellationToken));
@@ -104,7 +104,7 @@ public class StatisticsController(IServiceProvider serviceProvider) : Core.Infra
     /// Get statistics of commands cross grouped with users.
     /// </summary>
     [HttpGet("interactions/users")]
-    [ProducesResponseType(typeof(List<UserActionCountItem>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(List<Data.Models.API.Statistics.UserActionCountItem>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetUserCommandStatisticsAsync()
         => await ProcessAsync<GetUserCommandStatistics>();
 
@@ -112,7 +112,7 @@ public class StatisticsController(IServiceProvider serviceProvider) : Core.Infra
     /// Get statistics of api requests cross grouped with users.
     /// </summary>
     [HttpGet("api/users")]
-    [ProducesResponseType(typeof(List<UserActionCountItem>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(List<Data.Models.API.Statistics.UserActionCountItem>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetUserApiStatisticsAsync([Required] string criteria)
         => await ProcessAsync<GetApiUserStatistics>(criteria);
 }

@@ -5,7 +5,7 @@ namespace GrillBot.App.Actions.Commands;
 
 public class Mock : CommandAction
 {
-    private Emote MockingEmote { get; }
+    private Discord.Emote MockingEmote { get; }
     private IRandomManager Random { get; }
 
     // MaxMessageSize - 2xMocking emotes - Spaces
@@ -22,7 +22,7 @@ public class Mock : CommandAction
 
     public Mock(IConfiguration configuration, IRandomManager random)
     {
-        MockingEmote = Emote.Parse(configuration.GetValue<string>("Discord:Emotes:Mocking"));
+        MockingEmote = Discord.Emote.Parse(configuration.GetValue<string>("Discord:Emotes:Mocking"));
         Random = random;
     }
 

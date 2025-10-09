@@ -1,7 +1,7 @@
 ﻿using GrillBot.App.Actions.Api.V3.Unverify;
 using GrillBot.App.Infrastructure.Auth;
 using GrillBot.Core.Models.Pagination;
-using GrillBot.Core.Services.GrillBot.Models;
+using GrillBot.Models;
 using GrillBot.Core.Validation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

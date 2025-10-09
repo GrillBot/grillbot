@@ -1,7 +1,7 @@
 ﻿using GrillBot.Common.Managers.Localization;
 using GrillBot.Core.Services.Common.Exceptions;
 using GrillBot.Core.Services.Common.Executor;
-using GrillBot.Core.Services.Emote;
+using Emote;
 
 namespace GrillBot.App.Actions.Commands.Emotes.Suggestions;
 

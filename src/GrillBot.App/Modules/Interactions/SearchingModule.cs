@@ -2,7 +2,7 @@
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
 using GrillBot.App.Modules.Implementations.Searching;
-using GrillBot.Core.Services.SearchingService.Models.Events;
+using SearchingService.Models.Events;
 
 namespace GrillBot.App.Modules.Interactions;
 

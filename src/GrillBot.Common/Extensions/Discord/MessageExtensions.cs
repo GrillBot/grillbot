@@ -36,12 +36,12 @@ public static class MessageExtensions
         return true;
     }
 
-    public static IEnumerable<Emote> GetEmotesFromMessage(this IMessage message)
+    public static IEnumerable<global::Discord.Emote> GetEmotesFromMessage(this IMessage message)
     {
         return message.Tags
             .Where(o => o.Type == TagType.Emoji) // Is emote
             .Select(o => o.Value) // Only emote property
-            .OfType<Emote>() // Only emote type
+            .OfType<global::Discord.Emote>() // Only emote type
             .Distinct(); // Without duplicates.
     }
 }

@@ -1,7 +1,7 @@
 ﻿using GrillBot.App.Helpers;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
-using GrillBot.Core.Services.RubbergodService;
+using RubbergodService;
 using GrillBot.Core.Exceptions;
 using GrillBot.Core.Infrastructure.Actions;
 using Microsoft.AspNetCore.Mvc;

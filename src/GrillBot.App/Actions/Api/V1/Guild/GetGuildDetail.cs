@@ -6,12 +6,12 @@ using GrillBot.Common.Models;
 using GrillBot.Core.Exceptions;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Infrastructure.Actions;
-using GrillBot.Core.Services.AuditLog;
+using AuditLog;
 using GrillBot.Core.Services.Common.Executor;
-using GrillBot.Core.Services.Emote;
-using GrillBot.Core.Services.InviteService;
-using GrillBot.Core.Services.PointsService;
-using GrillBot.Core.Services.UserMeasures;
+using Emote;
+using InviteService;
+using PointsService;
+using UserMeasures;
 using GrillBot.Data.Models.API.Guilds;
 using GrillBot.Database.Models.Guilds;
 

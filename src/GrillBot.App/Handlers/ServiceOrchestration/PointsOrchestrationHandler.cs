@@ -2,9 +2,9 @@
 using GrillBot.Cache.Services.Managers.MessageCache;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Events.Contracts;
-using GrillBot.Core.Services.PointsService.Models;
-using GrillBot.Core.Services.PointsService.Models.Channels;
-using GrillBot.Core.Services.PointsService.Models.Events;
+using PointsService.Models;
+using PointsService.Models.Channels;
+using PointsService.Models.Events;
 
 namespace GrillBot.App.Handlers.ServiceOrchestration;
 
@@ -58,7 +58,7 @@ public class PointsOrchestrationHandler(
     public async Task ProcessAsync(Cacheable<IUserMessage, ulong> cachedMessage, Cacheable<IMessageChannel, ulong> cachedChannel, SocketReaction reaction)
     {
         if (!cachedChannel.HasValue || cachedChannel.Value is not ITextChannel textChannel) return;
-        if (reaction.Emote is not Emote || !textChannel.Guild.Emotes.Any(x => x.IsEqual(reaction.Emote))) return;
+        if (reaction.Emote is not Discord.Emote || !textChannel.Guild.Emotes.Any(x => x.IsEqual(reaction.Emote))) return;
 
         var reactionUser = reaction.User.IsSpecified ? reaction.User.GetValueOrDefault() : await textChannel.Guild.GetUserAsync(reaction.UserId);
         if (reactionUser is null) return;
@@ -93,7 +93,7 @@ public class PointsOrchestrationHandler(
     {
         if (!cachedChannel.HasValue || cachedChannel.Value is not ITextChannel textChannel)
             return Task.CompletedTask;
-        if (reaction.Emote is not Emote || !textChannel.Guild.Emotes.Any(x => x.IsEqual(reaction.Emote)))
+        if (reaction.Emote is not Discord.Emote || !textChannel.Guild.Emotes.Any(x => x.IsEqual(reaction.Emote)))
             return Task.CompletedTask;
 
         var reactionId = new ReactionInfo

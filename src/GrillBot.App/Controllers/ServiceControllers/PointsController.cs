@@ -1,11 +1,11 @@
 ﻿using GrillBot.App.Infrastructure.Auth;
 using GrillBot.Common.Helpers;
 using GrillBot.Core.Models.Pagination;
-using GrillBot.Core.Services.PointsService;
-using GrillBot.Core.Services.PointsService.Enums;
-using GrillBot.Core.Services.PointsService.Models;
-using GrillBot.Core.Services.PointsService.Models.Events;
-using GrillBot.Core.Services.PointsService.Models.Users;
+using PointsService;
+using PointsService.Enums;
+using PointsService.Models;
+using PointsService.Models.Events;
+using PointsService.Models.Users;
 using GrillBot.Core.Validation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

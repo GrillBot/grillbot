@@ -5,9 +5,9 @@ using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Models;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Core.Services.Common.Executor;
-using GrillBot.Core.Services.RemindService;
-using GrillBot.Core.Services.RemindService.Models.Request;
-using GrillBot.Core.Services.RemindService.Models.Response;
+using RemindService;
+using RemindService.Models.Request;
+using RemindService.Models.Response;
 using GrillBot.Data.Models.API.Reminder;
 
 namespace GrillBot.App.Actions.Api.V1.Reminder;

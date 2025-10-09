@@ -1,7 +1,7 @@
 ﻿using GrillBot.App.Managers.DataResolve;
 using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure.Actions;
-using GrillBot.Core.Services.AuditLog;
+using AuditLog;
 using GrillBot.Core.Services.Common.Executor;
 using GrillBot.Data.Models.API.Statistics;
 

@@ -5,7 +5,7 @@ using GrillBot.Common.Helpers;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Services.Common.Executor;
-using GrillBot.Core.Services.Emote;
+using Emote;
 
 namespace GrillBot.App.Actions.Commands.Emotes;
 
@@ -42,9 +42,9 @@ public class EmoteInfo : CommandAction
         return await CreateEmbedAsync(emoteInfo);
     }
 
-    private bool CheckEmote(IEmote emote, out Emote? result)
+    private bool CheckEmote(IEmote emote, out Discord.Emote? result)
     {
-        result = emote as Emote;
+        result = emote as Discord.Emote;
         if (result == null)
             ErrorMessage = Texts["Emote/Info/NotSupported", Locale];
         return IsOk;
@@ -69,7 +69,7 @@ public class EmoteInfo : CommandAction
         return result;
     }
 
-    private async Task<Embed> CreateEmbedAsync(Core.Services.Emote.Models.Response.EmoteInfo emoteInfo)
+    private async Task<Embed> CreateEmbedAsync(Emote.Models.Response.EmoteInfo emoteInfo)
     {
         var embed = new EmbedBuilder()
             .WithFooter(Context.User)

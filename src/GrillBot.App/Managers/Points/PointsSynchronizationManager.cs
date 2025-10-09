@@ -1,8 +1,8 @@
 ﻿using GrillBot.Common.Extensions.Discord;
 using GrillBot.Core.RabbitMQ.V2.Publisher;
-using GrillBot.Core.Services.PointsService.Models.Channels;
-using GrillBot.Core.Services.PointsService.Models.Users;
-using PointsModels = GrillBot.Core.Services.PointsService.Models;
+using PointsService.Models.Channels;
+using PointsService.Models.Events;
+using PointsService.Models.Users;
 
 namespace GrillBot.App.Managers.Points;
 
@@ -51,7 +51,7 @@ public class PointsSynchronizationManager
 
     public async Task PushAsync(IGuild guild, IEnumerable<UserSyncItem> users, IEnumerable<ChannelSyncItem> channels)
     {
-        var payload = new PointsModels.Events.SynchronizationPayload(guild.Id.ToString(), channels.ToList(), users.ToList());
+        var payload = new SynchronizationPayload(guild.Id.ToString(), channels.ToList(), users.ToList());
         await _rabbitPublisher.PublishAsync(payload);
     }
 }

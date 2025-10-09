@@ -1,7 +1,7 @@
 ﻿using GrillBot.App.Managers.DataResolve;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Services.Common.Executor;
-using GrillBot.Core.Services.SearchingService;
+using SearchingService;
 
 namespace GrillBot.App.Actions.Commands.Searching;
 

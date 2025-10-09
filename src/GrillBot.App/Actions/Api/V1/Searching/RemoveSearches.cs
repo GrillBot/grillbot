@@ -1,7 +1,7 @@
 ﻿using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Services.Common.Executor;
-using GrillBot.Core.Services.SearchingService;
+using SearchingService;
 
 namespace GrillBot.App.Actions.Api.V1.Searching;
 

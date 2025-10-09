@@ -1,6 +1,6 @@
 ﻿using System.Security.Claims;
 using Discord;
-using GrillBot.Core.Services.AuditLog.Models.Events.Create;
+using AuditLog.Models.Events.Create;
 
 namespace GrillBot.Common.Models;
 

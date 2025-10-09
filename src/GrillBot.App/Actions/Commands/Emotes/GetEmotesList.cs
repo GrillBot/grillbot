@@ -7,9 +7,9 @@ using GrillBot.Common.Managers.Localization;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Models.Pagination;
 using GrillBot.Core.Services.Common.Executor;
-using GrillBot.Core.Services.Emote;
-using GrillBot.Core.Services.Emote.Models.Request;
-using GrillBot.Core.Services.Emote.Models.Response;
+using Emote;
+using Emote.Models.Request;
+using Emote.Models.Response;
 using GrillBot.Data.Enums;
 
 namespace GrillBot.App.Actions.Commands.Emotes;
@@ -94,7 +94,7 @@ public class GetEmotesList(
                 var data = _texts["Emote/List/FieldData", Locale]
                     .FormatWith(item.UseCount, item.UsersCount, item.FirstOccurence.ToLocalTime().ToCzechFormat(), item.LastOccurence.ToLocalTime().ToCzechFormat());
 
-                var emote = new Emote(item.EmoteId.ToUlong(), item.EmoteName, item.EmoteIsAnimated);
+                var emote = new Discord.Emote(item.EmoteId.ToUlong(), item.EmoteName, item.EmoteIsAnimated);
                 embed.AddField(emote.ToString(), data, true);
             }
         }

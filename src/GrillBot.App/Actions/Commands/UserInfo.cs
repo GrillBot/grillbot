@@ -1,13 +1,13 @@
 ﻿using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Localization;
-using GrillBot.Core.Services.PointsService;
+using PointsService;
 using GrillBot.Core.Extensions;
 using GrillBot.Database.Enums;
 using GrillBot.Database.Services.Repository;
 using GrillBot.Core.Services.Common.Executor;
-using GrillBot.Core.Services.InviteService;
-using GrillBot.Core.Services.InviteService.Models.Request;
+using InviteService;
+using InviteService.Models.Request;
 using GrillBot.App.Managers.DataResolve;
 using UnverifyService;
 using GrillBot.Core.Services.Common.Exceptions;
@@ -101,7 +101,7 @@ public class UserInfo : CommandAction
         var status = user.GetStatus();
         var emote = Configuration.GetValue<string>($"Discord:Emotes:{status}");
 
-        AddField(builder, "State", $"{Emote.Parse(emote)} {Texts[$"User/UserStatus/{status}", Locale]}", true);
+        AddField(builder, "State", $"{Discord.Emote.Parse(emote)} {Texts[$"User/UserStatus/{status}", Locale]}", true);
     }
 
     private void SetUserBadges(EmbedBuilder builder, IUser user)

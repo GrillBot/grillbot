@@ -4,7 +4,7 @@ using GrillBot.Core.Extensions;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.Services.Common.Exceptions;
 using GrillBot.Core.Services.Common.Executor;
-using GrillBot.Core.Services.UserMeasures;
+using UserMeasures;
 using GrillBot.Data.Models.API.Users;
 using GrillBot.Database.Enums;
 using UnverifyService;
@@ -42,13 +42,9 @@ public class GetGuildUserInfo(
             SelfUnverifyCount = await ComputeSelfUnverifyCountAsync(guildId, userId)
         };
 
-        var userMeasuresInfo = await _userMeasuresService.ExecuteRequestAsync(
-            (c, ctx) => c.GetUserInfoAsync(guildId, userId, ctx.CancellationToken),
-            CancellationToken
-        );
-
-        result.WarningCount = userMeasuresInfo.WarningCount;
-        result.UnverifyCount = userMeasuresInfo.UnverifyCount;
+        var userMeasuresInfo = await GetUserMeasuresInfoAsync(userId, guildId);
+        result.WarningCount = userMeasuresInfo?.WarningCount.TryGetValue(guildId, out var wCount) == true ? wCount : 0;
+        result.UnverifyCount = userMeasuresInfo?.UnverifyCount.TryGetValue(guildId, out var uCount) == true ? uCount : 0;
 
         return ApiResult.Ok(result);
     }
@@ -67,6 +63,21 @@ public class GetGuildUserInfo(
         catch (ClientNotFoundException)
         {
             return 0;
+        }
+    }
+
+    private async Task<UserMeasures.Models.User.UserInfo?> GetUserMeasuresInfoAsync(string userId, string guildId)
+    {
+        try
+        {
+            return await _userMeasuresService.ExecuteRequestAsync(
+                (client, ctx) => client.GetUserInfoAsync(userId, guildId, ctx.CancellationToken),
+                CancellationToken
+            );
+        }
+        catch (ClientNotFoundException)
+        {
+            return null;
         }
     }
 }

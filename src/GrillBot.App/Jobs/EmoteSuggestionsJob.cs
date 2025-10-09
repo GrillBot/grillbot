@@ -1,6 +1,5 @@
 ﻿using GrillBot.App.Infrastructure.Jobs;
-using GrillBot.Core.Services.Common.Executor;
-using GrillBot.Core.Services.Emote;
+using Emote;
 using Quartz;
 
 namespace GrillBot.App.Jobs;

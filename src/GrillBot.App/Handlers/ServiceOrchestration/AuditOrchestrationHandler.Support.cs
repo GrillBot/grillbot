@@ -1,6 +1,6 @@
 ﻿using Discord.Net;
 using GrillBot.Common.Extensions.Discord;
-using GrillBot.Core.Services.AuditLog.Models.Events.Create;
+using AuditLog.Models.Events.Create;
 
 namespace GrillBot.App.Handlers.ServiceOrchestration;
 

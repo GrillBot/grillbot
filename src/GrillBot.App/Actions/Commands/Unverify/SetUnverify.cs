@@ -5,7 +5,7 @@ using GrillBot.Core.Infrastructure.Auth;
 using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Core.Services.Common.Exceptions;
 using GrillBot.Core.Services.Common.Executor;
-using GrillBot.Core.Services.GrillBot.Models;
+using GrillBot.Models;
 using UnverifyService;
 using UnverifyService.Models.Events;
 using UnverifyService.Models.Request;

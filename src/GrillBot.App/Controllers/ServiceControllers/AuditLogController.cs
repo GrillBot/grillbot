@@ -1,10 +1,10 @@
 ﻿using GrillBot.App.Infrastructure.Auth;
 using GrillBot.Core.Models.Pagination;
-using GrillBot.Core.Services.AuditLog;
-using GrillBot.Core.Services.AuditLog.Models.Request.Search;
-using GrillBot.Core.Services.AuditLog.Models.Response.Detail;
-using GrillBot.Core.Services.AuditLog.Models.Response.Info.Dashboard;
-using GrillBot.Core.Services.AuditLog.Models.Response.Search;
+using AuditLog;
+using AuditLog.Models.Request.Search;
+using AuditLog.Models.Response.Detail;
+using AuditLog.Models.Response.Info.Dashboard;
+using AuditLog.Models.Response.Search;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 

@@ -1,8 +1,8 @@
 ﻿using GrillBot.App.Infrastructure.Auth;
 using GrillBot.Core.Models.Pagination;
-using GrillBot.Core.Services.RemindService;
-using GrillBot.Core.Services.RemindService.Models.Request;
-using GrillBot.Core.Services.RemindService.Models.Response;
+using RemindService;
+using RemindService.Models.Request;
+using RemindService.Models.Response;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 

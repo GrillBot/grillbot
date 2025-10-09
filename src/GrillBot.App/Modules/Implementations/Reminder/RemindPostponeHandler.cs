@@ -1,7 +1,7 @@
 ﻿using GrillBot.App.Infrastructure;
 using GrillBot.Core.Services.Common.Exceptions;
 using GrillBot.Core.Services.Common.Executor;
-using GrillBot.Core.Services.RemindService;
+using RemindService;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Modules.Implementations.Reminder;

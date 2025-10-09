@@ -15,7 +15,7 @@ public class EmotesTypeConverter : TypeConverter<IEmote>
 
         if (NeoSmart.Unicode.Emoji.IsEmoji(value))
             return TypeReaderHelper.FromSuccess(new Emoji(value));
-        if (Emote.TryParse(value, out var emote))
+        if (Discord.Emote.TryParse(value, out var emote))
             return TypeReaderHelper.FromSuccess(emote);
 
         if (ulong.TryParse(value, out var emoteId))
@@ -32,7 +32,7 @@ public class EmotesTypeConverter : TypeConverter<IEmote>
             TypeReaderHelper.ConvertFailed(services, "EmoteInvalidFormat", context.Interaction.UserLocale);
     }
 
-    private static async Task<Emote?> TryDownloadEmoteAsync(IGuild guild, ulong emoteId)
+    private static async Task<Discord.Emote?> TryDownloadEmoteAsync(IGuild guild, ulong emoteId)
     {
         try
         {

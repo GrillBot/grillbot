@@ -1,6 +1,6 @@
 ﻿using GrillBot.Common.Extensions.Discord;
-using GrillBot.Core.Services.Emote.Models.Events;
-using GrillBot.Core.Services.Emote.Models.Events.Suggestions;
+using Emote.Models.Events;
+using Emote.Models.Events.Suggestions;
 
 namespace GrillBot.App.Handlers.ServiceOrchestration;
 

@@ -1,8 +1,8 @@
 ﻿using GrillBot.Common.Extensions;
 using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Localization;
-using GrillBot.Core.Services.Graphics.Models.Chart;
-using GrillBot.Core.Services.PointsService.Models;
+using Graphics.Models.Chart;
+using PointsService.Models;
 using GrillBot.Core.Managers.Random;
 
 namespace GrillBot.App.Actions.Commands.Points.Chart;

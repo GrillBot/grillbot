@@ -2,7 +2,7 @@
 using GrillBot.App.Actions.Commands.Emotes.Suggestions;
 using GrillBot.App.Infrastructure;
 using GrillBot.App.Infrastructure.Preconditions.Interactions;
-using GrillBot.Core.Services.Emote.Models.Events.Suggestions;
+using Emote.Models.Events.Suggestions;
 
 namespace GrillBot.App.Modules.Interactions.Emote;
 

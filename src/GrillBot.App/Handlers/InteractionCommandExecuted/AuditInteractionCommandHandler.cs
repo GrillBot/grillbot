@@ -4,8 +4,8 @@ using GrillBot.Common.Extensions;
 using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.RabbitMQ.V2.Publisher;
-using GrillBot.Core.Services.AuditLog.Enums;
-using GrillBot.Core.Services.AuditLog.Models.Events.Create;
+using AuditLog.Enums;
+using AuditLog.Models.Events.Create;
 
 namespace GrillBot.App.Handlers.InteractionCommandExecuted;
 

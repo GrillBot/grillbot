@@ -1,5 +1,4 @@
 ﻿using System.Text;
-using Discord;
 using NeoSmart.Unicode;
 using Emoji = Discord.Emoji;
 
@@ -22,7 +21,7 @@ public static class MessageHelper
                 var tag = tagPart.Append(message[index]).ToString();
                 index++;
 
-                if (Emote.TryParse(tag, out var emote))
+                if (Discord.Emote.TryParse(tag, out var emote))
                 {
                     yield return emote;
                 }

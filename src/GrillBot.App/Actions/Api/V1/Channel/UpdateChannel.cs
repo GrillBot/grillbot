@@ -1,5 +1,4 @@
 ﻿using GrillBot.App.Helpers;
-using GrillBot.App.Managers;
 using GrillBot.App.Managers.Points;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
@@ -7,12 +6,12 @@ using GrillBot.Core.Exceptions;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.RabbitMQ.V2.Publisher;
-using GrillBot.Core.Services.AuditLog.Enums;
-using GrillBot.Core.Services.AuditLog.Models.Events.Create;
-using GrillBot.Core.Services.MessageService.Models.Events;
-using GrillBot.Core.Services.MessageService.Models.Events.Channels;
-using GrillBot.Core.Services.PointsService.Models.Channels;
-using GrillBot.Core.Services.PointsService.Models.Users;
+using AuditLog.Enums;
+using AuditLog.Models.Events.Create;
+using MessageService.Models.Events;
+using MessageService.Models.Events.Channels;
+using PointsService.Models.Channels;
+using PointsService.Models.Users;
 using GrillBot.Data.Models.API.Channels;
 using GrillBot.Database.Enums;
 

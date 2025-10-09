@@ -1,7 +1,7 @@
 ﻿using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Core.RabbitMQ.V2.Publisher;
-using GrillBot.Core.Services.MessageService.Models.Events;
-using GrillBot.Core.Services.MessageService.Models.Events.Channels;
+using MessageService.Models.Events;
+using MessageService.Models.Events.Channels;
 
 namespace GrillBot.App.Handlers.ServiceOrchestration;
 

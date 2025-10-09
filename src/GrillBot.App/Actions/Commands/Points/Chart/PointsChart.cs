@@ -1,10 +1,10 @@
 ﻿using GrillBot.Common.Extensions.Discord;
 using GrillBot.Core.IO;
 using GrillBot.Core.Services.Common.Executor;
-using GrillBot.Core.Services.ImageProcessing;
-using GrillBot.Core.Services.ImageProcessing.Models;
-using GrillBot.Core.Services.PointsService;
-using GrillBot.Core.Services.PointsService.Models;
+using ImageProcessing;
+using ImageProcessing.Models;
+using PointsService;
+using PointsService.Models;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Actions.Commands.Points.Chart;

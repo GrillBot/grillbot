@@ -1,7 +1,7 @@
 ﻿using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Core.Extensions;
-using GrillBot.Core.Services.Emote.Models.Events;
-using GrillBot.Core.Services.Emote.Models.Events.Guild;
+using Emote.Models.Events;
+using Emote.Models.Events.Guild;
 using Microsoft.Extensions.Logging;
 
 namespace GrillBot.App.Handlers.ServiceOrchestration;

@@ -1,13 +1,4 @@
-﻿using GrillBot.Core.Services.AuditLog;
-using GrillBot.Core.Services.Emote;
-using GrillBot.Core.Services.InviteService;
-using GrillBot.Core.Services.MessageService;
-using GrillBot.Core.Services.PointsService;
-using GrillBot.Core.Services.RemindService;
-using GrillBot.Core.Services.SearchingService;
-using GrillBot.Core.Services.UserMeasures;
-using Microsoft.Extensions.DependencyInjection;
-using UnverifyService;
+﻿using Microsoft.Extensions.DependencyInjection;
 
 namespace GrillBot.App.Actions;
 
@@ -26,15 +17,15 @@ public static class ActionsExtensions
         services.AddScoped<RabbitMQPublisherAction>();
 
         return services
-            .AddScoped<Api.ServiceBridgeAction<IAuditLogServiceClient>>()
-            .AddScoped<Api.ServiceBridgeAction<IPointsServiceClient>>()
-            .AddScoped<Api.ServiceBridgeAction<IUserMeasuresServiceClient>>()
-            .AddScoped<Api.ServiceBridgeAction<IRemindServiceClient>>()
-            .AddScoped<Api.ServiceBridgeAction<ISearchingServiceClient>>()
-            .AddScoped<Api.ServiceBridgeAction<IEmoteServiceClient>>()
-            .AddScoped<Api.ServiceBridgeAction<IInviteServiceClient>>()
-            .AddScoped<Api.ServiceBridgeAction<IMessageServiceClient>>()
-            .AddScoped<Api.ServiceBridgeAction<IUnverifyServiceClient>>();
+            .AddScoped<Api.ServiceBridgeAction<AuditLog.IAuditLogServiceClient>>()
+            .AddScoped<Api.ServiceBridgeAction<PointsService.IPointsServiceClient>>()
+            .AddScoped<Api.ServiceBridgeAction<UserMeasures.IUserMeasuresServiceClient>>()
+            .AddScoped<Api.ServiceBridgeAction<RemindService.IRemindServiceClient>>()
+            .AddScoped<Api.ServiceBridgeAction<SearchingService.ISearchingServiceClient>>()
+            .AddScoped<Api.ServiceBridgeAction<Emote.IEmoteServiceClient>>()
+            .AddScoped<Api.ServiceBridgeAction<InviteService.IInviteServiceClient>>()
+            .AddScoped<Api.ServiceBridgeAction<MessageService.IMessageServiceClient>>()
+            .AddScoped<Api.ServiceBridgeAction<UnverifyService.IUnverifyServiceClient>>();
     }
 
     private static IServiceCollection AddApiActions(this IServiceCollection services)

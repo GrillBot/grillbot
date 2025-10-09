@@ -1,17 +1,9 @@
-﻿using GrillBot.Common.Extensions.Services;
+﻿using AuditLog;
+using GrillBot.Common.Extensions.Services;
 using GrillBot.Common.Managers.Logging;
 using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure.Actions;
-using GrillBot.Core.Services.AuditLog;
 using GrillBot.Core.Services.Common;
-using GrillBot.Core.Services.Emote;
-using GrillBot.Core.Services.Graphics;
-using GrillBot.Core.Services.ImageProcessing;
-using GrillBot.Core.Services.PointsService;
-using GrillBot.Core.Services.RemindService;
-using GrillBot.Core.Services.RubbergodService;
-using GrillBot.Core.Services.SearchingService;
-using GrillBot.Core.Services.UserMeasures;
 using GrillBot.Data.Models.API.Services;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -42,15 +34,15 @@ public class GetServiceInfo(
     {
         return id switch
         {
-            "rubbergod" => _serviceProvider.GetRequiredService<IRubbergodServiceClient>(),
-            "graphics" => _serviceProvider.GetRequiredService<IGraphicsClient>(),
-            "points" => _serviceProvider.GetRequiredService<IPointsServiceClient>(),
-            "image-processing" => _serviceProvider.GetRequiredService<IImageProcessingClient>(),
+            "rubbergod" => _serviceProvider.GetRequiredService<RubbergodService.IRubbergodServiceClient>(),
+            "graphics" => _serviceProvider.GetRequiredService<Graphics.IGraphicsClient>(),
+            "points" => _serviceProvider.GetRequiredService<PointsService.IPointsServiceClient>(),
+            "image-processing" => _serviceProvider.GetRequiredService<ImageProcessing.IImageProcessingClient>(),
             "audit-log" => _serviceProvider.GetRequiredService<IAuditLogServiceClient>(),
-            "user-measures" => _serviceProvider.GetRequiredService<IUserMeasuresServiceClient>(),
-            "emote" => _serviceProvider.GetRequiredService<IEmoteServiceClient>(),
-            "remind" => _serviceProvider.GetRequiredService<IRemindServiceClient>(),
-            "searching" => _serviceProvider.GetRequiredService<ISearchingServiceClient>(),
+            "user-measures" => _serviceProvider.GetRequiredService<UserMeasures.IUserMeasuresServiceClient>(),
+            "emote" => _serviceProvider.GetRequiredService<Emote.IEmoteServiceClient>(),
+            "remind" => _serviceProvider.GetRequiredService<RemindService.IRemindServiceClient>(),
+            "searching" => _serviceProvider.GetRequiredService<SearchingService.ISearchingServiceClient>(),
             _ => throw new NotSupportedException($"Unsupported service {id}")
         };
     }

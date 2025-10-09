@@ -1,7 +1,7 @@
 ﻿using GrillBot.App.Helpers;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Core.RabbitMQ.V2.Publisher;
-using GrillBot.Core.Services.Emote.Models.Events.Suggestions;
+using Emote.Models.Events.Suggestions;
 
 namespace GrillBot.App.Actions.Commands.Emotes.Suggestions;
 
@@ -36,7 +36,7 @@ public class CreateEmoteSuggestionAction(
         await _rabbitPublisher.PublishAsync(payload);
     }
 
-    private (string reason, string name, Emote? emote, IAttachment? attachment)? PrepareData(
+    private (string reason, string name, Discord.Emote? emote, IAttachment? attachment)? PrepareData(
         string reason,
         string? name,
         IEmote? emote,
@@ -55,7 +55,7 @@ public class CreateEmoteSuggestionAction(
             return null;
         }
 
-        var _emote = emote as Emote;
+        var _emote = emote as Discord.Emote;
         if (_emote is null && attachment is null)
         {
             ErrorMessage = GetText("MissingEmoteOrAttachment");
@@ -82,7 +82,7 @@ public class CreateEmoteSuggestionAction(
         return (reason, name!, _emote, attachment);
     }
 
-    private async Task<byte[]> GetImageAsync(Emote? emote, IAttachment? attachment)
+    private async Task<byte[]> GetImageAsync(Discord.Emote? emote, IAttachment? attachment)
     {
         byte[]? image = null;
 
@@ -100,7 +100,7 @@ public class CreateEmoteSuggestionAction(
         return image;
     }
 
-    private static bool IsAnimated(Emote? emote, IAttachment? attachment)
+    private static bool IsAnimated(Discord.Emote? emote, IAttachment? attachment)
         => emote?.Animated == true || Path.GetExtension(attachment?.Filename) == ".gif";
 
     private string GetText(string id)

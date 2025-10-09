@@ -1,5 +1,5 @@
 ﻿using GrillBot.Core.Infrastructure;
-using GrillBot.Core.Services.AuditLog.Models.Events.Create;
+using AuditLog.Models.Events.Create;
 using Microsoft.Extensions.Primitives;
 
 namespace GrillBot.Common.Extensions.AuditLog;

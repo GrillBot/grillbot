@@ -2,7 +2,7 @@
 using GrillBot.Common.FileStorage;
 using GrillBot.Core.Infrastructure.Auth;
 using GrillBot.Core.RabbitMQ.V2.Consumer;
-using GrillBot.Core.Services.AuditLog.Models.Events;
+using AuditLog.Models.Events;
 using Microsoft.Extensions.Logging;
 
 namespace GrillBot.App.Handlers.RabbitMQ;

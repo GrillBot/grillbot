@@ -3,8 +3,8 @@ using GrillBot.Common.Extensions.Discord;
 using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Common.Managers.Localization;
 using GrillBot.Core.Services.Common.Executor;
-using GrillBot.Core.Services.RubbergodService;
-using GrillBot.Core.Services.RubbergodService.Models.Help;
+using RubbergodService;
+using RubbergodService.Models.Help;
 
 namespace GrillBot.App.Handlers.MessageReceived;
 

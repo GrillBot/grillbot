@@ -4,9 +4,9 @@ using GrillBot.Common.Managers.Events.Contracts;
 using GrillBot.Core.Extensions;
 using GrillBot.Core.RabbitMQ.V2.Publisher;
 using GrillBot.Core.Services.Common.Executor;
-using GrillBot.Core.Services.Emote;
-using GrillBot.Core.Services.Emote.Models.Events;
-using GrillBot.Core.Services.Emote.Models.Events.Guild;
+using Emote;
+using Emote.Models.Events;
+using Emote.Models.Events.Guild;
 using Microsoft.Extensions.Logging;
 
 namespace GrillBot.App.Handlers.ServiceOrchestration;
@@ -51,7 +51,7 @@ public partial class EmoteOrchestrationHandler(
     public async Task ProcessAsync(Cacheable<IUserMessage, ulong> cachedMessage, Cacheable<IMessageChannel, ulong> cachedChannel, SocketReaction reaction)
     {
         if (!cachedChannel.HasValue || cachedChannel.Value is not ITextChannel textChannel) return;
-        if (reaction.Emote is not Emote emote) return;
+        if (reaction.Emote is not Discord.Emote emote) return;
 
         var message = cachedMessage.HasValue ? cachedMessage.Value : null;
         message ??= await _messageCache.GetAsync(cachedMessage.Id, null, true) as IUserMessage;
@@ -72,7 +72,7 @@ public partial class EmoteOrchestrationHandler(
     async Task IReactionRemovedEvent.ProcessAsync(Cacheable<IUserMessage, ulong> cachedMessage, Cacheable<IMessageChannel, ulong> cachedChannel, SocketReaction reaction)
     {
         if (!cachedChannel.HasValue || cachedChannel.Value is not ITextChannel textChannel) return;
-        if (reaction.Emote is not Emote emote) return;
+        if (reaction.Emote is not Discord.Emote emote) return;
 
         var message = cachedMessage.HasValue ? cachedMessage.Value : null;
         message ??= await _messageCache.GetAsync(cachedMessage.Id, null, true) as IUserMessage;

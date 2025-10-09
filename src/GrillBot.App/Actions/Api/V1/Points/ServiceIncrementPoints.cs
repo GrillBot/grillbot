@@ -4,7 +4,7 @@ using GrillBot.Common.Managers.Localization;
 using GrillBot.Common.Models;
 using GrillBot.Core.Exceptions;
 using GrillBot.Core.Infrastructure.Actions;
-using GrillBot.Core.Services.PointsService.Models.Events;
+using PointsService.Models.Events;
 
 namespace GrillBot.App.Actions.Api.V1.Points;
 

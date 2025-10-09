@@ -1,5 +1,5 @@
 ﻿using GrillBot.App.Infrastructure.Jobs;
-using GrillBot.Core.Services.RemindService;
+using RemindService;
 using Quartz;
 
 namespace GrillBot.App.Jobs;

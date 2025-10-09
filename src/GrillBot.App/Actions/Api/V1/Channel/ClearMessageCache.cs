@@ -2,8 +2,8 @@
 using GrillBot.Common.Models;
 using GrillBot.Core.Infrastructure.Actions;
 using GrillBot.Core.RabbitMQ.V2.Publisher;
-using GrillBot.Core.Services.AuditLog.Enums;
-using GrillBot.Core.Services.AuditLog.Models.Events.Create;
+using AuditLog.Enums;
+using AuditLog.Models.Events.Create;
 
 namespace GrillBot.App.Actions.Api.V1.Channel;
 

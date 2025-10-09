@@ -2,9 +2,9 @@
 using GrillBot.Core.Infrastructure.Auth;
 using GrillBot.Core.RabbitMQ.V2.Consumer;
 using GrillBot.Core.RabbitMQ.V2.Publisher;
-using GrillBot.Core.Services.Emote.Models.Events.Suggestions;
-using GrillBot.Core.Services.GrillBot.Models.Events.Messages;
-using GrillBot.Core.Services.RemindService.Models.Events;
+using Emote.Models.Events.Suggestions;
+using GrillBot.Models.Events.Messages;
+using RemindService.Models.Events;
 using Microsoft.Extensions.Logging;
 
 namespace GrillBot.App.Handlers.RabbitMQ.Messages;

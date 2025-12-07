@@ -84,7 +84,7 @@ public class GetChannelboard(
             var channel = await Context.Guild.GetChannelAsync(statItem.Key.ToUlong());
             var count = _formatHelper.FormatNumber("ChannelModule/GetChannelboard/Counts", Locale, statItem.Value.count);
 
-            result.Add(template.FormatWith(order, channel.Name, count));
+            result.Add(string.Format(template, order, channel.Name, count));
         }
 
         return string.Join("\n", result);

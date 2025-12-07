@@ -1,17 +1,9 @@
 ﻿using GrillBot.Common.Managers.Localization;
-using Humanizer;
 
 namespace GrillBot.Common.Helpers;
 
-public class FormatHelper
+public class FormatHelper(ITextsManager _texts)
 {
-    private ITextsManager Texts { get; }
-
-    public FormatHelper(ITextsManager texts)
-    {
-        Texts = texts;
-    }
-
     public string FormatNumber(string id, string locale, long count)
     {
         var countId = count switch
@@ -21,10 +13,10 @@ public class FormatHelper
             _ => "FiveAndMore"
         };
 
-        var text = Texts[$"{id}/{countId}", locale];
-        return text.FormatWith(Texts.GetCulture(locale), count);
+        var text = _texts[$"{id}/{countId}", locale];
+        return string.Format(_texts.GetCulture(locale), text, count);
     }
 
     public string FormatBoolean(string id, string locale, bool value)
-        => Texts[$"{id}/{value}", locale];
+        => _texts[$"{id}/{value}", locale];
 }

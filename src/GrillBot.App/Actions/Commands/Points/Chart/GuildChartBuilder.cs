@@ -21,12 +21,12 @@ public class GuildChartBuilder : ChartBuilderBase<IEnumerable<PointsChartItem>>
         };
     }
 
-    protected override IAsyncEnumerable<Dataset> CreateDatasetsAsync(ChartsFilter filter)
+    protected override Task<List<Dataset>> CreateDatasetsAsync(ChartsFilter filter)
     {
         var filteredData = ChartRequestBuilder.FilterData(Data, filter)
             .OrderBy(o => o.day).ToList();
 
-        return new List<Dataset>
+        return Task.FromResult(new List<Dataset>
         {
             new()
             {
@@ -39,6 +39,6 @@ public class GuildChartBuilder : ChartBuilderBase<IEnumerable<PointsChartItem>>
                     Value = Convert.ToInt32(filteredData.Where(x => x.day <= o.day).Sum(x => x.points))
                 }).ToList()
             }
-        }.ToAsyncEnumerable();
+        });
     }
 }

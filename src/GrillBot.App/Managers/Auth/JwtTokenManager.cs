@@ -32,7 +32,7 @@ public class JwtTokenManager(
 
         var userRole = ResolveRole(userEntity, interaction);
         if (string.IsNullOrEmpty(userRole))
-            return new OAuth2LoginToken(_texts["Auth/CreateToken/PublicAdminBlocked", language].FormatWith(user.Username));
+            return new OAuth2LoginToken(string.Format(_texts["Auth/CreateToken/PublicAdminBlocked", language], user.Username));
 
         await SynchronizeUserToServicesAsync(user);
         return GenerateJwtToken(userEntity, userRole, interaction, null, ip);

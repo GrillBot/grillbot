@@ -59,7 +59,7 @@ public class DuckInfo(
         catch (HttpRequestException ex)
         {
             await _loggingManager.ErrorAsync("DuckInfo", "An error occured while executing request on KachnaOnline.", ex);
-            throw new GrillBotException(GetText("CannotGetState").FormatWith(InfoChannel));
+            throw new GrillBotException(string.Format(GetText("CannotGetState"), InfoChannel));
         }
     }
 
@@ -122,7 +122,7 @@ public class DuckInfo(
         if (nextAll != null)
         {
             var tag = TimestampTag.FromDateTime(nextAll.Start);
-            titleBuilder.Append(GetText("NextAll").FormatWith(tag.ToString(TimestampTagStyles.Relative)));
+            titleBuilder.AppendFormat(GetText("NextAll"), tag.ToString(TimestampTagStyles.Relative));
         }
 
         AddNextIfPresent(nextBar, "NextBar", embedBuilder);
@@ -136,7 +136,7 @@ public class DuckInfo(
     {
         var tag = TimestampTag.FromDateTime(state.PlannedEnd!.Value);
 
-        titleBuilder.AppendLine(GetText("OpenAll").FormatWith(tag.ToString(TimestampTagStyles.ShortTime)));
+        titleBuilder.AppendFormat(GetText("OpenAll"), tag.ToString(TimestampTagStyles.ShortTime)).AppendLine();
 
         AddNextIfPresent(nextBar, "NextBar", embedBuilder);
         AddNextIfPresent(nextTearoom, "NextTearoom", embedBuilder);
@@ -161,8 +161,7 @@ public class DuckInfo(
             var start = TimestampTag.FromDateTime(state.Start);
             var end = TimestampTag.FromDateTime(state.PlannedEnd.Value);
 
-            titleBuilder.Append(GetText("TimeToClose").FormatWith(end.ToString(TimestampTagStyles.Relative)));
-
+            titleBuilder.AppendFormat(GetText("TimeToClose"), end.ToString(TimestampTagStyles.Relative));
             embedBuilder.AddField(GetText("Opening"), start.ToString(TimestampTagStyles.ShortTime), true);
             embedBuilder.AddField(GetText("Closing"), end.ToString(TimestampTagStyles.ShortTime), true);
         }

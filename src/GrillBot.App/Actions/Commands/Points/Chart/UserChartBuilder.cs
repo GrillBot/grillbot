@@ -26,13 +26,14 @@ public class UserChartBuilder : ChartBuilderBase<Dictionary<ulong, List<PointsCh
         };
     }
 
-    protected override async IAsyncEnumerable<Dataset> CreateDatasetsAsync(ChartsFilter filter)
+    protected override async Task<List<Dataset>> CreateDatasetsAsync(ChartsFilter filter)
     {
         var dates = ChartRequestBuilder.FilterData(
             Data.SelectMany(o => o.Value).GroupBy(o => o.Day).SelectMany(o => o.ToList()),
             filter
         ).Select(o => o.day).OrderBy(o => o).ToList();
         var usedColors = new HashSet<uint>();
+        var result = new List<Dataset>();
 
         foreach (var (userId, userData) in Data)
         {
@@ -40,7 +41,7 @@ public class UserChartBuilder : ChartBuilderBase<Dictionary<ulong, List<PointsCh
             if (guildUser is null) continue;
 
             var filtered = ChartRequestBuilder.FilterData(userData, filter);
-            yield return new Dataset
+            result.Add(new Dataset
             {
                 Data = dates.ConvertAll(day => new DataPoint
                 {
@@ -50,8 +51,10 @@ public class UserChartBuilder : ChartBuilderBase<Dictionary<ulong, List<PointsCh
                 Color = CreateColor(guildUser, usedColors).ToString(),
                 Label = guildUser.GetFullName(),
                 Width = 1
-            };
+            });
         }
+
+        return result;
     }
 
     private Color CreateColor(IGuildUser user, ICollection<uint> usedColors)

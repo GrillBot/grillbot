@@ -62,7 +62,7 @@ public class Emojization : CommandAction
 
             if (emote == null) return;
             if (result.Contains(emote) && !allowDuplicity)
-                throw new ValidationException(Texts["Emojization/DuplicateChar", Locale].FormatWith(emote.ToString()));
+                throw new ValidationException(string.Format(Texts["Emojization/DuplicateChar", Locale], emote.ToString()));
             result.Add(emote);
         }
 
@@ -72,18 +72,18 @@ public class Emojization : CommandAction
             {
                 case IEmote emote:
                     if (!allowDuplicity && result.Any(x => Equals(x, emote)))
-                        throw new ValidationException(Texts["Emojization/DuplicateChar", Locale].FormatWith(emote.ToString()));
+                        throw new ValidationException(string.Format(Texts["Emojization/DuplicateChar", Locale], emote.ToString()));
                     result.Add(emote);
                     break;
                 case char @char:
                     AddEmoteFromChar(@char);
                     break;
                 case string str:
-                {
-                    foreach (var stringChar in str)
-                        AddEmoteFromChar(stringChar);
-                    break;
-                }
+                    {
+                        foreach (var stringChar in str)
+                            AddEmoteFromChar(stringChar);
+                        break;
+                    }
             }
         }
 

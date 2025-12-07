@@ -137,10 +137,10 @@ public class LocalizationManager(
     private static string ProcessAdditionalData(string rawValue, string localized, Dictionary<string, string> additionalData)
     {
         if (rawValue == "RemindModule/NotifyMessage/Postponed" && additionalData.TryGetValue("PostponeCount", out var postponeCount))
-            return localized.FormatWith(postponeCount);
+            return string.Format(localized, postponeCount);
 
         if (rawValue == "SuggestionModule/CreateSuggestion/TooMuchSuggestions" && additionalData.TryGetValue("MaxSuggestions", out var maxSuggestions))
-            return localized.FormatWith(maxSuggestions);
+            return string.Format(localized, maxSuggestions);
 
         return localized;
     }

@@ -17,7 +17,6 @@ global using Newtonsoft.Json.Linq;
 global using System.Globalization;
 global using System.Text;
 global using Humanizer;
-global using Humanizer.Localisation;
 global using GrillBot.App.Extensions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;

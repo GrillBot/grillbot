@@ -51,7 +51,7 @@ public class SendMessageToChannel : ApiAction
             ?? throw new NotFoundException(Texts["ChannelModule/PostMessage/GuildNotFound", ApiContext.Language]);
 
         var channel = await guild.GetTextChannelAsync(channelId);
-        return (ITextChannel?)channel ?? throw new NotFoundException(Texts["ChannelModule/PostMessage/ChannelNotFound", ApiContext.Language].FormatWith(guild.Name));
+        return (ITextChannel?)channel ?? throw new NotFoundException(string.Format(Texts["ChannelModule/PostMessage/ChannelNotFound", ApiContext.Language], guild.Name));
     }
 
     private static MessageReference? CreateReference(string? reference, ulong guildId, ulong channelId)

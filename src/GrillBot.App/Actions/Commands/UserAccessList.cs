@@ -30,7 +30,7 @@ public class UserAccessList : CommandAction
     {
         return new EmbedBuilder()
             .WithFooter(Context.User)
-            .WithAuthor(Texts["User/AccessList/Title", Locale].FormatWith(user.GetFullName()), user.GetUserAvatarUrl())
+            .WithAuthor(string.Format(Texts["User/AccessList/Title", Locale], user.GetFullName()), user.GetUserAvatarUrl())
             .WithMetadata(new UserAccessListMetadata { ForUserId = user.Id, Page = page })
             .WithColor(user.GetHighestRole(true)?.Color ?? Color.Blue)
             .WithCurrentTimestamp();

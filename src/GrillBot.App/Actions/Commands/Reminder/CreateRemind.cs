@@ -62,7 +62,7 @@ public class CreateRemind : CommandAction
         {
             var minimalTime = Array.Find(firstError.Value, e => e.EndsWith("MinimalTime"));
             if (!string.IsNullOrEmpty(minimalTime))
-                throw new ValidationException(MinimalTimeTemplate.FormatWith(MinimalTime));
+                throw new ValidationException(string.Format(MinimalTimeTemplate, MinimalTime));
         }
 
         return string.IsNullOrEmpty(firstError.Key) || firstError.Value.Length == 0

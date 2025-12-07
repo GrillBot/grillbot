@@ -70,7 +70,7 @@ public class GetReminderList(
             var notifyAt = remind.NotifyAtUtc.ToLocalTime();
             var at = notifyAt.ToCzechFormat();
             var remaining = (now - notifyAt).Humanize(culture: culture);
-            var title = titleTemplate.FormatWith(remind.Id, fromUser?.GetDisplayName(), at, remaining);
+            var title = string.Format(titleTemplate, remind.Id, fromUser?.GetDisplayName(), at, remaining);
             var message = remind.Message[..Math.Min(remind.Message.Length, EmbedFieldBuilder.MaxFieldValueLength)];
 
             result.Add(new EmbedFieldBuilder().WithName(title).WithValue(message));
@@ -84,7 +84,7 @@ public class GetReminderList(
         return new EmbedBuilder()
             .WithFooter(Context.User)
             .WithMetadata(new RemindListMetadata { Page = page })
-            .WithAuthor(_texts["RemindModule/List/Embed/Title", Locale].FormatWith(ForUser))
+            .WithAuthor(string.Format(_texts["RemindModule/List/Embed/Title", Locale], ForUser))
             .WithColor(Color.Blue)
             .WithCurrentTimestamp();
     }
@@ -93,7 +93,7 @@ public class GetReminderList(
     {
         if (fields.Count == 0)
         {
-            embed.WithDescription(_texts["RemindModule/List/Embed/NoItems", Locale].FormatWith(ForUser));
+            embed.WithDescription(string.Format(_texts["RemindModule/List/Embed/NoItems", Locale], ForUser));
             pagesCount = 1;
             return;
         }

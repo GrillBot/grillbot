@@ -57,8 +57,7 @@ public class CacheCleanerJob(
             if (invites.Count == 0)
                 continue;
 
-            var prefix = $"InviteMetadata-{guild.Id}-*";
-            var keyExists = await _redisServer.KeysAsync(pattern: prefix, pageSize: 1).AnyAsync();
+            var keyExists = await KeyExistsAsync($"InviteMetadata-{guild.Id}-*");
             if (keyExists)
                 continue;
 
@@ -68,5 +67,12 @@ public class CacheCleanerJob(
 
         if (payloads.Count > 0)
             await _rabbitPublisher.PublishAsync(payloads);
+    }
+
+    private async Task<bool> KeyExistsAsync(string pattern)
+    {
+        await foreach (var _ in _redisServer.KeysAsync(pattern: pattern, pageSize: 1))
+            return true;
+        return false;
     }
 }

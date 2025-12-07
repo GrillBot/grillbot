@@ -33,7 +33,7 @@ public abstract class ChartBuilderBase<TData> where TData : IEnumerable
             var requestData = ChartRequestBuilder.CreateCommonRequest();
             requestData.Data.TopLabel!.Text = CreateTopLabel(chartFilterType, locale);
 
-            var dataSets = await CreateDatasetsAsync(chartFilterType).ToListAsync();
+            var dataSets = await CreateDatasetsAsync(chartFilterType);
             requestData.Data.Datasets.AddRange(dataSets);
 
             request.Requests.Add(requestData);
@@ -55,5 +55,5 @@ public abstract class ChartBuilderBase<TData> where TData : IEnumerable
     }
 
     protected abstract string CreateTopLabel(ChartsFilter filter, string locale);
-    protected abstract IAsyncEnumerable<Dataset> CreateDatasetsAsync(ChartsFilter filter);
+    protected abstract Task<List<Dataset>> CreateDatasetsAsync(ChartsFilter filter);
 }

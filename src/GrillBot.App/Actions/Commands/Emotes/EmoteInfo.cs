@@ -61,7 +61,7 @@ public class EmoteInfo : CommandAction
             var item = topUsers.ElementAt(i);
             var user = await _dataResolve.GetUserAsync(item.Key.ToUlong());
             var username = (user?.GlobalAlias ?? user?.Username) ?? unknownUserTemplate;
-            var row = rowTemplate.FormatWith($"{i + 1,2}", username, item.Value.FormatNumber());
+            var row = string.Format(rowTemplate, $"{i + 1,2}", username, item.Value.FormatNumber());
 
             result.Add(row);
         }

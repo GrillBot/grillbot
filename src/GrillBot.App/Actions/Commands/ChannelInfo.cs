@@ -84,7 +84,7 @@ public class ChannelInfo : CommandAction
         };
 
         var title = Texts[$"ChannelModule/ChannelInfo/{textId}", Locale];
-        if (textId == "OtherChannelType") title = title.FormatWith(channelType.ToString());
+        if (textId == "OtherChannelType") title = string.Format(title, channelType.ToString());
         builder.WithAuthor(title);
     }
 
@@ -104,7 +104,7 @@ public class ChannelInfo : CommandAction
         var rolePermsCount = permissionGroups.GetValueOrDefault(PermissionTarget.Role);
         var userPermsCountFormat = FormatHelper.FormatNumber("ChannelModule/ChannelInfo/PermsCountValue", Locale, userPermsCount);
         var rolePermsCountFormat = FormatHelper.FormatNumber("ChannelModule/ChannelInfo/PermsCountValue", Locale, rolePermsCount);
-        var permsFormatted = Texts["ChannelModule/ChannelInfo/PermsCount", Locale].FormatWith(userPermsCountFormat, rolePermsCountFormat);
+        var permsFormatted = string.Format(Texts["ChannelModule/ChannelInfo/PermsCount", Locale], userPermsCountFormat, rolePermsCountFormat);
         builder.AddField(Texts["ChannelModule/ChannelInfo/PermsCountTitle", Locale], permsFormatted);
     }
 

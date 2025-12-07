@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 
 # Run external NuGet source
 ARG github_actions_token
@@ -38,7 +38,7 @@ COPY "GrillBot.App/" /src/GrillBot.App
 RUN mkdir -p /publish
 RUN dotnet publish /src/GrillBot.App -c Release -o /publish --no-restore -r linux-x64 --self-contained false
 
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS FinalImage
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final_image
 LABEL org.opencontainers.image.source=https://github.com/grillbot/grillbot
 
 EXPOSE 5000

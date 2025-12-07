@@ -20,7 +20,7 @@ public class StartVoteAction(
 
             return startedVotesCount == 0
                 ? _texts["SuggestionModule/NoVote", Locale]
-                : _texts["SuggestionModule/VoteStarted", Locale].FormatWith(startedVotesCount);
+                : string.Format(_texts["SuggestionModule/VoteStarted", Locale], startedVotesCount);
         }
         catch (ClientBadRequestException ex)
         {

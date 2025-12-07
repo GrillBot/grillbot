@@ -82,7 +82,7 @@ public class GetEmotesList(
         if (list.TotalItemsCount == 0)
         {
             var description = ofUser != null ?
-                _texts["Emote/List/NoStatsOfUser", Locale].FormatWith(ofUser.GetFullName()) :
+                string.Format(_texts["Emote/List/NoStatsOfUser", Locale], ofUser.GetFullName()) :
                 _texts["Emote/List/NoStats", Locale];
 
             embed.WithDescription(description);
@@ -91,8 +91,13 @@ public class GetEmotesList(
         {
             foreach (var item in list.Data)
             {
-                var data = _texts["Emote/List/FieldData", Locale]
-                    .FormatWith(item.UseCount, item.UsersCount, item.FirstOccurence.ToLocalTime().ToCzechFormat(), item.LastOccurence.ToLocalTime().ToCzechFormat());
+                var data = string.Format(
+                    _texts["Emote/List/FieldData", Locale],
+                    item.UseCount,
+                    item.UsersCount,
+                    item.FirstOccurence.ToLocalTime().ToCzechFormat(),
+                    item.LastOccurence.ToLocalTime().ToCzechFormat()
+                );
 
                 var emote = new Discord.Emote(item.EmoteId.ToUlong(), item.EmoteName, item.EmoteIsAnimated);
                 embed.AddField(emote.ToString(), data, true);

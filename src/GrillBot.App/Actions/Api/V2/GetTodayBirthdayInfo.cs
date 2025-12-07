@@ -54,13 +54,13 @@ public class GetTodayBirthdayInfo : ApiAction
     private string Format(IReadOnlyCollection<(IUser user, int? age)> users)
     {
         if (users.Count == 0)
-            return Texts["BirthdayModule/Info/NoOneHave", ApiContext.Language].FormatWith(Configuration["Discord:Emotes:Sadge"]);
+            return string.Format(Texts["BirthdayModule/Info/NoOneHave", ApiContext.Language], Configuration["Discord:Emotes:Sadge"]);
 
         var formatted = users
             .Select(o =>
                 o.age == null
-                    ? Texts["BirthdayModule/Info/Parts/WithoutYears", ApiContext.Language].FormatWith(o.user.Mention, o.user.GetDisplayName())
-                    : Texts["BirthdayModule/Info/Parts/WithYears", ApiContext.Language].FormatWith(o.user.Mention, o.user.GetDisplayName(), o.age.Value)
+                    ? string.Format(Texts["BirthdayModule/Info/Parts/WithoutYears", ApiContext.Language], o.user.Mention, o.user.GetDisplayName())
+                    : string.Format(Texts["BirthdayModule/Info/Parts/WithYears", ApiContext.Language], o.user.Mention, o.user.GetDisplayName(), o.age.Value)
             ).ToList();
 
         var result = Texts[$"BirthdayModule/Info/Template/{(users.Count > 1 ? "MultipleForm" : "SingleForm")}", ApiContext.Language];
@@ -69,11 +69,11 @@ public class GetTodayBirthdayInfo : ApiAction
         if (users.Count > 1)
         {
             var withoutLast = string.Join(", ", formatted.Take(formatted.Count - 1));
-            return result.FormatWith(withoutLast, formatted[^1], hypers);
+            return string.Format(result, withoutLast, formatted[^1], hypers);
         }
         else
         {
-            return result.FormatWith(formatted[0], hypers);
+            return string.Format(result, formatted[0], hypers);
         }
     }
 

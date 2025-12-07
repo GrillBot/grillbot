@@ -62,7 +62,7 @@ public class GetSearchingList : CommandAction
         return new EmbedBuilder()
             .WithFooter(Context.User)
             .WithMetadata(new SearchingMetadata { Page = page, MessageQuery = query, ChannelId = channel.Id })
-            .WithTitle(Texts["SearchingModule/List/Embed/Title", Locale].FormatWith(channel.Name))
+            .WithTitle(string.Format(Texts["SearchingModule/List/Embed/Title", Locale], channel.Name))
             .WithColor(Color.Blue)
             .WithCurrentTimestamp();
     }
@@ -89,7 +89,7 @@ public class GetSearchingList : CommandAction
         if (fields.Count == 0)
         {
             var textsKey = string.IsNullOrEmpty(query) ? "NoItems" : "NoItemsWithQuery";
-            embed.WithDescription(Texts[$"SearchingModule/List/Embed/{textsKey}", Locale].FormatWith(channel.GetHyperlink(Context.Guild)));
+            embed.WithDescription(string.Format(Texts[$"SearchingModule/List/Embed/{textsKey}", Locale], channel.GetHyperlink(Context.Guild)));
             pagesCount = 1;
             return;
         }

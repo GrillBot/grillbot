@@ -30,7 +30,7 @@ public class CooldownCheckAttribute : PreconditionAttribute
             var texts = services.GetRequiredService<ITextsManager>();
             var culture = texts.GetCulture(context.Interaction.UserLocale);
             var remainsValue = remainingCooldown.Value.Humanize(precision: int.MaxValue, culture: culture, minUnit: TimeUnit.Minute);
-            var result = texts["CooldownEnabled", context.Interaction.UserLocale].FormatWith(remainsValue);
+            var result = string.Format(texts["CooldownEnabled", context.Interaction.UserLocale], remainsValue);
 
             return PreconditionResult.FromError(result);
         }

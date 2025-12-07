@@ -38,7 +38,7 @@ public class RemindModule : InteractionsModuleBase
             var remindId = await command.Command.ProcessAsync(Context.User, who, at, message, originalMessage.Id);
 
             var buttons = secret ? null : RemindHelper.CreateCopyButton(remindId);
-            var msg = GetText(nameof(CreateAsync), "Success") + (secret ? "" : " " + GetText(nameof(CreateAsync), "CopyMessage").FormatWith(Emojis.PersonRisingHand.ToString()));
+            var msg = GetText(nameof(CreateAsync), "Success") + (secret ? "" : " " + string.Format(GetText(nameof(CreateAsync), "CopyMessage"), Emojis.PersonRisingHand.ToString()));
             await SetResponseAsync(msg, components: buttons, secret: secret);
         }
         catch (ValidationException ex)

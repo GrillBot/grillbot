@@ -39,12 +39,12 @@ public sealed class PointsImage : CommandAction
 
         using var repository = DatabaseBuilder.CreateRepository();
         if (!await repository.GuildUser.ExistsAsync(guildUser))
-            throw new NotFoundException(Texts["Points/Image/NoActivity", Locale].FormatWith(user.GetDisplayName()));
+            throw new NotFoundException(string.Format(Texts["Points/Image/NoActivity", Locale], user.GetDisplayName()));
 
         var profilePicture = await ProfilePictureManager.GetOrCreatePictureAsync(user, 256);
         var status = await _pointsServiceClient.ExecuteRequestAsync((c, ctx) => c.GetImagePointsStatusAsync(guildUser.GuildId.ToString(), guildUser.Id.ToString(), ctx.CancellationToken));
         if (status is null)
-            throw new NotFoundException(Texts["Points/Image/NoActivity", Locale].FormatWith(user.GetDisplayName()));
+            throw new NotFoundException(string.Format(Texts["Points/Image/NoActivity", Locale], user.GetDisplayName()));
 
         var request = new PointsRequest
         {

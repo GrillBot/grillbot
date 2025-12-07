@@ -16,13 +16,13 @@ public class UnverifyMessageManager
     {
         var username = user.GetFullName();
 
-        return Texts["Unverify/Message/ManuallyRemoveFailed", locale].FormatWith(username, ex.Message);
+        return string.Format(Texts["Unverify/Message/ManuallyRemoveFailed", locale], username, ex.Message);
     }
 
     public string CreateRemoveAccessUnverifyNotFound(IGuildUser user, string locale)
     {
         var username = user.GetDisplayName();
 
-        return Texts["Unverify/Message/RemoveAccessUnverifyNotFound", locale].FormatWith(username);
+        return string.Format(Texts["Unverify/Message/RemoveAccessUnverifyNotFound", locale], username);
     }
 }

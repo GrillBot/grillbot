@@ -114,7 +114,7 @@ public class PointsLeaderboard(
     {
         var value = overAllTime ? item.Total : item.YearBack;
         var points = _formatHelper.FormatNumber("Points/Board/Counts", Locale, value);
-        return _texts["Points/Board/Row", Locale].FormatWith(index + skip + 1, username, points);
+        return string.Format(_texts["Points/Board/Row", Locale], index + skip + 1, username, points);
     }
 
     private async Task<MessageComponent?> CreatePaginationComponents(int currentPage)

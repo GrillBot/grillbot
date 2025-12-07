@@ -31,7 +31,7 @@ public class MemeModule(
     )
     {
         var emote = _configuration.GetValue<string>("Discord:Emotes:FeelsWowMan");
-        var msg = GetText(nameof(HiAsync), "Template").FormatWith(Context.User.GetDisplayName(), emote);
+        var msg = string.Format(GetText(nameof(HiAsync), "Template"), Context.User.GetDisplayName(), emote);
 
         return SetResponseAsync(@base == null ? msg : string.Join(" ", msg.Select(o => Convert.ToString(o, @base.Value))));
     }

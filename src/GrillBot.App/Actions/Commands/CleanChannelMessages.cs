@@ -29,7 +29,7 @@ public class CleanChannelMessages(ITextsManager _texts, IMessageCacheManager _me
         var count = countOrIdValue < DiscordEpoch ? Convert.ToInt32(countOrIdValue) : 0;
         var (totalCount, pinnedCount) = await ProcessMessagesAsync(messages, count);
 
-        return _texts["ChannelModule/Clean/ResultMessage", Locale].FormatWith(totalCount, pinnedCount);
+        return string.Format(_texts["ChannelModule/Clean/ResultMessage", Locale], totalCount, pinnedCount);
     }
 
     private static ulong ParseValue(string countOrMessage)

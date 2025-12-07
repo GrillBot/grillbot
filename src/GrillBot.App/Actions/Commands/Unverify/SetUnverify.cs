@@ -67,6 +67,6 @@ public class SetUnverify(
         var headers = _currentUser.ToDictionary();
 
         await _rabbitPublisher.PublishAsync(setRequest, headers!);
-        return _texts["Unverify/UnverifyStarted", Locale].FormatWith(user.GetDisplayName());
+        return string.Format(_texts["Unverify/UnverifyStarted", Locale], user.GetDisplayName());
     }
 }

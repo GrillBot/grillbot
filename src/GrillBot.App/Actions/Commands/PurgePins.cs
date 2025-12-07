@@ -30,6 +30,6 @@ public class PurgePins : CommandAction
         foreach (var pin in pins.Take(count))
             await pin.UnpinAsync(RequestOptions);
 
-        return Texts["Pins/UnpinCount", Locale].FormatWith(count);
+        return string.Format(Texts["Pins/UnpinCount", Locale], count);
     }
 }

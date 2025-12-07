@@ -82,7 +82,7 @@ public class UserInfo : CommandAction
 
     private void SetAuthor(EmbedBuilder builder, IUser user)
     {
-        var webAdminLink = !ExecutorEntity.HaveFlags(UserFlags.WebAdmin) ? null : Configuration.GetValue<string>("WebAdmin:UserDetailLink").FormatWith(user.Id);
+        var webAdminLink = !ExecutorEntity.HaveFlags(UserFlags.WebAdmin) ? null : string.Format(Configuration.GetValue<string>("WebAdmin:UserDetailLink")!, user.Id);
         builder.WithAuthor(user.GetFullName(), user.GetUserAvatarUrl(), webAdminLink);
     }
 
@@ -206,9 +206,9 @@ public class UserInfo : CommandAction
             if (!OverLimit && userInfo.CurrentUnverifies.TryGetValue(user.GuildId.ToString(), out var unverifyInfo))
             {
                 var unverifyType = unverifyInfo.IsSelfUnverify ? "self" : "";
-                var reason = unverifyInfo.IsSelfUnverify ? "" : Texts["User/InfoEmbed/ReasonRow", Locale].FormatWith(unverifyInfo.Reason);
+                var reason = unverifyInfo.IsSelfUnverify ? "" : string.Format(Texts["User/InfoEmbed/ReasonRow", Locale], unverifyInfo.Reason);
                 var endAt = (unverifyInfo.EndAtUtc.Kind == DateTimeKind.Unspecified ? unverifyInfo.EndAtUtc.WithKind(DateTimeKind.Utc) : unverifyInfo.EndAtUtc).ToLocalTime();
-                var row = Texts["User/InfoEmbed/UnverifyRow", Locale].FormatWith(unverifyType, endAt.ToCzechFormat(), reason);
+                var row = string.Format(Texts["User/InfoEmbed/UnverifyRow", Locale], unverifyType, endAt.ToCzechFormat(), reason);
 
                 AddField(builder, "UnverifyInfo", row.Cut(EmbedFieldBuilder.MaxFieldValueLength, true)!, false);
             }
@@ -248,7 +248,7 @@ public class UserInfo : CommandAction
             AddField(
                 builder,
                 "UsedInvite",
-                Texts["User/InfoEmbed/UsedVanityInviteRow", Locale].FormatWith(invite.Code, Texts["User/InfoEmbed/VanityInvite", Locale]),
+                string.Format(Texts["User/InfoEmbed/UsedVanityInviteRow", Locale], invite.Code, Texts["User/InfoEmbed/VanityInvite", Locale]),
                 false
             );
         }
@@ -274,7 +274,7 @@ public class UserInfo : CommandAction
             AddField(
                 builder,
                 "UsedInvite",
-                Texts["User/InfoEmbed/UsedInviteRow", Locale].FormatWith(invite.Code, creatorName, createdAt),
+                string.Format(Texts["User/InfoEmbed/UsedInviteRow", Locale], invite.Code, creatorName, createdAt),
                 false
             );
         }

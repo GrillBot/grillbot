@@ -23,7 +23,7 @@ public class MessageModule : InteractionsModuleBase
         public async Task ClearEmoteFromReactionsAsync(IMessage message, IEmote emote)
         {
             await message.RemoveAllReactionsForEmoteAsync(emote);
-            await SetResponseAsync(GetText(nameof(ClearEmoteFromReactionsAsync), "Success").FormatWith(emote));
+            await SetResponseAsync(string.Format(GetText(nameof(ClearEmoteFromReactionsAsync), "Success"), emote));
         }
     }
 }

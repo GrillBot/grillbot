@@ -46,6 +46,6 @@ public class UpdateJob : ApiAction
         var jobKeys = await scheduler.GetJobKeys(GroupMatcher<JobKey>.AnyGroup());
 
         if (!jobKeys.Any(o => o.Name == name))
-            throw new NotFoundException(Texts["Jobs/NotFound", ApiContext.Language].FormatWith(name));
+            throw new NotFoundException(string.Format(Texts["Jobs/NotFound", ApiContext.Language], name));
     }
 }

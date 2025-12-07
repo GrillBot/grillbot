@@ -3,7 +3,6 @@ using System.Text.RegularExpressions;
 using GrillBot.Common.Extensions;
 using GrillBot.Core.Extensions;
 using GrillBot.Models;
-using Humanizer;
 using Newtonsoft.Json.Linq;
 
 namespace GrillBot.Common.Managers.Localization;
@@ -82,16 +81,20 @@ public partial class TextsManager(string _basePath, string _fileMask) : ITextsMa
         foreach (var arg in content.Args)
         {
             var transformedValue = arg;
-            if (transformedValue.StartsWith("DateTime:"))
+            if (
+                transformedValue.StartsWith("DateTime:") &&
+                DateTime.TryParseExact(arg.Replace("DateTime:", ""), "o", CultureInfo.InvariantCulture, DateTimeStyles.None, out var dateTime)
+            )
             {
-                if (DateTime.TryParseExact(arg.Replace("DateTime:", ""), "o", CultureInfo.InvariantCulture, DateTimeStyles.None, out var dateTime))
-                    transformedValue = (dateTime.Kind == DateTimeKind.Unspecified ? dateTime.WithKind(DateTimeKind.Utc) : dateTime).ToLocalTime().ToCzechFormat();
+                transformedValue = (dateTime.Kind == DateTimeKind.Unspecified ? dateTime.WithKind(DateTimeKind.Utc) : dateTime).ToLocalTime().ToCzechFormat();
             }
 
             args.Add(transformedValue);
         }
 
-        return args.Count == 0 ? value : value.FormatWith([.. args]);
+        return args.Count == 0 ?
+            value :
+            string.Format(value, [.. args]);
     }
 
     private static string GetKey(string id, string locale) => $"{id}#{FixLocale(locale)}";

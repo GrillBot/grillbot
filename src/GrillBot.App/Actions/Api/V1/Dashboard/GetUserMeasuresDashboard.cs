@@ -28,23 +28,27 @@ public class GetUserMeasuresDashboard : ApiAction
     public override async Task<ApiResult> ProcessAsync()
     {
         var data = await _userMeasuresService.ExecuteRequestAsync((c, ctx) => c.GetDashboardDataAsync(ctx.CancellationToken));
-        var result = await MapAsync(data).ToListAsync();
+        var result = await MapAsync(data);
 
         return ApiResult.Ok(result);
     }
 
-    private async IAsyncEnumerable<DashboardInfoRow> MapAsync(List<DashboardRow> rows)
+    private async Task<List<DashboardInfoRow>> MapAsync(List<DashboardRow> rows)
     {
+        var result = new List<DashboardInfoRow>();
+
         foreach (var row in rows)
         {
             var user = await _dataResolveManager.GetUserAsync(row.UserId.ToUlong());
 
-            yield return new DashboardInfoRow
+            result.Add(new DashboardInfoRow
             {
                 Result = GetText(row.Type),
                 Name = FormatUser(user, row.UserId)
-            };
+            });
         }
+
+        return result;
     }
 
     private string GetText(string id)

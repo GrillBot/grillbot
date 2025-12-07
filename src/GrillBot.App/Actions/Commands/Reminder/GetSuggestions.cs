@@ -35,6 +35,6 @@ public class GetSuggestions(
         var at = item.NotifyAtUtc.ToLocalTime().ToCzechFormat();
         var fromUser = await _dataResolve.GetUserAsync(item.FromUserId.ToUlong());
 
-        return messageTemplate.FormatWith(item.RemindId, at, fromUser!.Username);
+        return string.Format(messageTemplate, item.RemindId, at, fromUser!.Username);
     }
 }

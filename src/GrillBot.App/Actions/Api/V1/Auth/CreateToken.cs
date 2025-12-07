@@ -94,8 +94,8 @@ public class CreateToken : ApiAction
     {
         return isPublic switch
         {
-            true when user.HaveFlags(UserFlags.PublicAdministrationBlocked) => Texts["Auth/CreateToken/PublicAdminBlocked", ApiContext.Language].FormatWith(user.Username),
-            false when !user.HaveFlags(UserFlags.WebAdmin) => Texts["Auth/CreateToken/PrivateAdminDisabled", ApiContext.Language].FormatWith(user.Username),
+            true when user.HaveFlags(UserFlags.PublicAdministrationBlocked) => string.Format(Texts["Auth/CreateToken/PublicAdminBlocked", ApiContext.Language], user.Username),
+            false when !user.HaveFlags(UserFlags.WebAdmin) => string.Format(Texts["Auth/CreateToken/PrivateAdminDisabled", ApiContext.Language], user.Username),
             _ => null
         };
     }

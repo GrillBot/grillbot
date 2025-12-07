@@ -55,7 +55,7 @@ public class RolesReader : CommandAction
         var premium = role.Tags?.IsPremiumSubscriberRole == true ? Texts["Roles/PremiumSubscriberRole", Locale] : "";
         var createdAt = role.CreatedAt.LocalDateTime.ToCzechFormat();
 
-        var summaryLine = Texts["Roles/RoleSummaryLine", Locale].FormatWith(memberCount, createdAt, mentionable, managed, premium);
+        var summaryLine = string.Format(Texts["Roles/RoleSummaryLine", Locale], memberCount, createdAt, mentionable, managed, premium);
         summaryLine = summaryLine.TrimEnd(',', ' ');
 
         return (new EmbedFieldBuilder().WithName(role.Name).WithValue(summaryLine), membersCount, role.Position);
@@ -66,7 +66,7 @@ public class RolesReader : CommandAction
         var totalMembersWithRole = Users.Count(o => o.RoleIds.Any(x => x != Context.Guild.EveryoneRole.Id));
         var totalMembersWithoutRole = Users.Count(o => o.RoleIds.All(x => x == Context.Guild.EveryoneRole.Id));
 
-        return Texts["Roles/GuildSummary", Locale].FormatWith(Context.Guild.Roles.Count, totalMembersWithRole, totalMembersWithoutRole);
+        return string.Format(Texts["Roles/GuildSummary", Locale], Context.Guild.Roles.Count, totalMembersWithRole, totalMembersWithoutRole);
     }
 
     private Embed CreateEmbed(IEnumerable<EmbedFieldBuilder> fields, Color color, string title, string? summary = null)
@@ -89,7 +89,7 @@ public class RolesReader : CommandAction
         Users = await Context.Guild.GetUsersAsync();
 
         var fields = await GetDetailFieldsAsync(role);
-        var title = Texts["Roles/DetailTitle", Locale].FormatWith(role.Name);
+        var title = string.Format(Texts["Roles/DetailTitle", Locale], role.Name);
         return CreateEmbed(fields, role.Color, title);
     }
 

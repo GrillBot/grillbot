@@ -21,7 +21,7 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
     protected IGuild Guild => Context.Guild;
     protected ISocketMessageChannel Channel => Context.Channel;
     protected IUser User => Context.User;
-    protected CancellationToken CancellationToken => _cancellationToken.Token;
+    protected CancellationToken CancellationToken => _cancellationToken?.Token ?? CancellationToken.None;
 
     protected string Locale
     {
@@ -90,7 +90,7 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
     public override async Task AfterExecuteAsync(ICommandInfo command)
     {
         await base.AfterExecuteAsync(command);
-        _cancellationToken.Dispose();
+        _cancellationToken?.Dispose();
     }
 
     protected override async Task DeleteOriginalResponseAsync()
@@ -106,8 +106,18 @@ public abstract class InteractionsModuleBase : InteractionModuleBase<SocketInter
         }
     }
 
-    protected async Task<IUserMessage> SetResponseAsync(string? content = null, Embed? embed = null, Embed[]? embeds = null, MessageComponent? components = null, MessageFlags? flags = null,
-        IEnumerable<FileAttachment>? attachments = null, RequestOptions? requestOptions = null, bool secret = false, bool suppressFollowUp = false, AllowedMentions? allowedMentions = null)
+    protected async Task<IUserMessage> SetResponseAsync(
+        string? content = null,
+        Embed? embed = null,
+        Embed[]? embeds = null,
+        MessageComponent? components = null,
+        MessageFlags? flags = null,
+        IEnumerable<FileAttachment>? attachments = null,
+        RequestOptions? requestOptions = null,
+        bool secret = false,
+        bool suppressFollowUp = false,
+        AllowedMentions? allowedMentions = null
+    )
     {
         using (CounterManager.Create("Discord.API.Interactions"))
         {

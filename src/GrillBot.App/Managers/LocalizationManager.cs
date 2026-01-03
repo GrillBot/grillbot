@@ -92,18 +92,12 @@ public class LocalizationManager(
 
     public async Task<string> TransformValueAsync(LocalizedMessageContent value, string language, Dictionary<string, string> additionalData, CancellationToken cancellationToken = default)
     {
-        if (value.Key.StartsWith("Bot."))
-        {
-            switch (value)
-            {
-                case "Bot.DisplayName":
-                    return _discordClient.CurrentUser.GetDisplayName();
-                case "Bot.AvatarUrl":
-                    return _discordClient.CurrentUser.GetUserAvatarUrl();
-                case "Bot.Mention":
-                    return _discordClient.CurrentUser.Mention;
-            }
-        }
+        if (value is null)
+            return "";
+
+        var botPrefixValue = ResolveBotPrefixProperties(value.Key, value);
+        if (!string.IsNullOrEmpty(botPrefixValue))
+            return botPrefixValue;
 
         if (value.Key.StartsWith("User."))
         {
@@ -132,6 +126,20 @@ public class LocalizationManager(
 
         var localized = _texts.GetIfExists(value, language).ReplaceIfNullOrEmpty(value);
         return ProcessAdditionalData(value.Key, localized, additionalData);
+    }
+
+    private string? ResolveBotPrefixProperties(string key, string value)
+    {
+        if (string.IsNullOrEmpty(key) || !key.StartsWith("Bot."))
+            return null;
+
+        return value switch
+        {
+            "Bot.DisplayName" => _discordClient.CurrentUser.GetDisplayName(),
+            "Bot.AvatarUrl" => _discordClient.CurrentUser.GetUserAvatarUrl(),
+            "Bot.Mention" => _discordClient.CurrentUser.Mention,
+            _ => null,
+        };
     }
 
     private static string ProcessAdditionalData(string rawValue, string localized, Dictionary<string, string> additionalData)

@@ -103,7 +103,7 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           passphrase: ${{ secrets.SSH_PASSHPRASE }}
-          script: /home/grillbot/deploy-frontend.sh bot
+          script: /home/grillbot/deploy-grillbot.sh bot
   VerifyProductionDeployment:
     runs-on: ubuntu-latest
     environment: ProductionInternal

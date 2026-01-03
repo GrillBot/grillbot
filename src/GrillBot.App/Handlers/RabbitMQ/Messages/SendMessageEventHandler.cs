@@ -76,8 +76,8 @@ public class SendMessageEventHandler(
         }
         finally
         {
-            if (message is not null)
-                await PublishCreatedMessageAsync(message, msg!, cancellationToken);
+            if (msg is not null)
+                await PublishCreatedMessageAsync(message, msg, cancellationToken);
         }
 
         return RabbitConsumptionResult.Success;

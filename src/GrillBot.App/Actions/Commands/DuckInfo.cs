@@ -5,6 +5,7 @@ using GrillBot.Common.Services.KachnaOnline;
 using GrillBot.Common.Services.KachnaOnline.Models;
 using GrillBot.Core.Exceptions;
 using GrillBot.Core.Extensions;
+using GrillBot.Core.Services.Common.Exceptions;
 using GrillBot.Core.Services.Common.Executor;
 using DuckStateType = GrillBot.Common.Services.KachnaOnline.Enums.DuckState;
 
@@ -34,18 +35,18 @@ public class DuckInfo(
                 if (currentState.FollowingState?.State is DuckStateType.OpenBar)
                     nextBar = currentState.FollowingState;
                 else
-                    nextBar = await _client.ExecuteRequestAsync((c, ctx) => c.GetNextStateAsync(DuckStateType.OpenBar, ctx.CancellationToken));
+                    nextBar = await GetNextStateAsync(DuckStateType.OpenBar, CancellationToken);
 
                 if (currentState.FollowingState?.State is DuckStateType.OpenTearoom)
                     nextTearoom = currentState.FollowingState;
                 else
-                    nextTearoom = await _client.ExecuteRequestAsync((c, ctx) => c.GetNextStateAsync(DuckStateType.OpenTearoom, ctx.CancellationToken));
+                    nextTearoom = await GetNextStateAsync(DuckStateType.OpenTearoom, CancellationToken);
 
                 if (currentState.FollowingState?.State is DuckStateType.OpenAll)
                     nextAll = currentState.FollowingState;
                 // Only determine the next "OpenAll" state if we're not already in one
                 else if (currentState.State != DuckStateType.OpenAll)
-                    nextAll = await _client.ExecuteRequestAsync((c, ctx) => c.GetNextStateAsync(DuckStateType.OpenAll, ctx.CancellationToken));
+                    nextAll = await GetNextStateAsync(DuckStateType.OpenAll, CancellationToken);
 
             }
 
@@ -60,6 +61,19 @@ public class DuckInfo(
         {
             await _loggingManager.ErrorAsync("DuckInfo", "An error occured while executing request on KachnaOnline.", ex);
             throw new GrillBotException(string.Format(GetText("CannotGetState"), InfoChannel));
+        }
+    }
+
+    private async Task<DuckState?> GetNextStateAsync(DuckStateType type, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            return await _client.ExecuteRequestAsync((c, ctx) => c.GetNextStateAsync(type, ctx.CancellationToken), cancellationToken);
+        }
+        catch (ClientNotFoundException)
+        {
+            await _loggingManager.InfoAsync("DuckInfo", $"No next state of type {type} found.");
+            return null;
         }
     }
 

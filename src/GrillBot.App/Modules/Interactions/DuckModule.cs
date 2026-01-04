@@ -11,7 +11,7 @@ public class DuckModule(IServiceProvider serviceProvider) : InteractionsModuleBa
     [SlashCommand("duck", "Finds the current state of the duck club.")]
     public async Task GetDuckInfoAsync()
     {
-        using var command = GetCommand<Actions.Commands.DuckInfo>();
+        using var command = await GetCommandAsync<Actions.Commands.DuckInfo>();
 
         try
         {

@@ -113,12 +113,14 @@ public class SendMessageEventHandler(
 
     private Task PublishCreatedMessageAsync(DiscordSendMessagePayload payload, IUserMessage message, CancellationToken cancellationToken = default)
     {
-        return RabbitPublisher.PublishAsync(new CreatedDiscordMessagePayload(
+        var resultMessage = new CreatedDiscordMessagePayload(
             payload.GuildId?.ToString(),
             payload.ChannelId.ToString(),
             message.Id.ToString(),
             payload.ServiceId,
             payload.ServiceData
-        ), cancellationToken: cancellationToken);
+        );
+
+        return RabbitPublisher.PublishAsync(resultMessage, cancellationToken: cancellationToken);
     }
 }

@@ -84,10 +84,10 @@ public class LocalizationManager(
 
     private async Task<EmbedFieldBuilder> ProcessFieldAsync(DiscordMessageEmbedField original, string language, Dictionary<string, string> additionalData, CancellationToken cancellationToken = default)
     {
-        return new EmbedFieldBuilder()
-            .WithName(await TransformValueAsync(original.Name, language, additionalData, cancellationToken))
-            .WithValue(await TransformValueAsync(original.Value.ToString() ?? "-", language, additionalData, cancellationToken))
-            .WithIsInline(original.IsInline);
+        var name = await TransformValueAsync(original.Name, language, additionalData, cancellationToken);
+        var value = await TransformValueAsync(original.Value ?? "-", language, additionalData, cancellationToken);
+
+        return new EmbedFieldBuilder().WithName(name).WithValue(value).WithIsInline(original.IsInline);
     }
 
     public async Task<string> TransformValueAsync(LocalizedMessageContent value, string language, Dictionary<string, string> additionalData, CancellationToken cancellationToken = default)

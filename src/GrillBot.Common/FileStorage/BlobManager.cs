@@ -25,7 +25,7 @@ public class BlobManager
         {
             var blobClient = Client.GetBlobClient(filename);
             if (!blobClient.CanGenerateSasUri)
-                return null;
+                throw new InvalidOperationException("Missing SharedKeyIdentifier");
 
             var builder = new BlobSasBuilder
             {

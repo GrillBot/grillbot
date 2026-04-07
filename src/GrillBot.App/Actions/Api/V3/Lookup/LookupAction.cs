@@ -11,25 +11,14 @@ using Microsoft.Extensions.Caching.Distributed;
 
 namespace GrillBot.App.Actions.Api.V3.Lookup;
 
-public class LookupAction : ApiAction
+public class LookupAction(
+    ApiRequestContext apiContext,
+    DataResolveManager _dataResolve,
+    BlobManagerFactoryHelper _blobManagerHelper,
+    IDistributedCache _cache
+) : ApiAction(apiContext)
 {
-    private readonly DataResolveManager _dataResolve;
-    private readonly BlobManagerFactoryHelper _blobManagerHelper;
-    private readonly IDistributedCache _cache;
-
     private static readonly TimeSpan _sasLinkExpiration = TimeSpan.FromMinutes(15);
-
-    public LookupAction(
-        ApiRequestContext apiContext,
-        DataResolveManager dataResolve,
-        BlobManagerFactoryHelper blobManagerHelper,
-        IDistributedCache cache
-    ) : base(apiContext)
-    {
-        _dataResolve = dataResolve;
-        _blobManagerHelper = blobManagerHelper;
-        _cache = cache;
-    }
 
     public override Task<ApiResult> ProcessAsync()
     {
@@ -99,7 +88,7 @@ public class LookupAction : ApiAction
             {
                 link = manager.GenerateSasLink(filename, _sasLinkExpiration);
                 if (string.IsNullOrEmpty(link))
-                    return CreateResult(null);
+                    continue;
 
                 await _cache.SetAsync(cacheKey, link, _sasLinkExpiration);
                 return CreateResult(new MessageResponse(link));

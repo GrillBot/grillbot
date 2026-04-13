@@ -86,7 +86,7 @@ public class LookupAction(
             var manager = await _blobManagerHelper.CreateAsync(container!);
             if (await manager.ExistsAsync(filename))
             {
-                link = manager.GenerateSasLink(filename, _sasLinkExpiration);
+                link = await manager.GenerateSasLinkAsync(filename, _sasLinkExpiration, cancellationToken: CancellationToken);
                 if (string.IsNullOrEmpty(link))
                     continue;
 

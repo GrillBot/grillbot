@@ -70,7 +70,7 @@ public abstract class Job(IServiceProvider serviceProvider) : IJob
             return Task.CompletedTask;
 
         var discordClient = ResolveService<IDiscordClient>();
-        var userId = discordClient.CurrentUser.Id.ToString();
+        var userId = discordClient.CurrentUser?.Id.ToString();
         var request = new LogRequest(LogType.JobCompleted, DateTime.UtcNow, null, userId)
         {
             JobExecution = logRequest

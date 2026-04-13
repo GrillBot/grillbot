@@ -25,6 +25,6 @@ public class BlobManagerFactory(
         var container = client.GetBlobContainerClient(containerName);
         await container.CreateIfNotExistsAsync();
 
-        return new BlobManager(_counterManager, container);
+        return new BlobManager(_counterManager, container, client);
     }
 }

@@ -5,28 +5,32 @@ using GrillBot.Core.Managers.Performance;
 
 namespace GrillBot.Common.FileStorage;
 
-public class BlobManager
+public class BlobManager(
+    ICounterManager _counterManager,
+    BlobContainerClient _client,
+    BlobServiceClient _serviceClient
+)
 {
-    private ICounterManager CounterManager { get; }
-    private BlobContainerClient Client { get; }
-
-    public BlobManager(ICounterManager counterManager, BlobContainerClient client)
-    {
-        CounterManager = counterManager;
-        Client = client;
-    }
-
     private CounterItem CreateCounter(string operation)
-        => CounterManager.Create($"Azure.BlobStorage.{Client.Name}.{operation}");
+        => _counterManager.Create($"Azure.BlobStorage.{_client.Name}.{operation}");
 
-    public string? GenerateSasLink(string filename, TimeSpan expiration, string resource = "b", BlobSasPermissions permissions = BlobSasPermissions.Read)
+    public async Task<string?> GenerateSasLinkAsync(
+        string filename,
+        TimeSpan expiration,
+        string resource = "b",
+        BlobSasPermissions permissions = BlobSasPermissions.Read,
+        CancellationToken cancellationToken = default
+    )
     {
-        using (CreateCounter(nameof(GenerateSasLink)))
+        using (CreateCounter(nameof(GenerateSasLinkAsync)))
         {
-            var blobClient = Client.GetBlobClient(filename);
-            if (!blobClient.CanGenerateSasUri)
-                throw new InvalidOperationException("Missing SharedKeyIdentifier");
+            var userDelegationKey = await _serviceClient.GetUserDelegationKeyAsync(
+                startsOn: DateTimeOffset.UtcNow,
+                expiresOn: DateTimeOffset.UtcNow.Add(expiration * 1.1),
+                cancellationToken: cancellationToken
+            );
 
+            var blobClient = _client.GetBlobClient(filename);
             var builder = new BlobSasBuilder
             {
                 BlobContainerName = blobClient.GetParentBlobContainerClient().Name,
@@ -36,7 +40,12 @@ public class BlobManager
             };
             builder.SetPermissions(permissions);
 
-            return blobClient.GenerateSasUri(builder).ToString();
+            var sasUri = blobClient.GenerateUserDelegationSasUri(
+                builder: builder,
+                userDelegationKey: userDelegationKey
+            );
+
+            return sasUri.ToString();
         }
     }
 
@@ -44,7 +53,7 @@ public class BlobManager
     {
         using (CreateCounter("Delete"))
         {
-            var blobClient = Client.GetBlobClient(filename);
+            var blobClient = _client.GetBlobClient(filename);
 
             await blobClient.DeleteIfExistsAsync();
         }
@@ -55,7 +64,7 @@ public class BlobManager
         using (CreateCounter("Upload"))
         {
             var binaryData = new BinaryData(content);
-            await Client.UploadBlobAsync(filename, binaryData);
+            await _client.UploadBlobAsync(filename, binaryData);
         }
     }
 
@@ -63,7 +72,7 @@ public class BlobManager
     {
         using (CreateCounter("Upload"))
         {
-            await Client.UploadBlobAsync(filename, contentStream);
+            await _client.UploadBlobAsync(filename, contentStream);
         }
     }
 
@@ -71,7 +80,7 @@ public class BlobManager
     {
         using (CreateCounter("Exists"))
         {
-            var blobClient = Client.GetBlobClient(filename);
+            var blobClient = _client.GetBlobClient(filename);
             var exists = await blobClient.ExistsAsync();
 
             return exists?.Value ?? false;
@@ -85,7 +94,7 @@ public class BlobManager
 
         using (CreateCounter("Download"))
         {
-            var blobClient = Client.GetBlobClient(filename);
+            var blobClient = _client.GetBlobClient(filename);
 
             var response = await blobClient.DownloadContentAsync();
             return response?.Value is null ? null : response.Value.Content.ToArray();
